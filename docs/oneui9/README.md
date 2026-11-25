@@ -116,7 +116,7 @@ image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the r
   "include":    ["^(android|com\\.(samsung|sec|google|android)\\..*)$"],
   "exclude":    [],
   "colors": {
-    "com.android.systemui": { "qs_tile_round_background_on": "#387aff" },
+    "com.android.systemui": { "qs_tile_round_background_on": "#ffffff" },
     "com.android.settings": { "^sec_dashboard_(?!.*(text|layer)).*_color\\d*$": "#262626" }
   }
 }

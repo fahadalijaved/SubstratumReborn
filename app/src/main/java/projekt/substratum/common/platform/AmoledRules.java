@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  *   "thumb":      "#2a2a2a",      scrollbar thumbs
  *   "include":    ["^com\\.samsung\\..*"],   regexes of packages; default: Samsung, Google, system
  *   "exclude":    ["^com\\.google\\.android\\.gms$"],
- *   "colors": { "com.android.systemui": { "qs_tile_round_background_on": "#387aff",
+ *   "colors": { "com.android.systemui": { "qs_tile_round_background_on": "#ffffff",
  *                                         "^sec_dashboard_.*_color$": "#262626" } }
  * }
  * </pre>
@@ -76,7 +76,7 @@ public final class AmoledRules {
         sysui.put("seekbar_background_color", 0xff1f1f1f);
         sysui.put("seekbar_background_color_expand", 0xff1f1f1f);
         sysui.put("seekbar_color_expand", 0xfffcfcfc);
-        sysui.put("qs_tile_round_background_on", 0xff387aff);
+        sysui.put("qs_tile_round_background_on", 0xffffffff);
         sysui.put("qs_switch_off_background_color", 0xff242424);
         sysui.put("qs_detail_layout_popup_menu_background_color", 0xff000000);
         sysui.put("qs_detail_layout_popup_menu_background_color_no_blur", 0xff000000);

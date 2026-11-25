@@ -198,7 +198,8 @@ public final class SystemAmoled {
 
     /**
      * Hand the colors to the LSPosed module, which replaces them by resource id inside the app
-     * (the app has to be in the module's scope). One line per color: id, light value, night value.
+     * (the app has to be in the module's scope). One line per color: id, light value, night value
+     * and, for plain colors, the stock dark value (the module maps code-drawn surfaces with it).
      *
      * @return Number of colors handed over
      */
@@ -206,14 +207,19 @@ public final class SystemAmoled {
         java.util.Map<String, String[]> byId = new java.util.LinkedHashMap<>();
         for (String[] item : items) {
             String[] line = byId.get(item[4]);
-            if (line == null) byId.put(item[4], line = new String[]{item[4], item[2], item[2]});
-            if ("night".equals(item[3])) line[2] = item[2];
-            else line[1] = item[2];
+            if (line == null) byId.put(item[4], line = new String[]{item[4], item[2], item[2], ""});
+            if ("night".equals(item[3])) {
+                line[2] = item[2];
+                if (item.length > 5) line[3] = item[5]; // stock dark value
+            } else {
+                line[1] = item[2];
+            }
         }
         StringBuilder content = new StringBuilder();
         for (String[] line : byId.values()) {
-            content.append(line[0]).append(' ').append(line[1]).append(' ').append(line[2])
-                    .append('\n');
+            content.append(line[0]).append(' ').append(line[1]).append(' ').append(line[2]);
+            if (!line[3].isEmpty()) content.append(' ').append(line[3]);
+            content.append('\n');
         }
         java.io.File local = new java.io.File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
         try (java.io.FileWriter writer = new java.io.FileWriter(local)) {
@@ -373,7 +379,8 @@ public final class SystemAmoled {
             items.add(new String[]{"color/" + name, "28",
                     String.format("0x%08x", light), "", hexId});
             items.add(new String[]{"color/" + name, "28",
-                    String.format("0x%08x", mapped), "night", hexId});
+                    String.format("0x%08x", mapped), "night", hexId,
+                    plain ? String.format("0x%08x", tv.data) : ""});
         }
         return items;
     }
