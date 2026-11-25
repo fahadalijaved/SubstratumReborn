@@ -1,9 +1,16 @@
 # Theming One UI 9 with SubstratumReborn
 
 One UI 9 (Android 17) skips overlay APKs that Samsung did not preinstall, and Android rejects
-overlays signed with another key. SubstratumReborn therefore applies themes with its own LSPosed
-module: the compiled overlay is stored on the device, and the module swaps the matching resources
-inside each target app as it starts. Themes are still ordinary Substratum themes.
+overlays signed with another key. SubstratumReborn therefore applies themes in two layers:
+
+- **Colors, booleans and integers** become a *fabricated overlay* in the system Overlay Manager
+  (root). They are resolved natively, so they also reach colors the app only uses through
+  references or inside its own drawables, they follow qualifiers such as `values-night`, apply
+  live without restarting the app, and framework values apply system-wide.
+- **Everything else** (dimensions, drawables, layouts) is applied by SubstratumReborn's LSPosed
+  module, which swaps the matching resources inside each target app as it starts.
+
+Themes are still ordinary Substratum themes; the split happens when Substratum builds them.
 
 ## What you need on the device
 
@@ -32,7 +39,8 @@ it as a number and Substratum skips the theme.
 
 | Kind | Works | Notes |
 |---|---|---|
-| Colors, dimens, booleans, integers, strings | Yes | Declare the same name in `res/values` |
+| Colors, booleans, integers | Yes, natively | Declare the same name in `res/values`; hex colors only (`#AARRGGBB`), references fall back to the module |
+| Dimens, strings | Yes | Declare the same name in `res/values` |
 | Drawables, vector or bitmap | Yes | Ship a file with the same name and qualifier |
 | Layouts | Yes | Ship a file with the same name; keep every view id the code looks up |
 | Framework (`android`) | Yes, in scoped apps | Applies in every app in the module's LSPosed scope |
@@ -47,7 +55,11 @@ it as a number and Substratum skips the theme.
 2. **Only replace names the target has.** New names are ignored, except the battery names below.
 3. **Use literal values or `@android:` references.** References to the target's own resources
    (`@*com.android.systemui:color/...`) do not resolve from a theme.
-4. Restarting a target over and over trips LSPosed's crash detection, which then stops all
+4. **Override the colors the app looks up, not only the end of a chain.** One UI colors are
+   chains (`search field -> surface_container -> surface_container_dark -> gray_80`). Fabricated
+   overlays handle chains natively; for values the module applies, override the name the app
+   actually uses.
+5. Restarting a target over and over trips LSPosed's crash detection, which then stops all
    modules (safe mode). Substratum restarts each target once per action.
 
 ## Design tokens

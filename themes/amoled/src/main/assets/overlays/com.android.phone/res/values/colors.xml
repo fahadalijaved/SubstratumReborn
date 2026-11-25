@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reborn AMOLED, com.android.phone, all modes: dark-only design tokens, plus the stock light values of the night overrides so light mode keeps working. Generated from the One UI 9 reference. -->
+<resources>
+    <color name="actionbar_icon_color">#ff5f6368</color>
+    <color name="background_floating_material_dark">#ff424242</color>
+    <color name="background_material_dark">#ff303030</color>
+    <color name="button_material_dark">#ff5a595b</color>
+    <color name="dialer_primary_text_color">#ff202124</color>
+    <color name="dialer_secondary_text_color">#ff5f6368</color>
+    <color name="dialpad_digits_text_color">#ff333333</color>
+    <color name="dialpad_secondary_text_color">#ff737373</color>
+    <color name="dim_foreground_material_light">#ff323232</color>
+    <color name="emergency_call_icon_color">#ff3c4043</color>
+    <color name="emergency_callback_mode_button_text_color">#ff252525</color>
+    <color name="front_cover_background_color">#ff010101</color>
+    <color name="material_blue_grey_800">#ff37474f</color>
+    <color name="material_blue_grey_900">#ff263238</color>
+    <color name="material_blue_grey_950">#ff21272b</color>
+    <color name="material_grey_600">#ff757575</color>
+    <color name="material_grey_800">#ff424242</color>
+    <color name="material_grey_850">#ff303030</color>
+    <color name="material_grey_900">#ff212121</color>
+    <color name="phone_settings_actionbar_text_color">#ff5f6368</color>
+    <color name="primary_dark_material_light">#ff757575</color>
+    <color name="primary_material_dark">#ff212121</color>
+    <color name="setting_primary_color">#ff333333</color>
+    <color name="setting_secondary_color">#ff737373</color>
+    <color name="switch_thumb_disabled_material_dark">#ff616161</color>
+    <color name="switch_track_off">#ff5f5f64</color>
+</resources>

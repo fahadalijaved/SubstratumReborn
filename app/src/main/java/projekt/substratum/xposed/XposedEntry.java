@@ -7,20 +7,29 @@
 
 package projekt.substratum.xposed;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResources;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -39,6 +48,23 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     private static final String SELF = "projekt.substratum";
     private static final String FRAMEWORK = "android";
     private static final String SYSTEMUI = "com.android.systemui";
+    // Plain values replaced directly, per target Resources, so they can follow light/dark changes
+    private static final Map<Resources, List<ValueReplacement>> VALUES = new WeakHashMap<>();
+    private static boolean configHooked;
+
+    private static final class ValueReplacement {
+        final String target, type, name;
+        final XModuleResources modRes;
+        final int id;
+
+        ValueReplacement(String target, String type, String name, XModuleResources modRes, int id) {
+            this.target = target;
+            this.type = type;
+            this.name = name;
+            this.modRes = modRes;
+            this.id = id;
+        }
+    }
     // Value types that can be forwarded; styles, attrs and ids cannot be replaced this way
     private static final Set<String> FORWARDABLE = new HashSet<>(Arrays.asList(
             "anim", "animator", "array", "bool", "color", "dimen", "drawable", "font",
@@ -51,6 +77,7 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
      */
     @Override
     public void initZygote(StartupParam startupParam) {
+        hookConfigurationChanges();
         for (String name : enabledOverlays()) {
             try {
                 apply(null, FRAMEWORK, name);
@@ -120,21 +147,35 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                     base + XposedBackend.APK, res);
             if (SYSTEMUI.equals(target)) BatteryHook.offer(modRes, overlayPackage);
             int replaced = 0;
+            boolean fabricated = false;
             String line;
             while ((line = reader.readLine()) != null) {
+                if (line.equals(XposedBackend.FABRICATED)) {
+                    fabricated = true;
+                    continue;
+                }
                 int slash = line.indexOf('/');
                 if (slash <= 0) continue;
                 String type = line.substring(0, slash);
                 String resName = line.substring(slash + 1);
                 if (!FORWARDABLE.contains(type)) continue;
+                // The system Overlay Manager already applies these natively
+                if (fabricated && (type.equals("color") || type.equals("bool") ||
+                        type.equals("integer"))) continue;
                 int id = modRes.getIdentifier(resName, type, overlayPackage);
                 if (id == 0) continue;
                 try {
+                    // Plain values are handed over as values: forwarding them leaks the
+                    // overlay's resource ids into the target, which some code paths then look
+                    // up in the target's own table and crash on
+                    Object value = directValue(modRes, type, id);
+                    Object replacement = value != null ? value : modRes.fwd(id);
                     if (res == null) {
-                        XResources.setSystemWideReplacement(target, type, resName,
-                                modRes.fwd(id));
+                        XResources.setSystemWideReplacement(target, type, resName, replacement);
                     } else {
-                        res.setReplacement(target, type, resName, modRes.fwd(id));
+                        res.setReplacement(target, type, resName, replacement);
+                        if (value != null) remember(res,
+                                new ValueReplacement(target, type, resName, modRes, id));
                     }
                     replaced++;
                 } catch (Throwable ignored) {
@@ -142,6 +183,86 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                 }
             }
             XposedBridge.log(TAG + name + " replaced " + replaced + " resources in " + target);
+        }
+    }
+
+    /**
+     * The value of a plain resource (color, dimen, bool, integer) in the overlay's current
+     * configuration, or null for anything that has to be forwarded (files, color state lists).
+     */
+    private static Object directValue(Resources modRes, String type, int id) {
+        TypedValue tv = new TypedValue();
+        try {
+            modRes.getValue(id, tv, true);
+        } catch (Resources.NotFoundException e) {
+            return null;
+        }
+        switch (type) {
+            case "color":
+                return tv.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
+                        tv.type <= TypedValue.TYPE_LAST_COLOR_INT ? Integer.valueOf(tv.data) : null;
+            case "dimen":
+                return tv.type == TypedValue.TYPE_DIMENSION ? new XResources.DimensionReplacement(
+                        TypedValue.complexToFloat(tv.data),
+                        tv.data & TypedValue.COMPLEX_UNIT_MASK) : null;
+            case "bool":
+                return tv.type == TypedValue.TYPE_INT_BOOLEAN ? Boolean.valueOf(tv.data != 0) : null;
+            case "integer":
+                return tv.type >= TypedValue.TYPE_FIRST_INT && tv.type <= TypedValue.TYPE_LAST_INT
+                        ? Integer.valueOf(tv.data) : null;
+            default:
+                return null;
+        }
+    }
+
+    private static void remember(Resources res, ValueReplacement replacement) {
+        synchronized (VALUES) {
+            List<ValueReplacement> list = VALUES.get(res);
+            if (list == null) VALUES.put(res, list = new ArrayList<>());
+            list.add(replacement);
+        }
+    }
+
+    /**
+     * Direct values do not switch with the configuration by themselves, so re-read them from the
+     * overlay whenever a themed Resources object changes night mode (or any other qualifier).
+     */
+    private static void hookConfigurationChanges() {
+        if (configHooked) return;
+        configHooked = true;
+        try {
+            XposedHelpers.findAndHookMethod(Resources.class, "updateConfiguration",
+                    Configuration.class, DisplayMetrics.class,
+                    "android.content.res.CompatibilityInfo", new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) {
+                            if (!(param.thisObject instanceof XResources)) return;
+                            List<ValueReplacement> list;
+                            synchronized (VALUES) {
+                                list = VALUES.get(param.thisObject);
+                                if (list == null) return;
+                                list = new ArrayList<>(list);
+                            }
+                            reapply((XResources) param.thisObject, list);
+                        }
+                    });
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + "could not follow configuration changes: " + t);
+        }
+    }
+
+    private static void reapply(XResources res, List<ValueReplacement> list) {
+        Configuration config = res.getConfiguration();
+        DisplayMetrics metrics = res.getDisplayMetrics();
+        Set<XModuleResources> updated = new HashSet<>();
+        for (ValueReplacement r : list) {
+            try {
+                if (updated.add(r.modRes)) r.modRes.updateConfiguration(config, metrics);
+                Object value = directValue(r.modRes, r.type, r.id);
+                if (value != null) res.setReplacement(r.target, r.type, r.name, value);
+            } catch (Throwable ignored) {
+                // Keep the previous value
+            }
         }
     }
 }

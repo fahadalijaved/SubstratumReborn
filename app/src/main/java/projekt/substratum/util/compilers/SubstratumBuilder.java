@@ -351,7 +351,8 @@ public class SubstratumBuilder {
             if (isDeviceOMS) {
                 if (Systems.isXposedBackend(context)) {
                     // Applied in-process by the LSPosed module, nothing is installed
-                    if (!XposedBackend.install(context, signedOverlayAPKPath, overlayName)) {
+                    if (!XposedBackend.install(context, signedOverlayAPKPath, overlayName,
+                            workArea)) {
                         hasErroredOut = true;
                         dumpErrorLogs(overlayPackage,
                                 "Could not store \"" + overlayName + "\" for the LSPosed module.");

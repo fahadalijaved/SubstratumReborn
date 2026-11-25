@@ -50,6 +50,7 @@ public class XposedBackend {
     public static final String APK = ".apk";
     public static final String INDEX = ".idx";
     public static final String ENABLED = ".enabled";
+    public static final String FABRICATED = "fabricated=true";
     private static final String TAG = "SubstratumXposed";
 
     /**
@@ -65,6 +66,15 @@ public class XposedBackend {
      * @return True, if stored
      */
     public static boolean install(Context context, String apkPath, String name) {
+        return install(context, apkPath, name, null);
+    }
+
+    /**
+     * @param workArea The overlay's compilation folder; its colors, bools and integers are also
+     *                 registered as a fabricated overlay (see {@link FabricatedValues}). Null to
+     *                 leave everything to the LSPosed module.
+     */
+    public static boolean install(Context context, String apkPath, String name, String workArea) {
         String target = archiveMetadata(context, apkPath, References.metadataOverlayTarget);
         if (target == null) {
             Log.e(TAG, "Overlay has no target metadata: " + apkPath);
@@ -80,10 +90,14 @@ public class XposedBackend {
             Log.e(TAG, "Overlay carries no resources: " + apkPath);
             return false;
         }
+        boolean fabricated = workArea != null &&
+                FabricatedValues.register(context, new File(workArea), target, name) > 0;
         File index = new File(context.getCacheDir(), name + INDEX);
         try (FileWriter writer = new FileWriter(index)) {
             writer.write("target=" + target + '\n');
             writer.write("package=" + archive.packageName + '\n');
+            // Tells the module to leave colors, bools and integers to the fabricated overlay
+            if (fabricated) writer.write(FABRICATED + '\n');
             for (String resource : resources) writer.write(resource + '\n');
         } catch (IOException e) {
             Log.e(TAG, "Could not write overlay index", e);
@@ -110,6 +124,7 @@ public class XposedBackend {
         }
         if (command.length() == 0) return;
         Root.runCommand(command + "restorecon -R " + DIR);
+        FabricatedValues.enable(names);
     }
 
     public static void disable(Iterable<String> names) {
@@ -119,6 +134,7 @@ public class XposedBackend {
                     .append("'; ");
         }
         if (command.length() != 0) Root.runCommand(command.toString());
+        FabricatedValues.disable(names);
     }
 
     public static void uninstall(Iterable<String> names) {
@@ -126,9 +142,11 @@ public class XposedBackend {
         for (String name : names) {
             String base = DIR + '/' + name;
             command.append("rm -f '").append(base).append(APK).append("' '").append(base)
-                    .append(INDEX).append("' '").append(base).append(ENABLED).append("'; ");
+                    .append(INDEX).append("' '").append(base).append(ENABLED).append("' '")
+                    .append(FabricatedValues.DIR).append('/').append(name).append(".xml'; ");
         }
         if (command.length() != 0) Root.runCommand(command.toString());
+        FabricatedValues.disable(names);
     }
 
     /**

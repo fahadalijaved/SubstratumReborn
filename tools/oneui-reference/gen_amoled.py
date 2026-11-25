@@ -61,28 +61,41 @@ def literal_night(v, t, depth=0):
 # resolves to one of these gets the replacement in values-night, whatever chain of references
 # leads there: the hook only sees direct lookups, and Android resolves references natively.
 PALETTE={
- '#ff010102':'#ff000000',  # page background (gray_100)
- '#ff000000':'#ff000000',
- '#ff17171a':'#ff0f0f0f',  # cards and lists (gray_95)
- '#ff1d1d20':'#ff0f0f0f',  # Material 3 surface
- '#ff1f1f1f':'#ff0f0f0f',
- '#ff252528':'#ff161616',  # raised surfaces (gray_90)
- '#ff2a2a2d':'#ff161616',
- '#ff2d2d30':'#ff1a1a1a',
- '#ff333333':'#ff1a1a1a',
- '#ff343437':'#ff1a1a1a',
- '#ff3a3a3d':'#ff1f1f1f',  # search bar, chips, popups (gray_80)
- '#ff3a3a3c':'#ff1f1f1f',
- '#ff3b3b3b':'#ff1f1f1f',
+ # pages, cards, lists and banners: full black
+ '#ff010102':'#ff000000', '#ff000000':'#ff000000', '#ff17171a':'#ff000000', '#ff1d1d20':'#ff000000',
+ '#ff111111':'#ff000000', '#ff121212':'#ff000000', '#ff1b1b1b':'#ff000000', '#ff1c1b1f':'#ff000000',
+ '#ff1f1f1f':'#ff000000', '#ff081226':'#ff000000', '#ff191c1e':'#ff000000', '#ff1a1c1e':'#ff000000',
+ # raised surfaces, dividers, floating bars, search fields: just off black so they still read
+ '#ff252528':'#ff0a0a0a', '#ff2a2a2d':'#ff0a0a0a', '#ff2d2d30':'#ff121212', '#ff303030':'#ff121212',
+ '#ff313131':'#ff121212', '#ff323234':'#ff121212', '#ff333333':'#ff121212', '#ff343437':'#ff121212',
+ '#ff3a3a3c':'#ff121212', '#ff3a3a3d':'#ff121212', '#ff3b3b3b':'#ff121212',
+ # selected states on those bars
+ '#ff505053':'#ff262626', '#ff454548':'#ff262626',
 }
+
+def amoled(color):
+    """AMOLED replacement for an opaque dark-mode color, or None to keep it.
+
+    Any dark color (whatever its hue) becomes black; dark neutral greys used for dividers,
+    bars, scrollbars and buttons become near black. Translucent colors (scrims, shadows) and
+    anything lighter (text, accents) are kept.
+    """
+    if color in PALETTE: return PALETTE[color]
+    if not color or len(color)!=9 or not color.startswith('#ff'): return None
+    r,g,b=(int(color[i:i+2],16) for i in (3,5,7))
+    hi,lo=max(r,g,b),min(r,g,b)
+    if hi<=0x30: return '#ff000000'
+    if hi-lo<=0x18 and hi<=0x60: return '#ff121212'
+    if hi-lo<=0x18 and hi<=0x80: return '#ff262626'
+    return None
 
 SURF={  # One UI design tokens, dark
  'basic_token_sys_background_dark':'#ff000000','basic_token_sys_background_variant_dark':'#ff000000',
  'basic_token_sys_surface_dark':'#ff000000','basic_token_sys_surface_variant_dark':'#ff000000',
- 'basic_token_sys_surface_container_lowest_dark':'#ff000000','basic_token_sys_surface_container_low_dark':'#ff121212',
- 'basic_token_sys_surface_container_dark':'#ff161616','basic_token_sys_surface_container_high_dark':'#ff1c1c1c',
- 'basic_token_sys_surface_container_higher_dark':'#ff222222','basic_token_sys_surface_container_highest_dark':'#ff2a2a2a',
- 'basic_token_sys_surface_bright_dark':'#ff1c1c1c','basic_token_sys_surface_brightest_dark':'#ff1f1f1f',
+ 'basic_token_sys_surface_container_lowest_dark':'#ff000000','basic_token_sys_surface_container_low_dark':'#ff000000',
+ 'basic_token_sys_surface_container_dark':'#ff000000','basic_token_sys_surface_container_high_dark':'#ff0a0a0a',
+ 'basic_token_sys_surface_container_higher_dark':'#ff121212','basic_token_sys_surface_container_highest_dark':'#ff121212',
+ 'basic_token_sys_surface_bright_dark':'#ff0a0a0a','basic_token_sys_surface_brightest_dark':'#ff121212',
  'basic_token_effect_blur_surface_dark':'#ff000000','basic_token_component_navibar_translucent_background_dark':'#ff000000',
  'basic_token_component_dialog_surface_container_dark':'#ff121212','basic_token_component_dialog_surface_container_low_dark':'#ff0a0a0a',
 }
@@ -99,14 +112,15 @@ NIGHT={
   'sec_control_default_background':'#ff0a0a0a','sec_control_enabled_default_background':'#ff111111',
   'panel_background_blur_color':'#ff000000',
  },
- 'com.android.settings':{'background_common':'#ff000000','sesl_fragment_bgcolor':'#ff121212'},
+ 'com.android.settings':{'background_common':'#ff000000','sesl_fragment_bgcolor':'#ff000000'},
 }
 # name -> AMOLED value for names matched by a regex, dark mode only (stock light value is kept)
 NIGHT_PATTERNS={
  'com.android.settings':[(r'^sec_dashboard_(?!.*(text|layer)).*_color\d*$','#ff262626')],
 }
 DEFAULT_ONLY={'com.android.systemui':{'qs_tile_container_bg':'#ff0a0a0a','sec_panel_background_color':'#ff000000'}}
-TOKEN_PKGS=sorted(p for p in os.listdir(REF) if os.path.exists(f'{REF}/{p}/values/color.csv') and any(l.startswith('basic_token_sys_background_dark,') for l in open(f'{REF}/{p}/values/color.csv')))
+SKIP=re.compile(r'^(android|com\.google\.android\.gms|projekt\.substratum.*|com\.google\.android\.gms\.policy_.*|com\.monotype\..*)$')
+TOKEN_PKGS=sorted(p for p in os.listdir(REF) if os.path.exists(f'{REF}/{p}/values/color.csv') and not SKIP.match(p))
 for pkg in TOKEN_PKGS:
     t=table(pkg); day=[]; night=[]; skipped=[]
     for n,v in SURF.items():
@@ -122,8 +136,9 @@ for pkg in TOKEN_PKGS:
     for n,configs in t.items():
         if n in night_items or n in direct: continue
         dark=literal_night(configs.get('night',configs.get('default')),t)
-        if dark in PALETTE and dark!=PALETTE[dark]:
-            night_items[n]=PALETTE[dark]
+        mapped=amoled(dark)
+        if mapped and mapped!=dark:
+            night_items[n]=mapped
     for n,v in night_items.items():
         if n not in t: skipped.append(n+' (absent)'); continue
         # values-night only works if light mode keeps a value, so copy the stock light value
