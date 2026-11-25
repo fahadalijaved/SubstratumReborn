@@ -89,6 +89,8 @@ public final class AmoledRules {
         sysui.put("qs_tile_icon_off_tint_color", 0xfffcfcff);
         sysui.put("sec_qs_switch_off_background_color", 0xff242424);
         sysui.put("sec_qs_media_player_background_color", 0xff000000);
+        // One UI 9 QS boxes: this color with blur reduced, a wallpaper tint otherwise
+        sysui.put("qs_tile_coloring_container_bg_ultra_mode", 0xff000000);
         r.exact.put("com.android.systemui", sysui);
         List<Object[]> settings = new ArrayList<>();
         settings.add(new Object[]{Pattern.compile("^sec_dashboard_(?!.*(text|layer)).*_color\\d*$"),

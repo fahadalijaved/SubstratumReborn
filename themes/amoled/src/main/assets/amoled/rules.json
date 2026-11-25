@@ -37,7 +37,8 @@
       "qs_tile_container_bg_border_color": "#262626",
       "qs_tile_icon_off_tint_color": "#fcfcff",
       "sec_qs_switch_off_background_color": "#242424",
-      "sec_qs_media_player_background_color": "#000000"
+      "sec_qs_media_player_background_color": "#000000",
+      "qs_tile_coloring_container_bg_ultra_mode": "#000000"
     },
     "com.android.settings": {
       "^sec_dashboard_(?!.*(text|layer)).*_color\\d*$": "#262626"
