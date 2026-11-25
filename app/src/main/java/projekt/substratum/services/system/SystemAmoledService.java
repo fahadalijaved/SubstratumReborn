@@ -118,6 +118,8 @@ public class SystemAmoledService extends Service {
                             " colors");
                 } else {
                     SystemAmoled.removeAll(this);
+                    // The module's System UI hooks (solid shade, dark tracks) unload with it
+                    projekt.substratum.common.platform.QsOptions.restartSystemUi();
                     result = getString(R.string.system_amoled_removed);
                 }
             } catch (Throwable t) {
