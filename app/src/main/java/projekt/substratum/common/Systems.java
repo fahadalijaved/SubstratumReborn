@@ -156,6 +156,7 @@ public class Systems {
                             "current_theme_mode",
                             OVERLAY_MANAGER_SERVICE_P_ROOTED
                     ).apply();
+                    return OVERLAY_MANAGER_SERVICE_P_ROOTED;
                 }
             } else if (IS_OREO) {
                 if (isAndromeda(context)) {
@@ -697,7 +698,9 @@ public class Systems {
      * @return True, if root is granted
      */
     public static boolean checkRootAccess() {
-        if (!prefs.contains("root_access")) {
+        // Only a granted result is worth caching: KernelSU and APatch deny silently until the
+        // user enables the app in their manager, so a denial has to be asked again.
+        if (!prefs.getBoolean("root_access", false)) {
             setAndCheckRootAccess();
         }
         return prefs.getBoolean("root_access", false);
