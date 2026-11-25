@@ -619,7 +619,7 @@ final class OverlaysManager {
                                 overlays.currentInstance.finalRunner = new ArrayList<>();
                             }
                             String packageName = checked.getFullOverlayParameters();
-                            if (Packages.isPackageInstalled(context, packageName) ||
+                            if (Packages.isOverlayAvailable(context, packageName) ||
                                     state.equals(COMPILE_ENABLE)) {
                                 overlays.currentInstance.finalRunner.add(packageName);
                             }
@@ -1040,7 +1040,7 @@ final class OverlaysManager {
                         }
                     } else if (!state.equals(COMPILE_UPDATE)) {
                         String packageName = checked.getFullOverlayParameters();
-                        if (Packages.isPackageInstalled(context, packageName)) {
+                        if (Packages.isOverlayAvailable(context, packageName)) {
                             overlays.currentInstance.finalRunner.add(packageName);
                         }
                     }

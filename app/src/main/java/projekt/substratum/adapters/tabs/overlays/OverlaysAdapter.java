@@ -28,7 +28,7 @@ import projekt.substratum.common.platform.ThemeManager;
 import projekt.substratum.databinding.TabOverlaysItemBinding;
 import projekt.substratum.util.views.SheetDialog;
 
-import static projekt.substratum.common.Packages.isPackageInstalled;
+import projekt.substratum.common.Packages;
 import static projekt.substratum.common.References.LEGACY_NEXUS_DIR;
 import static projekt.substratum.common.References.PIXEL_NEXUS_DIR;
 import static projekt.substratum.common.Systems.checkOMS;
@@ -73,7 +73,7 @@ public class OverlaysAdapter extends RecyclerView.Adapter<OverlaysAdapter.ViewHo
             } else {
                 packageToCheck = overlaysItem.getFullOverlayParameters();
             }
-            if (isPackageInstalled(context, packageToCheck)) {
+            if (Packages.isOverlayAvailable(context, packageToCheck)) {
                 viewBinding.overlayState.setVisibility(View.VISIBLE);
                 if (overlaysItem.isOverlayEnabled()) {
                     changeOverlayTargetPackageNameTint(viewBinding, context, INSTALLED_ENABLED);

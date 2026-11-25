@@ -123,6 +123,19 @@ public class Packages {
     }
 
     /**
+     * Checks if an overlay exists, either as an installed package or stored for the LSPosed
+     * engine, which does not install overlays
+     *
+     * @param context     Context
+     * @param overlayName Overlay package name
+     * @return True, if the overlay exists
+     */
+    public static boolean isOverlayAvailable(Context context, String overlayName) {
+        return isPackageInstalled(context, overlayName) ||
+                projekt.substratum.common.platform.XposedBackend.isStored(overlayName);
+    }
+
+    /**
      * Checks if a package is available to be used
      *
      * @param context     Context

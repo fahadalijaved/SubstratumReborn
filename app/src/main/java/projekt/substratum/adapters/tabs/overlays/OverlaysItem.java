@@ -22,7 +22,6 @@ import projekt.substratum.common.Systems;
 
 import static projekt.substratum.common.Packages.getLiveOverlayVersion;
 import static projekt.substratum.common.Packages.getOverlayMetadataInt;
-import static projekt.substratum.common.Packages.isPackageInstalled;
 import static projekt.substratum.common.References.metadataOverlayVersion;
 import static projekt.substratum.common.Resources.SETTINGS;
 import static projekt.substratum.common.Resources.SETTINGS_ICONS;
@@ -343,7 +342,7 @@ public class OverlaysItem implements Serializable {
     }
 
     public boolean isOverlayEnabled() {
-        boolean installed = Packages.isPackageInstalled(context, getFullOverlayParameters());
+        boolean installed = Packages.isOverlayAvailable(context, getFullOverlayParameters());
         if (Systems.isSamsungDevice(context)) {
             return installed;
         } else {
@@ -352,7 +351,7 @@ public class OverlaysItem implements Serializable {
     }
 
     public boolean isVariantInstalled() {
-        return isPackageInstalled(context,
+        return Packages.isOverlayAvailable(context,
                 this.getPackageName() + '.' + this.getThemeName() +
                         ((!this.getBaseResources().isEmpty()) ?
                                 '.' + this.getBaseResources() : ""));

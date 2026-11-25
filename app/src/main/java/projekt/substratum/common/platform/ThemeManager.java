@@ -792,8 +792,13 @@ public class ThemeManager {
             for (String overlay : overlays) {
                 if (XposedBackend.isEnabled(overlay)) enabled.add(overlay);
             }
+            // Disable first: restarting the targets needs the overlay index, which uninstall
+            // deletes. The restart is what reverts the target app to its original resources.
+            if (!enabled.isEmpty()) {
+                XposedBackend.disable(enabled);
+                XposedBackend.restartTargets(context, enabled);
+            }
             XposedBackend.uninstall(overlays);
-            if (!enabled.isEmpty()) XposedBackend.restartTargets(context, enabled);
             return;
         }
 
