@@ -35,6 +35,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import projekt.substratum.common.platform.QsOptions;
 import projekt.substratum.common.platform.XposedBackend;
 
 /**
@@ -77,7 +78,8 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
      */
     @Override
     public void initZygote(StartupParam startupParam) {
-        hookConfigurationChanges();
+        // Kill switch (hooks.off, hooks.off.android)
+        if (!HookGuard.allowFramework()) return;
         for (String name : enabledOverlays()) {
             try {
                 apply(null, FRAMEWORK, name);
@@ -89,32 +91,65 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
-        if (SYSTEMUI.equals(lpparam.packageName)) {
+        String pkg = lpparam.packageName;
+        if (SELF.equals(pkg)) {
+            // Lets Substratum see the module, also while the kill switch is on
+            try {
+                XposedHelpers.findAndHookMethod(XposedBackend.class.getName(),
+                        lpparam.classLoader, "isModuleActive",
+                        XC_MethodReplacement.returnConstant(true));
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + "module status for Substratum failed: " + t);
+            }
+        }
+        boolean systemUi = SYSTEMUI.equals(pkg);
+        // Only the app the process belongs to: packages loaded into another app's process (Play
+        // services modules, WebView) must not install their color table there
+        if (!systemUi && !lpparam.isFirstApplication) return;
+        boolean mainSystemUi = systemUi && SYSTEMUI.equals(lpparam.processName);
+        // Kill switch and crash loop guard
+        String guard = HookGuard.state(pkg,
+                lpparam.appInfo != null ? lpparam.appInfo.deviceProtectedDataDir : null,
+                lpparam.processName);
+        if (!HookGuard.OK.equals(guard)) {
+            if (mainSystemUi) ModuleStatus.reportSkipped(guard);
+            return;
+        }
+        if (systemUi) {
+            boolean battery = false, qs = false, layout = false;
+            QsOptions options;
+            try {
+                options = QsOptions.read();
+            } catch (Throwable t) {
+                options = new QsOptions();
+            }
             try {
                 BatteryHook.hook(lpparam.classLoader);
+                battery = true;
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "battery hook failed: " + t);
             }
             try {
                 QsAmoledHook.hook(lpparam.classLoader);
+                qs = (options.shade || options.track) &&
+                        new File(XposedBackend.DIR, XposedBackend.AMOLED_FLAG).exists();
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "QS AMOLED hook failed: " + t);
             }
             try {
                 QsLayoutHook.hook(lpparam.classLoader);
+                layout = options.aspect > 0;
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "QS layout hook failed: " + t);
             }
+            if (mainSystemUi) ModuleStatus.reportWhenCreated(qs, layout, battery);
             return;
         }
         try {
-            AppAmoledHook.hook(lpparam.packageName);
+            AppAmoledHook.hook(lpparam);
         } catch (Throwable t) {
-            XposedBridge.log(TAG + "AMOLED colors for " + lpparam.packageName + " failed: " + t);
+            XposedBridge.log(TAG + "AMOLED colors for " + pkg + " failed: " + t);
         }
-        if (!SELF.equals(lpparam.packageName)) return;
-        XposedHelpers.findAndHookMethod(XposedBackend.class.getName(), lpparam.classLoader,
-                "isModuleActive", XC_MethodReplacement.returnConstant(true));
     }
 
     @Override
@@ -122,7 +157,13 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                                                    resparam) {
         String target = resparam.packageName;
         if (FRAMEWORK.equals(target)) return; // handled in initZygote
-        for (String name : enabledOverlays()) {
+        // Kill switch and crash loop guard
+        if (!HookGuard.OK.equals(HookGuard.state(target))) return;
+        List<String> enabled = enabledOverlays();
+        // Only in processes the guard lets through (framework values are replaced system-wide
+        // and do not need it)
+        if (!enabled.isEmpty()) hookConfigurationChanges();
+        for (String name : enabled) {
             try {
                 apply(resparam.res, target, name);
             } catch (Throwable t) {

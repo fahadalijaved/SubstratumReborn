@@ -52,13 +52,33 @@ public class XposedBackend {
     public static final String ENABLED = ".enabled";
     public static final String FABRICATED = "fabricated=true";
     /**
-     * AMOLED colors for one app, applied by resource id: "id light night" per line
+     * AMOLED colors for one app, applied by resource id. The first line is
+     * {@code # key=<versionKey>} of the app version the ids were read from; the module ignores
+     * a file whose key does not match the installed app. Then one line per color:
+     * {@code id light night [stockNight|csl]}.
      */
     public static final String AMOLED_IDS = ".amoled.ids";
     /**
      * Present while "AMOLED for every app" is applied: turns on the module's SystemUI code hooks
      */
     public static final String AMOLED_FLAG = "amoled-hooks.on";
+    /**
+     * Kill switch: while {@code hooks.off} exists the module installs no hooks and forwards no
+     * resources; {@code hooks.off.<package>} does the same for one app. Read as each process
+     * starts.
+     */
+    public static final String HOOKS_OFF = "hooks.off";
+    /**
+     * Prefix of the module's crash-loop guard files in each guarded app's device-protected data
+     * directory: {@code reborn_guard_starts} (recent start times) and {@code reborn_guard_tripped}
+     * (present while the guard keeps the app stock).
+     */
+    public static final String GUARD_FILES = "reborn_guard_";
+    /**
+     * Settings.Global key System UI writes once the module has set up (or skipped) its hooks:
+     * {@code v=<versionCode>;t=<millis>;qs=<0|1>;layout=<0|1>;battery=<0|1>;guard=<ok|tripped|off>}
+     */
+    public static final String STATUS_KEY = "reborn_module_status";
     private static final String TAG = "SubstratumXposed";
 
     /**
@@ -66,6 +86,44 @@ public class XposedBackend {
      */
     public static boolean isModuleActive() {
         return false;
+    }
+
+    /**
+     * Identifies an installed app version: an update or reinstall changes the APK path or the
+     * version code. Written by the app into the AMOLED id lists and compared by the module.
+     */
+    public static String versionKey(String sourceDir, long versionCode) {
+        return sourceDir + "|" + versionCode;
+    }
+
+    /**
+     * Turn the module's kill switch on or off (root). Takes effect as processes start: restart
+     * System UI and the themed apps.
+     *
+     * @return True, if the switch is now in the requested state
+     */
+    public static boolean setHooksPaused(boolean paused) {
+        String file = DIR + '/' + HOOKS_OFF;
+        if (paused) {
+            Root.runCommand("mkdir -p " + DIR + " && chmod 755 " + DIR + " && touch " + file +
+                    " && chmod 644 " + file + " && restorecon " + file);
+        } else {
+            Root.runCommand("rm -f " + file);
+        }
+        return areHooksPaused() == paused;
+    }
+
+    public static boolean areHooksPaused() {
+        return new File(DIR, HOOKS_OFF).exists();
+    }
+
+    /**
+     * Clear the crash-loop guard of one app (root), so the module hooks it again from its next
+     * start.
+     */
+    public static void resetGuard(String pkg) {
+        if (pkg == null || !pkg.matches("[A-Za-z0-9_.]+")) return;
+        Root.runCommand("rm -f /data/user_de/0/" + pkg + "/" + GUARD_FILES + "*");
     }
 
     /**

@@ -228,4 +228,88 @@ A rules theme can suggest a row height; it is used until the user picks one:
 
 Apps whose resource names are obfuscated (Play Store) or that refuse overlays get their colors
 from the module inside their own process, by resource id and, for Compose screens, by their
-own dark surface colors where they are drawn. Add such apps to the module's scope.
+own dark surface colors where they are drawn. Add such apps to the module's scope. Each color
+list is keyed to the app version it was read from: after an app update the app stays stock
+until AMOLED for every app is applied again, so ids that moved never turn text black.
+
+## Recovery
+
+If System UI or an app misbehaves after applying something, these steps undo it from a root
+shell (`adb shell`, then `su`), mildest first. None of them needs a reinstall.
+
+### Module status
+
+System UI records what the module did each time it starts:
+
+```
+settings get global reborn_module_status
+# v=1101;t=1764100000000;qs=1;layout=0;battery=1;guard=ok
+```
+
+`qs`, `layout` and `battery` say whether the quick settings AMOLED hooks, the panel row height
+and the battery hook were set up. `guard` is `ok`, `off` (kill switch) or `tripped` (crash loop
+guard). `t` is when System UI wrote the line, right after it started.
+
+### Kill switch
+
+While `hooks.off` exists, the module installs no hooks and forwards no resources in any process
+that starts:
+
+```
+touch /data/resource-cache/substratum/hooks.off
+chmod 644 /data/resource-cache/substratum/hooks.off
+restorecon /data/resource-cache/substratum/hooks.off
+kill $(pidof com.android.systemui)      # System UI comes back stock
+am force-stop com.android.vending       # any themed app: stock from its next launch
+```
+
+To turn the module back on, remove the file and restart the same way:
+
+```
+rm -f /data/resource-cache/substratum/hooks.off
+kill $(pidof com.android.systemui)
+```
+
+`hooks.off.<package>` (for example `hooks.off.com.android.vending`) does the same for one app,
+and `hooks.off.android` for framework resources. Processes read the switch when they start, so
+a running app keeps its hooks until it restarts; if framework resources stay themed, a soft
+reboot clears them. Substratum still sees the module as active while the switch is on.
+
+### Crash loop guard
+
+System UI and every app the module changes count their starts. Three starts within 90 seconds
+trip the guard: the app then starts stock, and System UI reports `guard=tripped`. A process
+that stays up for 30 seconds clears the count, so a restart more than 30 seconds after the
+previous one never trips it. After fixing the cause, reset the guard and restart:
+
+```
+rm -f /data/user_de/0/com.android.systemui/reborn_guard_*
+kill $(pidof com.android.systemui)
+```
+
+For another app, use its package in the path and force-stop it instead.
+
+### AMOLED overlays
+
+AMOLED for every app also registers fabricated overlays. They are not hooks, so the kill switch
+leaves them on. To turn off one app's overlay:
+
+```
+cmd overlay list | grep RebornSystemAmoled
+cmd overlay disable --user 0 com.android.shell:<package>.RebornSystemAmoled
+```
+
+The next boot registers them again until **Remove** runs on Substratum's AMOLED screen.
+
+### LSPosed
+
+To turn the module off completely, open LSPosed Manager, go to Modules, and switch
+**substratum** off (or take single apps out of its scope). Then force-stop the scoped apps and
+restart System UI, or soft reboot if LSPosed asks for it.
+
+### Full reboot
+
+Where root (for example KernelSU) and LSPosed are loaded only for the current session, a full
+reboot drops both: the module stops, and so does everything that needs root, including
+re-registering the AMOLED overlays. Root and LSPosed then have to be set up again. This is the
+last resort, and it is the device owner's call.

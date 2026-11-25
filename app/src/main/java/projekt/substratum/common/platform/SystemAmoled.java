@@ -198,24 +198,39 @@ public final class SystemAmoled {
 
     /**
      * Hand the colors to the LSPosed module, which replaces them by resource id inside the app
-     * (the app has to be in the module's scope). One line per color: id, light value, night value
-     * and, for plain colors, the stock dark value (the module maps code-drawn surfaces with it).
+     * (the app has to be in the module's scope). The first line is {@code # key=} with the app
+     * version the colors were read from (the module skips the file once the app is updated).
+     * Then one line per color: id, light value, night value and, for plain colors, the stock dark
+     * value (the module maps code-drawn surfaces with it), or {@code csl} for color state lists
+     * the rules name a color for.
      *
      * @return Number of colors handed over
      */
     private static int registerById(Context context, String pkg, List<String[]> items) {
+        String key;
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(pkg, 0);
+            key = XposedBackend.versionKey(info.applicationInfo.sourceDir,
+                    androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(info));
+        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+            Log.w(TAG, pkg + ": no version to key the module's colors with: " + e);
+            return 0;
+        }
         java.util.Map<String, String[]> byId = new java.util.LinkedHashMap<>();
         for (String[] item : items) {
             String[] line = byId.get(item[4]);
             if (line == null) byId.put(item[4], line = new String[]{item[4], item[2], item[2], ""});
             if ("night".equals(item[3])) {
                 line[2] = item[2];
-                if (item.length > 5) line[3] = item[5]; // stock dark value
+                if (item.length > 5) {
+                    // stock dark value; none for a color state list
+                    line[3] = item[5].isEmpty() ? "csl" : item[5];
+                }
             } else {
                 line[1] = item[2];
             }
         }
-        StringBuilder content = new StringBuilder();
+        StringBuilder content = new StringBuilder("# key=").append(key).append('\n');
         for (String[] line : byId.values()) {
             content.append(line[0]).append(' ').append(line[1]).append(' ').append(line[2]);
             if (!line[3].isEmpty()) content.append(' ').append(line[3]);
