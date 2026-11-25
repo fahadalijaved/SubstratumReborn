@@ -1,7 +1,17 @@
-/*
- * Copyright (c) 2016-2019 Projekt Substratum
- * This file is part of Substratum.
- *
- * SPDX-License-Identifier: GPL-3.0-Or-Later
- */
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven(url = "https://jitpack.io")
+    }
+}
+rootProject.name = "SubstratumReborn"
 include(":app")

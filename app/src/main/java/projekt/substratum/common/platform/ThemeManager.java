@@ -101,6 +101,34 @@ public class ThemeManager {
     private static final int EXPORT_RETURN_DEFAULT = 2;
     private static final int STATE_LIST_ALL_OVERLAYS = 13579;
 
+    /*
+     * The public SDK now ships its own android.content.om.OverlayInfo without the hidden
+     * members the legacy backends relied on, so read them reflectively.
+     */
+    private static String overlayPackage(Object overlayInfo) {
+        try {
+            return (String) overlayInfo.getClass().getField("packageName").get(overlayInfo);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return "";
+        }
+    }
+
+    private static int overlayState(Object overlayInfo) {
+        try {
+            return overlayInfo.getClass().getField("state").getInt(overlayInfo);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return -1;
+        }
+    }
+
+    private static boolean overlayEnabled(Object overlayInfo) {
+        try {
+            return (Boolean) overlayInfo.getClass().getMethod("isEnabled").invoke(overlayInfo);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return overlayState(overlayInfo) == STATE_ENABLED;
+        }
+    }
+
     /**
      * Blacklisted applications to hide on specific devices, for example Samsung devices
      *
@@ -378,8 +406,8 @@ public class ThemeManager {
                         for (Map.Entry<String, List<OverlayInfo>> stringListEntry :
                                 allOverlays.entrySet()) {
                             for (OverlayInfo oi : stringListEntry.getValue()) {
-                                if (oi.isEnabled()) {
-                                    list.add(oi.packageName);
+                                if (overlayEnabled(oi)) {
+                                    list.add(overlayPackage(oi));
                                 }
                             }
                         }
@@ -391,7 +419,7 @@ public class ThemeManager {
                             int targetOverlaysSize = targetOverlays.size();
                             int count = 0;
                             for (OverlayInfo oi : targetOverlays) {
-                                if (oi.isEnabled()) count++;
+                                if (overlayEnabled(oi)) count++;
                             }
                             if ((targetOverlaysSize > 1) && (count > 1))
                                 list.add(stringListEntry.getKey());
@@ -401,16 +429,16 @@ public class ThemeManager {
                         for (Map.Entry<String, List<OverlayInfo>>
                                 stringListEntry : allOverlays.entrySet()) {
                             for (OverlayInfo oi : stringListEntry.getValue()) {
-                                if ((overlayState == STATE_ENABLED) && oi.isEnabled()) {
-                                    list.add(oi.packageName);
-                                } else if ((overlayState == STATE_DISABLED) && !oi.isEnabled()) {
-                                    list.add(oi.packageName);
+                                if ((overlayState == STATE_ENABLED) && overlayEnabled(oi)) {
+                                    list.add(overlayPackage(oi));
+                                } else if ((overlayState == STATE_DISABLED) && !overlayEnabled(oi)) {
+                                    list.add(overlayPackage(oi));
                                 } else if (overlayState == STATE_MISSING_TARGET) {
-                                    if (oi.state == STATE_MISSING_TARGET) {
-                                        list.add(oi.packageName);
+                                    if (overlayState(oi) == STATE_MISSING_TARGET) {
+                                        list.add(overlayPackage(oi));
                                     }
                                 } else if (overlayState == STATE_LIST_ALL_OVERLAYS) {
-                                    list.add(oi.packageName);
+                                    list.add(overlayPackage(oi));
                                 }
                             }
                         }

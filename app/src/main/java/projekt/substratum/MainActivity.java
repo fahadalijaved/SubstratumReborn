@@ -327,22 +327,17 @@ public class MainActivity extends AppCompatActivity implements
         bottomBar.setLabelVisibilityMode(LabelVisibilityMode.LABEL_VISIBILITY_LABELED);
 
         bottomBar.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.tab_themes:
-                    switchFragment(ThemeFragment.class.getCanonicalName());
-                    break;
-                case R.id.tab_overlay_manager:
-                    switchFragment(ManagerFragment.class.getCanonicalName());
-                    break;
-                case R.id.tab_profiles:
-                    switchFragment(ProfileFragment.class.getCanonicalName());
-                    break;
-                case R.id.tab_priorities:
-                    switchFragment(PriorityLoaderFragment.class.getCanonicalName());
-                    break;
-                case R.id.tab_settings:
-                    switchFragment(SettingsFragment.class.getCanonicalName());
-                    break;
+            int switchId = item.getItemId();
+            if (switchId == R.id.tab_themes) {
+                switchFragment(ThemeFragment.class.getCanonicalName());
+            } else if (switchId == R.id.tab_overlay_manager) {
+                switchFragment(ManagerFragment.class.getCanonicalName());
+            } else if (switchId == R.id.tab_profiles) {
+                switchFragment(ProfileFragment.class.getCanonicalName());
+            } else if (switchId == R.id.tab_priorities) {
+                switchFragment(PriorityLoaderFragment.class.getCanonicalName());
+            } else if (switchId == R.id.tab_settings) {
+                switchFragment(SettingsFragment.class.getCanonicalName());
             }
 
             if (item.getItemId() != R.id.tab_overlay_manager) {
@@ -445,136 +440,136 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         SharedPreferences prefs = context.getSharedPreferences("substratum_state", Context.MODE_PRIVATE);
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            case R.id.showcase:
-                launchInternalActivity(this, ShowcaseActivity.class);
-                return true;
-            case R.id.rescue:
-                Restore.invoke(this);
-                return true;
+        int switchId2 = item.getItemId();
+        if (switchId2 == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (switchId2 == R.id.showcase) {
+            launchInternalActivity(this, ShowcaseActivity.class);
+            return true;
+        } else if (switchId2 == R.id.rescue) {
+            Restore.invoke(this);
+            return true;
 
             // Begin OMS based options
-            case R.id.per_app:
-                if (!References.isServiceRunning(SubstratumFloatInterface.class, context)) {
-                    if (Settings.canDrawOverlays(context) && checkUsagePermissions(context)) {
-                        showFloatingHead();
-                    } else if (!Settings.canDrawOverlays(context)) {
-                        DialogInterface.OnClickListener dialogClickListener = (dialog,
-                                                                               which) -> {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    Intent drawOverApps = new Intent(
-                                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                            Uri.parse("package:" + context
-                                                    .getPackageName()));
-                                    startActivityForResult(drawOverApps,
-                                            PERMISSIONS_REQUEST_DRAW_OVER_OTHER_APPS);
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    dialog.dismiss();
-                                    break;
-                            }
-                        };
-                        new AlertDialog.Builder(this)
-                                .setTitle(R.string.per_app_request_title)
-                                .setMessage(R.string.per_app_draw_over_other_apps_request)
-                                .setPositiveButton(R.string.dialog_ok, dialogClickListener)
-                                .setNegativeButton(R.string.dialog_cancel, dialogClickListener)
-                                .show();
-                    } else if (!checkUsagePermissions(context)) {
-                        DialogInterface.OnClickListener dialogClickListener = (dialog,
-                                                                               which) -> {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    Intent usage = new Intent(Settings
-                                            .ACTION_USAGE_ACCESS_SETTINGS);
-                                    startActivityForResult(usage,
-                                            PERMISSIONS_REQUEST_USAGE_ACCESS_SETTINGS);
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    dialog.dismiss();
-                                    break;
-                            }
-                        };
-                        new AlertDialog.Builder(this)
-                                .setTitle(R.string.per_app_request_title)
-                                .setMessage(R.string.per_app_usage_stats_request)
-                                .setPositiveButton(R.string.dialog_ok, dialogClickListener)
-                                .setNegativeButton(R.string.dialog_cancel, dialogClickListener)
-                                .show();
-                    }
-                } else {
-                    hideFloatingHead();
+        } else if (switchId2 == R.id.per_app) {
+            if (!References.isServiceRunning(SubstratumFloatInterface.class, context)) {
+                if (Settings.canDrawOverlays(context) && checkUsagePermissions(context)) {
+                    showFloatingHead();
+                } else if (!Settings.canDrawOverlays(context)) {
+                    DialogInterface.OnClickListener dialogClickListener = (dialog,
+                                                                           which) -> {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Intent drawOverApps = new Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:" + context
+                                                .getPackageName()));
+                                startActivityForResult(drawOverApps,
+                                        PERMISSIONS_REQUEST_DRAW_OVER_OTHER_APPS);
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                dialog.dismiss();
+                                break;
+                        }
+                    };
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.per_app_request_title)
+                            .setMessage(R.string.per_app_draw_over_other_apps_request)
+                            .setPositiveButton(R.string.dialog_ok, dialogClickListener)
+                            .setNegativeButton(R.string.dialog_cancel, dialogClickListener)
+                            .show();
+                } else if (!checkUsagePermissions(context)) {
+                    DialogInterface.OnClickListener dialogClickListener = (dialog,
+                                                                           which) -> {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Intent usage = new Intent(Settings
+                                        .ACTION_USAGE_ACCESS_SETTINGS);
+                                startActivityForResult(usage,
+                                        PERMISSIONS_REQUEST_USAGE_ACCESS_SETTINGS);
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                dialog.dismiss();
+                                break;
+                        }
+                    };
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.per_app_request_title)
+                            .setMessage(R.string.per_app_usage_stats_request)
+                            .setPositiveButton(R.string.dialog_ok, dialogClickListener)
+                            .setNegativeButton(R.string.dialog_cancel, dialogClickListener)
+                            .show();
                 }
-                return true;
+            } else {
+                hideFloatingHead();
+            }
+            return true;
 
-            case R.id.restart_systemui:
-                DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            ThemeManager.restartSystemUI(context);
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
+        } else if (switchId2 == R.id.restart_systemui) {
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        ThemeManager.restartSystemUI(context);
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.dialog_restart_systemui_title));
-                builder.setMessage(getString(R.string.dialog_restart_systemui_content));
-                builder.setPositiveButton(
-                        getString(R.string.restore_dialog_okay), dialogClickListener);
-                builder.setNegativeButton(
-                        getString(R.string.dialog_cancel), dialogClickListener);
-                builder.show();
-                return true;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.dialog_restart_systemui_title));
+            builder.setMessage(getString(R.string.dialog_restart_systemui_content));
+            builder.setPositiveButton(
+                    getString(R.string.restore_dialog_okay), dialogClickListener);
+            builder.setNegativeButton(
+                    getString(R.string.dialog_cancel), dialogClickListener);
+            builder.show();
+            return true;
             // Begin RRO based options
-            case R.id.reboot_device:
-                dialogClickListener = (dialog, which) -> {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            prefs.edit().clear().apply();
-                            ElevatedCommands.reboot();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
-                builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.dialog_restart_reboot_title));
-                builder.setMessage(getString(R.string.dialog_restart_reboot_content));
-                builder.setPositiveButton(
-                        getString(R.string.restore_dialog_okay), dialogClickListener);
-                builder.setNegativeButton(
-                        getString(R.string.dialog_cancel), dialogClickListener);
-                builder.show();
-                return true;
+        } else if (switchId2 == R.id.reboot_device) {
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        prefs.edit().clear().apply();
+                        ElevatedCommands.reboot();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.dialog_restart_reboot_title));
+            builder.setMessage(getString(R.string.dialog_restart_reboot_content));
+            builder.setPositiveButton(
+                    getString(R.string.restore_dialog_okay), dialogClickListener);
+            builder.setNegativeButton(
+                    getString(R.string.dialog_cancel), dialogClickListener);
+            builder.show();
+            return true;
 
-            case R.id.soft_reboot:
-                dialogClickListener = (dialog, which) -> {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            prefs.edit().clear().apply();
-                            ElevatedCommands.softReboot();
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                    }
-                };
-                builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.dialog_restart_soft_reboot_title));
-                builder.setMessage(getString(R.string.dialog_restart_soft_reboot_content));
-                builder.setPositiveButton(
-                        getString(R.string.restore_dialog_okay), dialogClickListener);
-                builder.setNegativeButton(
-                        getString(R.string.dialog_cancel), dialogClickListener);
-                builder.show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        } else if (switchId2 == R.id.soft_reboot) {
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        prefs.edit().clear().apply();
+                        ElevatedCommands.softReboot();
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.dialog_restart_soft_reboot_title));
+            builder.setMessage(getString(R.string.dialog_restart_soft_reboot_content));
+            builder.setPositiveButton(
+                    getString(R.string.restore_dialog_okay), dialogClickListener);
+            builder.setNegativeButton(
+                    getString(R.string.dialog_cancel), dialogClickListener);
+            builder.show();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
     }
 

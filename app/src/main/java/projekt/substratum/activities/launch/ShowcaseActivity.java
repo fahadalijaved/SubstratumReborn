@@ -80,41 +80,41 @@ public class ShowcaseActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            case R.id.showcase:
-                try {
-                    String playURL;
-                    if (Systems.checkOMS(getApplicationContext())) {
-                        playURL = getString(R.string.search_play_store_url);
-                    } else if (Systems.isSamsung(getApplicationContext())) {
-                        playURL = getString(R.string.search_play_store_url_samsung);
-                    } else {
-                        playURL = getString(R.string.search_play_store_url_legacy);
-                    }
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(playURL));
-                    startActivity(i);
-                } catch (final ActivityNotFoundException ignored) {
-                    Lunchbar.make(masterView,
-                            getString(R.string.activity_missing_toast),
-                            Snackbar.LENGTH_LONG)
-                            .show();
-                }
-                return true;
-            case R.id.info:
-                launchShowcaseInfo();
-                return true;
-            case R.id.filter:
-                if (drawerLayout.getDrawerLockMode(navigationView) == DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-                    return true;
-                if (drawerLayout.isDrawerOpen(navigationView)) {
-                    drawerLayout.closeDrawer(navigationView);
+        int switchId = item.getItemId();
+        if (switchId == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (switchId == R.id.showcase) {
+            try {
+                String playURL;
+                if (Systems.checkOMS(getApplicationContext())) {
+                    playURL = getString(R.string.search_play_store_url);
+                } else if (Systems.isSamsung(getApplicationContext())) {
+                    playURL = getString(R.string.search_play_store_url_samsung);
                 } else {
-                    drawerLayout.openDrawer(navigationView);
+                    playURL = getString(R.string.search_play_store_url_legacy);
                 }
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(playURL));
+                startActivity(i);
+            } catch (final ActivityNotFoundException ignored) {
+                Lunchbar.make(masterView,
+                        getString(R.string.activity_missing_toast),
+                        Snackbar.LENGTH_LONG)
+                        .show();
+            }
+            return true;
+        } else if (switchId == R.id.info) {
+            launchShowcaseInfo();
+            return true;
+        } else if (switchId == R.id.filter) {
+            if (drawerLayout.getDrawerLockMode(navigationView) == DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                return true;
+            if (drawerLayout.isDrawerOpen(navigationView)) {
+                drawerLayout.closeDrawer(navigationView);
+            } else {
+                drawerLayout.openDrawer(navigationView);
+            }
 
         }
         return false;
