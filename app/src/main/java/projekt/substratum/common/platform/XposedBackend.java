@@ -59,6 +59,11 @@ public class XposedBackend {
      * Present while "AMOLED for every app" is applied: turns on the module's SystemUI code hooks
      */
     public static final String AMOLED_FLAG = "amoled-hooks.on";
+    /**
+     * Optional: row height of the One UI 9 quick settings panel grid as a fraction of the cell
+     * width (stock 0.917), read by the module's SystemUI layout hook
+     */
+    public static final String QS_CELL_ASPECT = "qs-cell-aspect";
     private static final String TAG = "SubstratumXposed";
 
     /**

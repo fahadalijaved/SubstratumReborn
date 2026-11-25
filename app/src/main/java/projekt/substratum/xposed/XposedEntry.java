@@ -100,6 +100,11 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "QS AMOLED hook failed: " + t);
             }
+            try {
+                QsLayoutHook.hook(lpparam.classLoader);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + "QS layout hook failed: " + t);
+            }
             return;
         }
         try {

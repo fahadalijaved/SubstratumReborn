@@ -201,3 +201,20 @@ tools/oneui-reference/fab_to_theme.py OUT/definitions themes/amoled-static/src/m
 ```
 
 The reference records names and values only; it does not contain Samsung's files.
+
+### One UI 9 quick settings: what needs the LSPosed module
+
+One UI 9 draws parts of quick settings in Compose code with fixed values, which no overlay can
+change. While AMOLED for every app is applied, the module (scoped to System UI) handles them:
+
+| Part | Stock | With the module |
+|---|---|---|
+| Shade background | faded to a max alpha below 1, apps show through | fully opaque |
+| Brightness / volume track | 15% white drawn twice (grey) | 6% white (near black) |
+| Panel row height | `cell width x 0.917` | `cell width x` the value in `/data/resource-cache/substratum/qs-cell-aspect` (for example `0.65`; delete the file for stock) |
+
+Restart System UI after changing `qs-cell-aspect`. The tile box columns are QuickStar's setting.
+
+Apps whose resource names are obfuscated (Play Store) or that refuse overlays get their colors
+from the module inside their own process, by resource id and, for Compose screens, by their
+own dark surface colors where they are drawn. Add such apps to the module's scope.
