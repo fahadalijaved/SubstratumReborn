@@ -759,6 +759,7 @@ public class ThemeManager {
                 deleteBuilder.append(String.format(" %s/_%s.apk", pieDir, overlay));
             }
             Root.runCommand(deleteBuilder.toString());
+            projekt.substratum.util.helpers.MagiskHelper.syncMount();
             return;
         }
 

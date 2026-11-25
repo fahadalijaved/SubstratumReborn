@@ -130,9 +130,9 @@ public class FileOperations {
      * Mount system RW
      */
     public static void mountSystemRW() {
-        String mountPoint = References.getMagiskDirectory();
-        if (mountPoint.equals("/")) mountPoint = "/system";
-        mountRW(mountPoint);
+        // A module directory lives on /data and is always writable; remounting it would only
+        // strip the mount flags of /data itself.
+        if (References.getMagiskDirectory().equals("/")) mountRW("/system");
     }
 
     /**
@@ -162,9 +162,9 @@ public class FileOperations {
      * Mount system RO
      */
     public static void mountSystemRO() {
-        String mountPoint = References.getMagiskDirectory();
-        if (mountPoint.equals("/")) mountPoint = "/system";
-        mountRO(mountPoint);
+        if (References.getMagiskDirectory().equals("/")) mountRO("/system");
+        // Overlays in the module changed, bring the live /system/app up to date
+        projekt.substratum.util.helpers.MagiskHelper.syncMount();
     }
 
     /**
@@ -173,7 +173,7 @@ public class FileOperations {
      * @param mountpoint The directory to mount as RO
      */
     public static void mountRO(final String mountpoint) {
-        Root.runCommand(String.format("mount -t auto -o %s %s", checkBox("rw"), mountpoint));
+        Root.runCommand(String.format("mount -t auto -o %s %s", checkBox("ro"), mountpoint));
     }
 
     /**
