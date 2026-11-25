@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,6 +48,7 @@ public final class AmoledJobs {
     private static final AtomicInteger IDS = new AtomicInteger();
     private static final List<Listener> LISTENERS = new CopyOnWriteArrayList<>();
     private static final ConcurrentLinkedDeque<Job> WAITING = new ConcurrentLinkedDeque<>();
+    private static final Map<String, String> LABELS = new ConcurrentHashMap<>();
     private static volatile Job current;
     private static Handler main;
 
@@ -263,6 +266,14 @@ public final class AmoledJobs {
         return !snapshot().isIdle();
     }
 
+    /**
+     * The name of an app the queue reported progress for, or the package name.
+     */
+    public static String labelOf(String pkg) {
+        String label = pkg != null ? LABELS.get(pkg) : null;
+        return label != null ? label : pkg;
+    }
+
     // Reported by SystemAmoledService
 
     /**
@@ -276,14 +287,20 @@ public final class AmoledJobs {
      * A job left the queue and runs now (worker thread).
      */
     public static void started(Job job) {
-        WAITING.remove(job);
+        // Current first: a snapshot in between never reads as idle
         current = job;
+        WAITING.remove(job);
         post(() -> {
             for (Listener l : LISTENERS) l.onJobStarted(job);
         });
     }
 
-    public static void progress(Job job, String pkg, int done, int total) {
+    /**
+     * @param label The app's name, read on the worker thread: listeners get it from
+     *              {@link #labelOf} without a PackageManager call on the main thread
+     */
+    public static void progress(Job job, String pkg, String label, int done, int total) {
+        if (pkg != null && label != null) LABELS.put(pkg, label);
         post(() -> {
             for (Listener l : LISTENERS) l.onProgress(job, pkg, done, total);
         });

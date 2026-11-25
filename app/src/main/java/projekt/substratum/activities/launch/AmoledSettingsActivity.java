@@ -82,7 +82,8 @@ public class AmoledSettingsActivity extends AppCompatActivity {
 
         @Override
         public void onProgress(AmoledJobs.Job job, String pkg, int done, int total) {
-            showRunning(getString(R.string.system_amoled_progress, done, total, label(pkg)));
+            showRunning(getString(R.string.system_amoled_progress, done, total,
+                    AmoledJobs.labelOf(pkg)));
             progress.setIndeterminate(false);
             progress.setMax(Math.max(total, 1));
             progress.setProgressCompat(done, true);
@@ -187,19 +188,12 @@ public class AmoledSettingsActivity extends AppCompatActivity {
     }
 
     private void showRunning(String text) {
+        // A new run starts as "working" until it reports progress (switched while hidden only)
+        if (progress.getVisibility() != View.VISIBLE) progress.setIndeterminate(true);
         progress.setVisibility(View.VISIBLE);
         apply.setEnabled(false);
         remove.setEnabled(false);
         status.setText(text);
-    }
-
-    private String label(String pkg) {
-        try {
-            return getPackageManager().getApplicationLabel(
-                    getPackageManager().getApplicationInfo(pkg, 0)).toString();
-        } catch (Exception e) {
-            return pkg;
-        }
     }
 
     // Quick settings
@@ -255,22 +249,31 @@ public class AmoledSettingsActivity extends AppCompatActivity {
             qsDirty = false;
             qsApply.setEnabled(false);
             boolean colorsChanged = !tileChoice.equals(previousTile);
+            Context app = getApplicationContext();
+            String rulesTheme = theme;
+            // Written and carried out in one task: leaving or recreating the screen right after
+            // the tap neither loses the apply nor hands work to a stopped executor
             worker.execute(() -> {
-                boolean written = chosen.write(this);
+                boolean written = chosen.write(app);
+                if (written) {
+                    if (colorsChanged) {
+                        // New tile color: register System UI's colors again, then restart it
+                        // (the job only does that while AMOLED is applied)
+                        AmoledJobs.applySystemUi(app, rulesTheme);
+                    } else {
+                        QsOptions.restartSystemUi();
+                    }
+                }
                 main.post(() -> {
-                    if (isFinishing()) return;
+                    if (isFinishing() || isDestroyed()) return;
                     if (!written) {
                         Toast.makeText(this, R.string.system_amoled_failed,
                                 Toast.LENGTH_LONG).show();
                         return;
                     }
-                    if (colorsChanged) {
-                        // New tile color: register System UI's colors again, then restart it
-                        // (the job only does that while AMOLED is applied)
-                        AmoledJobs.applySystemUi(this, theme);
+                    // Otherwise the listener shows the job when it starts (or it already ended)
+                    if (colorsChanged && AmoledJobs.isBusy()) {
                         showRunning(getString(R.string.system_amoled_working));
-                    } else {
-                        worker.execute(QsOptions::restartSystemUi);
                     }
                     Toast.makeText(this, R.string.amoled_qs_applied, Toast.LENGTH_SHORT).show();
                 });

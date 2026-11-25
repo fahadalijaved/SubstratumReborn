@@ -58,7 +58,7 @@ public final class SystemAmoled {
     private static final String SNAPSHOTS = FabricatedValues.DIR + "/snapshots";
     /**
      * Never force-stopped: the phone, calls, Bluetooth, NFC, the keyboard, the launcher, Play
-     * services, System UI and Substratum itself
+     * services, System UI and Substratum itself (see {@link #safeToRestart} for the rest)
      */
     private static final Set<String> NEVER_RESTART = new HashSet<>(Arrays.asList(
             "android",
@@ -432,8 +432,9 @@ public final class SystemAmoled {
 
     /**
      * Whether an app may be force-stopped so it reloads module colors. Never persistent apps,
-     * telephony, Bluetooth, NFC, the keyboard in use, the home app, Play services, System UI or
-     * Substratum.
+     * telephony, Bluetooth, NFC (and anything else running as a core identity or in one of their
+     * processes), the keyboard in use, the home app, apps with an accessibility service on or
+     * the live wallpaper in use, Play services, System UI or Substratum.
      */
     public static boolean safeToRestart(Context context, String pkg) {
         if (pkg == null || NEVER_RESTART.contains(pkg)) return false;
@@ -441,6 +442,27 @@ public final class SystemAmoled {
         try {
             ApplicationInfo info = pm.getApplicationInfo(pkg, 0);
             if ((info.flags & ApplicationInfo.FLAG_PERSISTENT) != 0) return false;
+            // Core identities other than system (phone, Bluetooth, NFC, secure element, network
+            // stack...), whatever their package is called on this device
+            int appId = info.uid % 100000;
+            if (appId < android.os.Process.FIRST_APPLICATION_UID &&
+                    appId != android.os.Process.SYSTEM_UID) {
+                return false;
+            }
+            // Runs inside one of the processes above (telephony providers in com.android.phone)
+            if (info.processName != null && !pkg.equals(info.processName) &&
+                    (NEVER_RESTART.contains(info.processName) ||
+                            "system".equals(info.processName))) {
+                return false;
+            }
+            // Shares its user id, and so its processes, with one of them (Google Services
+            // Framework with Play services)
+            if (appId != android.os.Process.SYSTEM_UID) {
+                String[] shared = pm.getPackagesForUid(info.uid);
+                if (shared != null && shared.length > 1) {
+                    for (String other : shared) if (NEVER_RESTART.contains(other)) return false;
+                }
+            }
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
@@ -451,6 +473,27 @@ public final class SystemAmoled {
             if (component != null && pkg.equals(component.getPackageName())) return false;
         } catch (RuntimeException ignored) {
             // no keyboard setting to read
+        }
+        // A force-stop turns the package's accessibility services off for good
+        try {
+            String services = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            if (services != null) {
+                for (String service : services.split(":")) {
+                    ComponentName component = ComponentName.unflattenFromString(service);
+                    if (component != null && pkg.equals(component.getPackageName())) return false;
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // no accessibility setting to read
+        }
+        // ...and resets a live wallpaper of the package to the default one
+        try {
+            android.app.WallpaperInfo wallpaper =
+                    android.app.WallpaperManager.getInstance(context).getWallpaperInfo();
+            if (wallpaper != null && pkg.equals(wallpaper.getPackageName())) return false;
+        } catch (RuntimeException ignored) {
+            // no wallpaper service
         }
         try {
             ResolveInfo home = pm.resolveActivity(new Intent(Intent.ACTION_MAIN)
@@ -561,6 +604,40 @@ public final class SystemAmoled {
         }
         Log.i(TAG, "restored " + restored + " fabricated overlays after boot");
         return restored;
+    }
+
+    /**
+     * Whether a restore after boot has anything to do: AMOLED is applied (or was, by an older
+     * version), or an enabled Substratum overlay has fabricated values. Needs no root (the
+     * module's folder is readable by apps); when that folder cannot be listed, assume there is.
+     */
+    public static boolean hasRestorable(Context context) {
+        File dir = new File(XposedBackend.DIR);
+        String[] files = dir.list();
+        if (files == null && dir.exists()) return true;
+        if (files != null) {
+            for (String file : files) {
+                if (file.equals(XposedBackend.AMOLED_FLAG)) return true;
+                if (file.endsWith(XposedBackend.ENABLED) && hasFabricatedValues(
+                        file.substring(0, file.length() - XposedBackend.ENABLED.length()))) {
+                    return true;
+                }
+            }
+        }
+        return AmoledState.exists(context) && AmoledState.read(context).enabled;
+    }
+
+    private static boolean hasFabricatedValues(String overlay) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(
+                new File(XposedBackend.DIR, overlay + XposedBackend.INDEX)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().equals(XposedBackend.FABRICATED)) return true;
+            }
+            return false;
+        } catch (IOException e) {
+            return true; // cannot tell
+        }
     }
 
     private static String fabricateAndEnable(String target, String name, String file) {
@@ -746,6 +823,10 @@ public final class SystemAmoled {
             }
             case MODULE: {
                 String key = versionKey(context, pkg);
+                // Never taken away (switched off and on again before the queue got to it)
+                if (key != null && live.exists() && key.equals(readKey(live))) {
+                    return Switched.ON;
+                }
                 if (key != null && copy.exists() && key.equals(readKey(copy)) &&
                         installIds(copy, pkg)) {
                     //noinspection ResultOfMethodCallIgnored

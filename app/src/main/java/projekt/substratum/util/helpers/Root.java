@@ -64,7 +64,9 @@ public class Root {
      *
      * @return Instance of SU
      */
-    private static SU getSU() {
+    private static synchronized SU getSU() {
+        // Synchronized: the job queue, screens and the state migration all use root at once,
+        // and each would otherwise start a shell of its own (one left running, never closed)
         if ((su == null) || su.closed || su.denied)
             su = new SU();
         return su;

@@ -175,6 +175,8 @@ public class SystemAmoledService extends Service {
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), null);
         SystemAmoled.markApplied(this, job.theme);
+        // Everything is registered again: an old "not restored" notice no longer applies
+        getSystemService(NotificationManager.class).cancel(NO_ROOT_NOTIFICATION_ID);
         // The theme's quick settings layout, unless one was chosen in Substratum
         if (rules.qsAspect > 0 && !projekt.substratum.Substratum.getPreferences()
                 .getBoolean(AmoledRules.PREF_QS_CHOSEN, false)) {
@@ -212,6 +214,12 @@ public class SystemAmoledService extends Service {
 
     private String setEnabled(AmoledJobs.Job job) {
         String pkg = job.packageName();
+        // Flipped back since (a later job of the queue carries the last choice): doing this one
+        // would only restart the app twice and briefly undo the saved switch
+        if (AmoledState.read(this).isUserEnabled(pkg) != job.on) {
+            Log.i(TAG, job + " superseded by a later switch");
+            return null;
+        }
         String label = label(pkg);
         switch (SystemAmoled.setAppEnabled(this, pkg, job.on)) {
             case SAVED:
@@ -236,6 +244,12 @@ public class SystemAmoledService extends Service {
      */
     private boolean restore() {
         NotificationManager notifications = getSystemService(NotificationManager.class);
+        // Nothing applied: no root needed, and no "not restored" notification at every boot
+        if (!SystemAmoled.hasRestorable(this)) {
+            Log.i(TAG, "restore: nothing to restore");
+            notifications.cancel(NO_ROOT_NOTIFICATION_ID);
+            return true;
+        }
         if (!Root.checkRootAccess() || !Root.isAlive()) {
             Log.w(TAG, "restore: root not available");
             PendingIntent retry = PendingIntent.getForegroundService(this, 0,
@@ -272,7 +286,7 @@ public class SystemAmoledService extends Service {
         String label = label(pkg);
         String text = getString(R.string.system_amoled_progress, index + 1, total, label);
         show(ongoing(text, index + 1, total, false));
-        AmoledJobs.progress(job, pkg, index + 1, total);
+        AmoledJobs.progress(job, pkg, label, index + 1, total);
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(PROGRESS)
                 .putExtra(EXTRA_DONE, index + 1).putExtra(EXTRA_TOTAL, total)
                 .putExtra(EXTRA_PACKAGE, label));
