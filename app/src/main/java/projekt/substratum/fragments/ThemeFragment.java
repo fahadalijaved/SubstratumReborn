@@ -291,6 +291,8 @@ public class ThemeFragment extends Fragment {
         recyclerView = viewBinding.themeList;
         swipeRefreshLayout = viewBinding.swipeRefreshLayout;
         cardView = viewBinding.noEntryCardView;
+        viewBinding.installStarterTheme.setOnClickListener(v ->
+                projekt.substratum.util.helpers.StarterTheme.install(context));
 
         // Register the theme install receiver to auto refresh the fragment
         refreshReceiver = new ThemeInstallReceiver();

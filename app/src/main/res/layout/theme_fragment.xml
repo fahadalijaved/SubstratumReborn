@@ -5,6 +5,7 @@
   ~ SPDX-License-Identifier: GPL-3.0-Or-Later
   -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <RelativeLayout
@@ -66,6 +67,17 @@
                         android:textAllCaps="true"
                         android:textColor="@color/main_screen_card_theme_title"
                         android:textSize="16sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/install_starter_theme"
+                        style="@style/Widget.Material3Expressive.Button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/no_themes_description"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/install_starter_theme"
+                        app:icon="@drawable/ic_get_app" />
 
                 </RelativeLayout>
 

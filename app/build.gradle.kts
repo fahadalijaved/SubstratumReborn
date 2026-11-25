@@ -11,6 +11,38 @@ plugins {
     id("com.android.application")
 }
 
+/**
+ * Embeds the Reborn AMOLED starter theme (themes/amoled) as assets/starter/reborn_amoled.apk,
+ * installed from the empty Themes tab.
+ */
+abstract class CopyStarterTheme : DefaultTask() {
+    @get:InputFile
+    abstract val apk: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copy() {
+        val dir = outputDir.get().asFile.resolve("starter")
+        dir.mkdirs()
+        apk.get().asFile.copyTo(dir.resolve("reborn_amoled.apk"), overwrite = true)
+    }
+}
+
+val copyStarterTheme = tasks.register<CopyStarterTheme>("copyStarterTheme") {
+    apk.set(project(":themes:amoled").layout.buildDirectory
+        .file("outputs/apk/debug/amoled-debug.apk"))
+    dependsOn(":themes:amoled:assembleDebug")
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(
+            copyStarterTheme, CopyStarterTheme::outputDir)
+    }
+}
+
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 
 fun gitHash(): String = try {
