@@ -35,6 +35,20 @@ VALUE_TYPES = {"color", "dimen", "bool", "integer", "string", "fraction", "array
 AAPT2 = os.path.join(os.environ.get("ANDROID_HOME", "/opt/android-sdk"),
                      "build-tools", "37.0.0", "aapt2")
 
+# Locale qualifiers (en, en-rUS, b+sr+Latn ...) are left out: themers do not need translations
+LOCALE_RE = re.compile(r"(^|-)([a-z]{2,3}(-r[A-Z]{2})?|b\+[A-Za-z0-9+]+)(-|$)")
+KEEP_QUALIFIERS = re.compile(r"^(night|notnight|land|port|v\d+|sw\d+dp|w\d+dp|h\d+dp|"
+                             r"[a-z]*dpi|anydpi|round|notround|watch|car|television|desk|"
+                             r"large|xlarge|small|normal|long|notlong|ldrtl|ldltr|"
+                             r"keysexposed|nokeys|nonav|navhidden|finger|notouch)$")
+
+
+def keep_config(config):
+    if config == "default":
+        return True
+    return all(KEEP_QUALIFIERS.match(q) for q in config.split("-"))
+
+
 PACKAGE_RE = re.compile(r"^Package name=(\S+) id=")
 TYPE_RE = re.compile(r"^  type (\S+) id=")
 RESOURCE_RE = re.compile(r"^    resource 0x([0-9a-f]+) ([^/\s]+)/(\S+)(.*)$")
@@ -71,6 +85,8 @@ def parse(lines):
         if m and current:
             rtype, name = current
             config = m.group(1) or "default"
+            if not keep_config(config):
+                continue
             value = m.group(2).strip()
             fm = FILE_RE.match(value)
             if fm:
@@ -108,14 +124,23 @@ def main():
         sys.exit(__doc__)
     out_dir = sys.argv[1]
     os.makedirs(out_dir, exist_ok=True)
-    summary = []
+    # Split APKs (density, language, feature) share a package: merge them before writing
+    merged = {}
     for apk in sys.argv[2:]:
         package, values, files, flags = parse(dump(apk))
         if not package:
             print("skipping, no resource table: " + apk, file=sys.stderr)
             continue
+        entry = merged.setdefault(package, (defaultdict(set), set(), {}, []))
+        for rtype, rows in values.items():
+            entry[0][rtype].update(rows)
+        entry[1].update(files)
+        entry[2].update(flags)
+        entry[3].append(os.path.basename(apk))
+    summary = []
+    for package, (values, files, flags, apks) in sorted(merged.items()):
         counts = write(out_dir, package, values, files, flags)
-        summary.append((package, os.path.basename(apk), counts))
+        summary.append((package, " + ".join(apks), counts))
         print("%s: %s" % (package, ", ".join("%d %s" % (v, k) for k, v in sorted(counts.items()))))
     with open(os.path.join(out_dir, "README.md"), "w") as f:
         f.write("# One UI resource reference\n\n"

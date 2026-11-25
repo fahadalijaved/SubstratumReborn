@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reborn AMOLED, com.android.systemui, dark mode. Generated from the One UI 9 reference. -->
+<resources>
+    <color name="panel_bg_color">#ff000000</color>
+    <color name="notification_material_background_color">#ff0a0a0a</color>
+    <color name="notification_material_background_dimmed_color">#ff111111</color>
+    <color name="notification_material_background_on_lockscreen">#ff000000</color>
+    <color name="notification_material_background_color_reduce_transparency_and_blur">#ff0a0a0a</color>
+    <color name="notification_legacy_background_color">#ff0a0a0a</color>
+    <color name="notification_shelf_button_background_fill_color">#ff0a0a0a</color>
+    <color name="qs_detail_layout_popup_menu_background_color">#ff111111</color>
+    <color name="qs_detail_layout_popup_menu_background_color_no_blur">#ff111111</color>
+    <color name="qs_tile_round_background_off">#ff1a1a1a</color>
+    <color name="qs_multisim_popup_background">#ff111111</color>
+    <color name="qs_onboarding_bg_color">#ff111111</color>
+    <color name="sec_brightness_mirror_background_color">#ff000000</color>
+    <color name="sec_notification_guts_content_bg_color">#ff0a0a0a</color>
+    <color name="sec_notification_guts_header_bg_color">#ff111111</color>
+    <color name="sec_fgs_content_button_background_color">#ff1a1a1a</color>
+    <color name="sec_control_default_background">#ff0a0a0a</color>
+    <color name="sec_control_enabled_default_background">#ff111111</color>
+    <color name="panel_background_blur_color">#ff000000</color>
+</resources>

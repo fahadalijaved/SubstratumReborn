@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reborn AMOLED, com.samsung.android.incallui, all modes: dark-only design tokens, plus the stock light values of the night overrides so light mode keeps working. Generated from the One UI 9 reference. -->
+<resources>
+    <color name="basic_token_sys_background_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_container_lowest_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_container_dark">#ff121212</color>
+    <color name="basic_token_sys_surface_container_high_dark">#ff1a1a1a</color>
+    <color name="basic_token_sys_surface_container_higher_dark">#ff222222</color>
+    <color name="basic_token_sys_surface_bright_dark">#ff1a1a1a</color>
+    <color name="basic_token_sys_surface_brightest_dark">#ff262626</color>
+</resources>

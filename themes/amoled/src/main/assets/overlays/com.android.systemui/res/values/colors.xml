@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reborn AMOLED, com.android.systemui, all modes: dark-only design tokens, plus the stock light values of the night overrides so light mode keeps working. Generated from the One UI 9 reference. -->
+<resources>
+    <color name="basic_token_sys_background_dark">#ff000000</color>
+    <color name="basic_token_sys_background_variant_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_variant_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_container_lowest_dark">#ff000000</color>
+    <color name="basic_token_sys_surface_container_low_dark">#ff0a0a0a</color>
+    <color name="basic_token_sys_surface_container_dark">#ff121212</color>
+    <color name="basic_token_sys_surface_container_high_dark">#ff1a1a1a</color>
+    <color name="basic_token_sys_surface_container_higher_dark">#ff222222</color>
+    <color name="basic_token_sys_surface_container_highest_dark">#ff2a2a2a</color>
+    <color name="basic_token_sys_surface_bright_dark">#ff1a1a1a</color>
+    <color name="basic_token_sys_surface_brightest_dark">#ff262626</color>
+    <color name="basic_token_effect_blur_surface_dark">#ff0a0a0a</color>
+    <color name="basic_token_component_navibar_translucent_background_dark">#ff000000</color>
+    <color name="basic_token_component_dialog_surface_container_dark">#ff121212</color>
+    <color name="basic_token_component_dialog_surface_container_low_dark">#ff0a0a0a</color>
+    <color name="qs_tile_container_bg">#ff0a0a0a</color>
+    <color name="sec_panel_background_color">#ff000000</color>
+    <color name="notification_material_background_color">#8cffffff</color>
+    <color name="notification_material_background_dimmed_color">#fffafafa</color>
+    <color name="notification_material_background_on_lockscreen">#ebfafaff</color>
+    <color name="notification_material_background_color_reduce_transparency_and_blur">#8cffffff</color>
+    <color name="notification_legacy_background_color">#ff1a1a1a</color>
+    <color name="notification_shelf_button_background_fill_color">#47000000</color>
+    <color name="qs_detail_layout_popup_menu_background_color">#ccffffff</color>
+    <color name="qs_detail_layout_popup_menu_background_color_no_blur">#ffffffff</color>
+    <color name="qs_tile_round_background_off">#40000000</color>
+    <color name="qs_multisim_popup_background">#ccf2f2f2</color>
+    <color name="qs_onboarding_bg_color">#fff1f1f3</color>
+    <color name="sec_brightness_mirror_background_color">#b3ffffff</color>
+    <color name="sec_notification_guts_content_bg_color">#fff6f6f6</color>
+    <color name="sec_notification_guts_header_bg_color">#fffcfcfc</color>
+    <color name="sec_fgs_content_button_background_color">#ffeeeef0</color>
+    <color name="sec_control_default_background">#b3f2f2f3</color>
+    <color name="sec_control_enabled_default_background">#fffcfcfc</color>
+    <color name="panel_background_blur_color">#4dfafafa</color>
+</resources>

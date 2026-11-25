@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reborn AMOLED, com.android.settings, dark mode. Generated from the One UI 9 reference. -->
+<resources>
+    <color name="background_common">#ff000000</color>
+</resources>
