@@ -37,7 +37,9 @@ import projekt.substratum.common.platform.XposedBackend;
  * app stays stock until that file is removed. A process that survives 30 seconds empties the
  * list, so deliberate restarts never add up.</li>
  * </ul>
- * Guard file I/O that fails lets the hooks run; nothing here throws into the host process.
+ * While the app a process belongs to is left stock, no other package is hooked in that process
+ * either. Guard file I/O that fails lets the hooks run; nothing here throws into the host
+ * process.
  */
 final class HookGuard {
 
@@ -56,8 +58,12 @@ final class HookGuard {
     private static final long SURVIVED_MS = 30_000;
     private static final int PER_USER_RANGE = 100000;
 
-    // Package -> OK, TRIPPED or OFF, decided once per process
+    // Package -> OK, TRIPPED or OFF, decided once per process: for the app the process belongs
+    // to, and for other packages whose code or resources it loads
     private static final Map<String, String> STATES = new HashMap<>();
+    private static final Map<String, String> OTHERS = new HashMap<>();
+    // Set once the app this process belongs to is left stock: nothing else is hooked here then
+    private static volatile String processState;
 
     private HookGuard() {
     }
@@ -76,36 +82,52 @@ final class HookGuard {
      *
      * @param deDataDir   The package's device-protected data directory
      * @param processName This process, or null if unknown
+     * @param own         True for the app this process belongs to (the first application).
+     *                    Other packages only follow the kill switch: their guard files belong
+     *                    to another app.
      * @return {@link #OK}, {@link #TRIPPED} or {@link #OFF}
      */
-    static String state(String pkg, String deDataDir, String processName) {
+    static String state(String pkg, String deDataDir, String processName, boolean own) {
+        String state;
         synchronized (STATES) {
-            String state = STATES.get(pkg);
+            Map<String, String> cache = own ? STATES : OTHERS;
+            state = cache.get(pkg);
             if (state == null) {
-                state = decide(pkg, deDataDir, processName);
-                STATES.put(pkg, state);
+                state = decide(pkg, deDataDir, processName, own);
+                cache.put(pkg, state);
             }
-            return state;
         }
+        if (own && !OK.equals(state)) processState = state;
+        return state;
     }
 
     /**
      * For handleInitPackageResources, where no application info is at hand.
      */
     static String state(String pkg) {
-        synchronized (STATES) {
-            String state = STATES.get(pkg);
-            if (state != null) return state;
-        }
+        String processName = processName();
+        boolean own = processName == null || processName.startsWith("<") ||
+                processName.equals(pkg) || processName.startsWith(pkg + ':');
         return state(pkg, "/data/user_de/" + Process.myUid() / PER_USER_RANGE + '/' + pkg,
-                processName());
+                processName, own);
     }
 
-    private static String decide(String pkg, String deDataDir, String processName) {
+    /**
+     * False once the kill switch or the crash loop guard left the app this process belongs to
+     * stock: then no other package is hooked in it either (an overlay for another package's
+     * resources can take this process down as well).
+     */
+    static boolean processAllowed() {
+        return processState == null;
+    }
+
+    private static String decide(String pkg, String deDataDir, String processName,
+                                 boolean own) {
         if (killed(pkg)) {
-            log("kill switch, " + pkg + " left stock");
+            if (own) log("kill switch, " + pkg + " left stock");
             return OFF;
         }
+        if (!own) return OK;
         try {
             if (!guarded(pkg)) return OK;
             return crashLoop(pkg, deDataDir, processName) ? TRIPPED : OK;

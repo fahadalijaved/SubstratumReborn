@@ -57,7 +57,9 @@ final class AppAmoledHook {
     private static final String TAG = "SubstratumXposed: AMOLED: ";
     private static final String KEY = "# key=";
     private static final String STATE_LIST = "csl";
-    private static final String COMPOSE_VIEW = "androidx.compose.ui.platform.AndroidComposeView";
+    private static final String[] COMPOSE_VIEWS = {
+            "androidx.compose.ui.platform.AndroidComposeView",
+            "androidx.compose.ui.platform.ComposeView"};
     private static String target;
     private static SparseArray<int[]> byId; // id -> {light, night}
     private static SparseBooleanArray stateLists; // color state lists with a rule color
@@ -187,8 +189,7 @@ final class AppAmoledHook {
             }
         });
         // Compose and other code-defined colors, where they are drawn
-        boolean compose = XposedHelpers.findClassIfExists(COMPOSE_VIEW, lpparam.classLoader) !=
-                null;
+        boolean compose = hasCompose(lpparam.classLoader);
         if (compose && !surfaces.isEmpty()) {
             XposedHelpers.findAndHookMethod(Paint.class, "setColor", int.class,
                     new XC_MethodHook() {
@@ -221,6 +222,21 @@ final class AppAmoledHook {
         XposedBridge.log(TAG + ids.size() + " colors by id, " + lists.size() +
                 " color state lists, " + (compose ? surfaces.size() + " surface colors" :
                 "no Compose, no surface colors") + " in " + packageName);
+    }
+
+    /**
+     * Whether the app contains Compose. ComposeView keeps its name when a layout names it, even
+     * in apps that shrink and rename their classes.
+     */
+    private static boolean hasCompose(ClassLoader loader) {
+        for (String name : COMPOSE_VIEWS) {
+            try {
+                if (XposedHelpers.findClassIfExists(name, loader) != null) return true;
+            } catch (Throwable ignored) {
+                // a class it needs is missing: not usable
+            }
+        }
+        return false;
     }
 
     /**

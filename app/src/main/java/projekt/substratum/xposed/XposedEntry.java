@@ -107,14 +107,16 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
         // services modules, WebView) must not install their color table there
         if (!systemUi && !lpparam.isFirstApplication) return;
         boolean mainSystemUi = systemUi && SYSTEMUI.equals(lpparam.processName);
-        // Kill switch and crash loop guard
+        // Kill switch and crash loop guard, for this package and for the app the process
+        // belongs to
         String guard = HookGuard.state(pkg,
                 lpparam.appInfo != null ? lpparam.appInfo.deviceProtectedDataDir : null,
-                lpparam.processName);
+                lpparam.processName, lpparam.isFirstApplication);
         if (!HookGuard.OK.equals(guard)) {
             if (mainSystemUi) ModuleStatus.reportSkipped(guard);
             return;
         }
+        if (!HookGuard.processAllowed()) return;
         if (systemUi) {
             boolean battery = false, qs = false, layout = false;
             QsOptions options;
@@ -157,8 +159,9 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                                                    resparam) {
         String target = resparam.packageName;
         if (FRAMEWORK.equals(target)) return; // handled in initZygote
-        // Kill switch and crash loop guard
-        if (!HookGuard.OK.equals(HookGuard.state(target))) return;
+        // Kill switch and crash loop guard, for the target and for the app the process belongs
+        // to (System UI loads many apps' resources)
+        if (!HookGuard.OK.equals(HookGuard.state(target)) || !HookGuard.processAllowed()) return;
         List<String> enabled = enabledOverlays();
         // Only in processes the guard lets through (framework values are replaced system-wide
         // and do not need it)
@@ -283,7 +286,7 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
      * Direct values do not switch with the configuration by themselves, so re-read them from the
      * overlay whenever a themed Resources object changes night mode (or any other qualifier).
      */
-    private static void hookConfigurationChanges() {
+    private static synchronized void hookConfigurationChanges() {
         if (configHooked) return;
         configHooked = true;
         try {

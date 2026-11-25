@@ -280,7 +280,10 @@ reboot clears them. Substratum still sees the module as active while the switch 
 System UI and every app the module changes count their starts. Three starts within 90 seconds
 trip the guard: the app then starts stock, and System UI reports `guard=tripped`. A process
 that stays up for 30 seconds clears the count, so a restart more than 30 seconds after the
-previous one never trips it. After fixing the cause, reset the guard and restart:
+previous one never trips it. Restarts and force-stops that Substratum does itself (applying
+quick settings options, AMOLED for every app, Remove) clear the count first, so they never
+trip it either. While an app is left stock, the module also leaves alone every other package's
+resources in that app's processes. After fixing the cause, reset the guard and restart:
 
 ```
 rm -f /data/user_de/0/com.android.systemui/reborn_guard_*

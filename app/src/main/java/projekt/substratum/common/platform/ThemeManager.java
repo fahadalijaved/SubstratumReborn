@@ -356,7 +356,9 @@ public class ThemeManager {
         } else if (checkThemeInterfacer(context)) {
             ThemeInterfacerService.restartSystemUI();
         } else {
-            Root.runCommand("pkill -f com.android.systemui");
+            // A restart on purpose does not count towards the module's crash loop guard
+            Root.runCommand(XposedBackend.forgetStartsCommand("com.android.systemui") +
+                    "; pkill -f com.android.systemui");
         }
     }
 

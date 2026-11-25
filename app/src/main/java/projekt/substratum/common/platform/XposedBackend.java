@@ -127,6 +127,16 @@ public class XposedBackend {
     }
 
     /**
+     * Root shell command that forgets an app's recent starts, to run right before Substratum
+     * restarts or force-stops it on purpose: such restarts are not a crash loop, however quickly
+     * they follow each other. A tripped guard stays tripped.
+     */
+    public static String forgetStartsCommand(String pkg) {
+        if (pkg == null || !pkg.matches("[A-Za-z0-9_.]+")) return "true";
+        return "rm -f /data/user_de/0/" + pkg + "/" + GUARD_FILES + "starts";
+    }
+
+    /**
      * Store a freshly compiled overlay. Does not enable it.
      *
      * @return True, if stored

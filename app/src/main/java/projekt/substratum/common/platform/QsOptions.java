@@ -89,6 +89,8 @@ public final class QsOptions {
     }
 
     public static void restartSystemUi() {
-        Root.runCommand("kill $(pidof com.android.systemui)");
+        // A restart on purpose does not count towards the module's crash loop guard
+        Root.runCommand(XposedBackend.forgetStartsCommand("com.android.systemui") +
+                "; kill $(pidof com.android.systemui)");
     }
 }

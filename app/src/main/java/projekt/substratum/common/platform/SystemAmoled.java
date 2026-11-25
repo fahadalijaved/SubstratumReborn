@@ -250,8 +250,9 @@ public final class SystemAmoled {
         //noinspection ResultOfMethodCallIgnored
         local.delete();
         if (out == null || !out.trim().endsWith("rc=0")) return 0;
-        // The colors load when the app starts
-        projekt.substratum.util.helpers.Root.runCommand("am force-stop " + pkg);
+        // The colors load when the app starts (a stop on purpose is no crash loop)
+        projekt.substratum.util.helpers.Root.runCommand(
+                XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg);
         Log.i(TAG, pkg + ": " + byId.size() + " colors handed to the LSPosed module by id");
         return byId.size();
     }
@@ -413,8 +414,9 @@ public final class SystemAmoled {
                             "cmd overlay disable --user 0 'com.android.shell:" + name +
                             "' >/dev/null 2>&1; true");
         }
-        // Apps with module colors load them when they start
-        projekt.substratum.util.helpers.Root.runCommand("am force-stop " + pkg);
+        // Apps with module colors load them when they start (a stop on purpose is no crash loop)
+        projekt.substratum.util.helpers.Root.runCommand(
+                XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg);
     }
 
     public static void removeAll(Context context) {
