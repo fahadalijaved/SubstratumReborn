@@ -91,6 +91,9 @@ public final class AmoledRules {
         sysui.put("sec_qs_media_player_background_color", 0xff000000);
         // One UI 9 QS boxes: this color with blur reduced, a wallpaper tint otherwise
         sysui.put("qs_tile_coloring_container_bg_ultra_mode", 0xff000000);
+        // Brightness and volume bars: a plain white fill instead of a grey-to-white gradient
+        sysui.put("tw_progress_color_control_activated", 0xffffffff);
+        sysui.put("tw_progress_color_control_activated_start", 0xffffffff);
         r.exact.put("com.android.systemui", sysui);
         List<Object[]> settings = new ArrayList<>();
         settings.add(new Object[]{Pattern.compile("^sec_dashboard_(?!.*(text|layer)).*_color\\d*$"),

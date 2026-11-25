@@ -96,6 +96,11 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "battery hook failed: " + t);
             }
+            try {
+                QsAmoledHook.hook(lpparam.classLoader);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + "QS AMOLED hook failed: " + t);
+            }
             return;
         }
         if (!SELF.equals(lpparam.packageName)) return;

@@ -99,6 +99,11 @@ public final class SystemAmoled {
                 Log.w(TAG, "Skipping " + pkg + ": " + t);
             }
         }
+        // SystemUI code hooks of the LSPosed module (opaque shade, dark bar tracks)
+        projekt.substratum.util.helpers.Root.runCommand("mkdir -p " + XposedBackend.DIR +
+                " && chmod 755 " + XposedBackend.DIR + " && touch " + XposedBackend.DIR + "/" +
+                XposedBackend.AMOLED_FLAG + " && chmod 644 " + XposedBackend.DIR + "/" +
+                XposedBackend.AMOLED_FLAG + " && restorecon -R " + XposedBackend.DIR);
         return new int[]{apps, colors};
     }
 
@@ -239,7 +244,8 @@ public final class SystemAmoled {
 
     public static void removeAll(Context context) {
         projekt.substratum.util.helpers.Root.runCommand(
-                "rm -f " + XposedBackend.DIR + "/*" + XposedBackend.AMOLED_IDS);
+                "rm -f " + XposedBackend.DIR + "/*" + XposedBackend.AMOLED_IDS + " " +
+                        XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG);
         List<String> names = new ArrayList<>();
         for (PackageInfo info : context.getPackageManager().getInstalledPackages(0)) {
             names.add(info.packageName + SUFFIX);
@@ -302,20 +308,23 @@ public final class SystemAmoled {
             } catch (Resources.NotFoundException e) {
                 continue;
             }
-            // Color state lists keep their states: only plain colors are replaced
-            if (tv.type < TypedValue.TYPE_FIRST_COLOR_INT || tv.type > TypedValue.TYPE_LAST_COLOR_INT)
-                continue;
             Integer mapped = rules.explicit(pkg, name);
+            boolean plain = tv.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
+                    tv.type <= TypedValue.TYPE_LAST_COLOR_INT;
+            // Color state lists keep their states, unless the rules name a color for them
+            if (!plain && mapped == null) continue;
             if (mapped == null) mapped = amoled(tv.data, name, rules);
-            if (mapped == null || mapped == tv.data) continue;
+            if (mapped == null || plain && mapped == tv.data) continue;
             // A night-only entry can fail to map (idmap2 confuses it with similarly named
             // resources), so every night value is paired with the stock light value
-            int light = tv.data; // dark-only resources: pair with their own stock value
+            int light = plain ? tv.data : res.getColorStateList(id, null).getDefaultColor();
             try {
                 dayRes.getValue(id, dayValue, true);
                 if (dayValue.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
                         dayValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
                     light = dayValue.data;
+                } else if (!plain) {
+                    light = dayRes.getColorStateList(id, null).getDefaultColor();
                 } else {
                     continue; // a state list in light mode: leave the resource alone
                 }

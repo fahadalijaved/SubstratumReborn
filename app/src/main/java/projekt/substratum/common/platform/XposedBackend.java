@@ -55,6 +55,10 @@ public class XposedBackend {
      * AMOLED colors for one app, applied by resource id: "id light night" per line
      */
     public static final String AMOLED_IDS = ".amoled.ids";
+    /**
+     * Present while "AMOLED for every app" is applied: turns on the module's SystemUI code hooks
+     */
+    public static final String AMOLED_FLAG = "amoled-hooks.on";
     private static final String TAG = "SubstratumXposed";
 
     /**
