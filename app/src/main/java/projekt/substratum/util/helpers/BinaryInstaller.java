@@ -27,6 +27,13 @@ public class BinaryInstaller {
      * @param forced  Ignore the dynamic check and just install no matter what
      */
     public static void install(Context context, boolean forced) {
+        // The extracted binaries outlive app updates, so refresh them whenever the build changes
+        android.content.SharedPreferences prefs = Substratum.getPreferences();
+        long build = projekt.substratum.BuildConfig.buildTime.getTime();
+        if (prefs.getLong("binaries_build", 0L) != build) {
+            forced = true;
+            prefs.edit().putLong("binaries_build", build).apply();
+        }
         injectAAPT(context, forced);
         injectZipAlign(context, forced);
     }
