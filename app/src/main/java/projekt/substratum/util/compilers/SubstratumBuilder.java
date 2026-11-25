@@ -464,6 +464,9 @@ public class SubstratumBuilder {
         return errorLogs;
     }
 
+    private static final int MAX_COMPILE_REPAIRS = 5;
+    private int compileRepairs = 0;
+
     private boolean runAAPTShellCommands(String commands,
                                          String workArea,
                                          String targetPkg,
@@ -484,6 +487,7 @@ public class SubstratumBuilder {
                 stdin.write("exit\n".getBytes());
 
                 boolean errored = false;
+                List<String> errorLines = new ArrayList<>();
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(stderr))) {
                     String line;
                     while ((line = br.readLine()) != null) {
@@ -499,12 +503,23 @@ public class SubstratumBuilder {
                                     overlayPackage, additionalVariant, assetReplacement,
                                     true, context, noCacheDir);
                         } else {
-                            dumpErrorLogs(overlayPackage,
-                                    line);
+                            errorLines.add(line);
                             errored = true;
                         }
                     }
                 }
+                // Themes written for older One UI reference resources that newer releases
+                // removed. Drop just the broken entries or files and build the rest.
+                if (errored && compileRepairs < MAX_COMPILE_REPAIRS &&
+                        CompileRepair.repair(errorLines) > 0) {
+                    compileRepairs++;
+                    Substratum.log(References.SUBSTRATUM_BUILDER, "Dropped resources that this " +
+                            "system no longer has, compiling again (pass " + compileRepairs + ")");
+                    return runAAPTShellCommands(commands, workArea, targetPkg, themeName,
+                            overlayPackage, additionalVariant, assetReplacement, legacySwitch,
+                            context, noCacheDir);
+                }
+                for (String line : errorLines) dumpErrorLogs(overlayPackage, line);
                 if (errored) {
                     hasErroredOut = true;
                     dumpErrorLogs(overlayPackage,

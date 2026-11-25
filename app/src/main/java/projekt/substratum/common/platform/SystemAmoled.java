@@ -152,6 +152,11 @@ public final class SystemAmoled {
         night.uiMode = (night.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
                 Configuration.UI_MODE_NIGHT_YES;
         Resources res = app.createConfigurationContext(night).getResources();
+        Configuration day = new Configuration(night);
+        day.uiMode = (day.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
+                Configuration.UI_MODE_NIGHT_NO;
+        Resources dayRes = app.createConfigurationContext(day).getResources();
+        TypedValue dayValue = new TypedValue();
         Map<String, Integer> explicit = EXPLICIT.get(pkg);
 
         List<String[]> items = new ArrayList<>();
@@ -170,6 +175,17 @@ public final class SystemAmoled {
             Integer mapped = explicit != null && explicit.containsKey(name) ?
                     explicit.get(name) : amoled(tv.data, name);
             if (mapped == null || mapped == tv.data) continue;
+            // A night-only entry can fail to map (idmap2 confuses it with similarly named
+            // resources), so every night value is paired with the stock light value
+            try {
+                dayRes.getValue(id, dayValue, true);
+            } catch (Resources.NotFoundException e) {
+                continue;
+            }
+            if (dayValue.type < TypedValue.TYPE_FIRST_COLOR_INT ||
+                    dayValue.type > TypedValue.TYPE_LAST_COLOR_INT) continue;
+            items.add(new String[]{"color/" + name, "28",
+                    String.format("0x%08x", dayValue.data), ""});
             items.add(new String[]{"color/" + name, "28",
                     String.format("0x%08x", mapped), "night"});
         }
@@ -230,22 +246,23 @@ public final class SystemAmoled {
         boolean bg = BG.matcher(name).find();
         boolean floating = FLOAT.matcher(name).find() && !AREA.matcher(name).find();
         if (text || state) return null;
+        boolean line = LINE.matcher(name).find();
+        // Outlines of floating things (popups, menus, dialogs, bars) stay as a thin dark border so
+        // black popups still separate from a black page
+        if (line && floating) return 0xff1f1f1f;
         if (a < 0xff) {
             // see-through white or tinted surfaces would show as grey or tint on black
-            if (a <= 0x66 && hi > 0x60 && (bg || LINE.matcher(name).find())) return 0;
+            if (a <= 0x66 && hi > 0x60 && (bg || line)) return 0;
             if (a <= 0x40 && lo >= 0xc0) return 0;
             // see-through dark tints over blur: an AMOLED blur
-            if (hi <= 0x60 && a >= 0x20 && (bg || floating)) return 0xf2000000;
+            if (hi <= 0x60 && a >= 0x20 && (bg || floating)) return 0xfa000000;
             return null;
         }
         if (name.contains("thumb")) return hi <= 0x80 ? 0xff2a2a2a : null;
         if (name.contains("track") || SLIDER.matcher(name).find() && bg)
             return hi <= 0x80 ? 0xff1a1a1a : null;
-        if (hi <= 0x30) return floating ? 0xff0a0a0a : 0xff000000;
-        if (hi - lo <= 0x18 && hi <= 0x80) {
-            if (LINE.matcher(name).find()) return 0xff000000;
-            return floating ? 0xff0a0a0a : 0xff000000;
-        }
+        if (hi <= 0x30) return 0xff000000;
+        if (hi - lo <= 0x18 && hi <= 0x80) return 0xff000000;
         return null;
     }
 }
