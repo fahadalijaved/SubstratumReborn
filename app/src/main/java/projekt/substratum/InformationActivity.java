@@ -1266,7 +1266,9 @@ public class InformationActivity extends AppCompatActivity {
                             setStatusBarColor(Color.parseColor("#ffff00"));
                     informationActivity.floatingActionButton.setBackgroundTintList(
                             ColorStateList.valueOf(Color.parseColor("#ffff00")));
-                } else if (!informationActivity.prefs.getBoolean("lite_mode", false)) {
+                } else if (!informationActivity.prefs.getBoolean("lite_mode", false) &&
+                        informationActivity.byteArray != null) {
+                    // Themes without a hero image leave byteArray unset
                     Bitmap bitmap = BitmapFactory.decodeByteArray(
                             informationActivity.byteArray, 0, informationActivity.byteArray.length);
                     informationActivity.heroImage.setImageBitmap(bitmap);

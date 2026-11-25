@@ -18,15 +18,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import projekt.substratum.common.References;
 import projekt.substratum.util.helpers.Root;
@@ -54,8 +51,6 @@ public class XposedBackend {
     public static final String INDEX = ".idx";
     public static final String ENABLED = ".enabled";
     private static final String TAG = "SubstratumXposed";
-    private static final Pattern RESOURCE_LINE =
-            Pattern.compile("spec resource 0x[0-9a-f]+ [^:]+:([a-z0-9_-]+)/(\\S+)");
 
     /**
      * Replaced with {@code return true} by the module when LSPosed has it active for Substratum.
@@ -229,28 +224,38 @@ public class XposedBackend {
     }
 
     /**
-     * List the resources an overlay carries as {@code type/name}, using the bundled aapt.
+     * List the resources an overlay carries as {@code type/name}.
+     * <p>
+     * Walks the overlay's own resource ids (package 0x7f, types from 1, entries from 0) through
+     * the framework's resource APIs, so no dump tool is needed.
      */
     private static List<String> listResources(Context context, String apkPath) {
         List<String> list = new ArrayList<>();
-        Process process = null;
+        PackageManager pm = context.getPackageManager();
+        PackageInfo info = pm.getPackageArchiveInfo(apkPath, 0);
+        if (info == null || info.applicationInfo == null) return list;
+        info.applicationInfo.sourceDir = apkPath;
+        info.applicationInfo.publicSourceDir = apkPath;
+        android.content.res.Resources res;
         try {
-            process = new ProcessBuilder(
-                    context.getFilesDir().getAbsolutePath() + "/aapt", "d", "resources", apkPath)
-                    .redirectErrorStream(true).start();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    Matcher matcher = RESOURCE_LINE.matcher(line);
-                    if (matcher.find()) list.add(matcher.group(1) + '/' + matcher.group(2));
+            res = pm.getResourcesForApplication(info.applicationInfo);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Could not open overlay resources", e);
+            return list;
+        }
+        int emptyTypes = 0;
+        for (int type = 1; type <= 0xff && emptyTypes < 4; type++) {
+            int found = 0;
+            for (int entry = 0; entry <= 0xffff; entry++) {
+                int id = 0x7f000000 | (type << 16) | entry;
+                try {
+                    list.add(res.getResourceTypeName(id) + '/' + res.getResourceEntryName(id));
+                    found++;
+                } catch (android.content.res.Resources.NotFoundException e) {
+                    break;
                 }
             }
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            Log.e(TAG, "Could not list overlay resources", e);
-        } finally {
-            if (process != null) process.destroy();
+            emptyTypes = found == 0 ? emptyTypes + 1 : 0;
         }
         return list;
     }
