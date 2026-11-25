@@ -192,7 +192,9 @@ public class XposedBackend {
             if (target != null) targets.add(target);
         }
         StringBuilder command = new StringBuilder();
-        boolean systemUi = false;
+        // Framework overlays apply when each scoped app process starts; SystemUI is the one that
+        // has to be restarted to see them, other apps pick them up on their next launch
+        boolean systemUi = targets.contains("android");
         for (String target : targets) {
             if ("com.android.systemui".equals(target)) {
                 systemUi = true;

@@ -20,6 +20,7 @@ import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -31,18 +32,44 @@ import projekt.substratum.common.platform.XposedBackend;
  * LSPosed entry point. For every app in scope, loads the enabled Substratum overlays that target
  * it and redirects their resources by name, the way the Overlay Manager would.
  */
-public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPackageResources {
+public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackage,
+        IXposedHookInitPackageResources {
 
     private static final String TAG = "SubstratumXposed: ";
     private static final String SELF = "projekt.substratum";
+    private static final String FRAMEWORK = "android";
+    private static final String SYSTEMUI = "com.android.systemui";
     // Value types that can be forwarded; styles, attrs and ids cannot be replaced this way
     private static final Set<String> FORWARDABLE = new HashSet<>(Arrays.asList(
             "anim", "animator", "array", "bool", "color", "dimen", "drawable", "font",
             "fraction", "integer", "interpolator", "layout", "mipmap", "plurals", "raw",
             "string", "xml"));
 
+    /**
+     * Framework resources can only be replaced system-wide, which LSPosed allows here. It runs in
+     * every process the module is scoped to, so framework overlays reach exactly those apps.
+     */
+    @Override
+    public void initZygote(StartupParam startupParam) {
+        for (String name : enabledOverlays()) {
+            try {
+                apply(null, FRAMEWORK, name);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + "skipping " + name + " for framework: " + t);
+            }
+        }
+    }
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
+        if (SYSTEMUI.equals(lpparam.packageName)) {
+            try {
+                BatteryHook.hook(lpparam.classLoader);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + "battery hook failed: " + t);
+            }
+            return;
+        }
         if (!SELF.equals(lpparam.packageName)) return;
         XposedHelpers.findAndHookMethod(XposedBackend.class.getName(), lpparam.classLoader,
                 "isModuleActive", XC_MethodReplacement.returnConstant(true));
@@ -52,12 +79,8 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam
                                                    resparam) {
         String target = resparam.packageName;
-        String[] files = new File(XposedBackend.DIR).list();
-        if (files == null) return;
-        Arrays.sort(files);
-        for (String file : files) {
-            if (!file.endsWith(XposedBackend.ENABLED)) continue;
-            String name = file.substring(0, file.length() - XposedBackend.ENABLED.length());
+        if (FRAMEWORK.equals(target)) return; // handled in initZygote
+        for (String name : enabledOverlays()) {
             try {
                 apply(resparam.res, target, name);
             } catch (Throwable t) {
@@ -67,6 +90,22 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
         }
     }
 
+    private static java.util.List<String> enabledOverlays() {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        String[] files = new File(XposedBackend.DIR).list();
+        if (files == null) return names;
+        Arrays.sort(files);
+        for (String file : files) {
+            if (file.endsWith(XposedBackend.ENABLED)) {
+                names.add(file.substring(0, file.length() - XposedBackend.ENABLED.length()));
+            }
+        }
+        return names;
+    }
+
+    /**
+     * @param res Target resources, or null for the framework (system-wide replacement)
+     */
     private static void apply(XResources res, String target, String name) throws IOException {
         String base = XposedBackend.DIR + '/' + name;
         try (BufferedReader reader = new BufferedReader(
@@ -79,6 +118,7 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
 
             XModuleResources modRes = XModuleResources.createInstance(
                     base + XposedBackend.APK, res);
+            if (SYSTEMUI.equals(target)) BatteryHook.offer(modRes, overlayPackage);
             int replaced = 0;
             String line;
             while ((line = reader.readLine()) != null) {
@@ -90,7 +130,12 @@ public class XposedEntry implements IXposedHookLoadPackage, IXposedHookInitPacka
                 int id = modRes.getIdentifier(resName, type, overlayPackage);
                 if (id == 0) continue;
                 try {
-                    res.setReplacement(target, type, resName, modRes.fwd(id));
+                    if (res == null) {
+                        XResources.setSystemWideReplacement(target, type, resName,
+                                modRes.fwd(id));
+                    } else {
+                        res.setReplacement(target, type, resName, modRes.fwd(id));
+                    }
                     replaced++;
                 } catch (Throwable ignored) {
                     // The target does not have this resource
