@@ -234,6 +234,16 @@
             android:name=".activities.launch.AmoledSettingsActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
+        <!-- Reborn: the Compose shell (Home, AMOLED, Themes, Applied), reached through LauncherActivity -->
+        <activity
+            android:name=".reborn.RebornActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".activities.launch.RebornSettingsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.launch.ManageSpaceActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"

@@ -601,7 +601,8 @@ public class References {
         editor.putBoolean("auto_disable_target_overlays", false);
         editor.putBoolean("lite_mode", false);
         editor.putBoolean("sungstromeda_mode", true);
-        editor.putString(APP_THEME, DEFAULT_THEME);
+        // Follow the system; DEFAULT_THEME keeps meaning the light theme
+        editor.putString(APP_THEME, AUTO_THEME);
         editor.putInt("grid_style_cards_count", DEFAULT_GRID_COUNT);
         editor.putInt("legacy_overlay_priority", DEFAULT_PRIORITY);
         editor.remove("previous_logchar_cleanup");

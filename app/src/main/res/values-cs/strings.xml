@@ -506,7 +506,7 @@ restartuje po 3 sekundách.</string>
     <string name="notification_channel_andromeda">Stav systémového motivu</string>
     <string name="notification_channel_andromeda_description">Oznámení o stavu připojení systémového motivu</string>
     <!-- Nav drawer -->
-    <string name="nav_main">substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Motivy vzhledu</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Správce</string>

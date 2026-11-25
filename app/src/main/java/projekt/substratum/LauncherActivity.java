@@ -12,20 +12,25 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import projekt.substratum.activities.launch.SplashScreenActivity;
+import projekt.substratum.reborn.RebornActivity;
 
 public class LauncherActivity extends AppCompatActivity {
 
     /**
-     * The main launcher activity
+     * The main launcher activity: straight to Reborn Home, no splash screen or intro. Kept as the
+     * exported entry so pinned icons and shortcuts keep working.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = new Intent(this, SplashScreenActivity.class);
-        intent.putExtra("first_run", Substratum.getPreferences().getBoolean("first_run", true));
+        Intent intent = new Intent(this, RebornActivity.class);
+        Intent from = getIntent();
+        if (from != null && from.hasExtra(RebornActivity.EXTRA_TAB)) {
+            intent.putExtra(RebornActivity.EXTRA_TAB, from.getStringExtra(RebornActivity.EXTRA_TAB));
+        }
         this.startActivity(intent);
+        this.overridePendingTransition(0, 0);
         this.finish();
     }
 }

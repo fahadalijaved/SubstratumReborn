@@ -9,6 +9,8 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // Kotlin itself is AGP 9's built-in Kotlin: no org.jetbrains.kotlin.android plugin
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 /**
@@ -54,9 +56,15 @@ fun gitHash(): String = try {
 
 android {
     namespace = "projekt.substratum"
-    compileSdk = 37
+    // Compose 1.13 (BOM 2026.11.01) needs Android 17 QPR1 (API 37.1) to compile against
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
     buildFeatures {
         dataBinding = true
+        compose = true
         buildConfig = true
         aidl = true
     }
@@ -64,8 +72,8 @@ android {
         applicationId = "projekt.substratum"
         minSdk = 26
         targetSdk = 28
-        versionCode = 1102
-        versionName = "reborn 1102"
+        versionCode = 1103
+        versionName = "reborn 1103"
         buildConfigField("java.util.Date", "buildTime", "new java.util.Date(${System.currentTimeMillis()}L)")
         buildConfigField("String", "GIT_HASH", "\"${gitHash()}\"")
     }
@@ -132,6 +140,13 @@ dependencies {
     implementation("com.github.thesurix:gesture-recycler:1.8.0")
     implementation("com.github.cachapa:ExpandableLayout:2.9.2")
     implementation("org.zeroturnaround:zt-zip:1.17")
+
+    // Jetpack Compose + Material 3 Expressive (material3 1.5.0 via the BOM) for the Reborn screens
+    implementation(platform("androidx.compose:compose-bom:2026.11.01"))
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.activity:activity-compose:1.13.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }

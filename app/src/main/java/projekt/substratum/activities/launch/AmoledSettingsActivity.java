@@ -67,9 +67,18 @@ public class AmoledSettingsActivity extends AppCompatActivity {
     private MaterialButton remove;
     private MaterialButton qsApply;
     private TextView qsOffNote;
+    private Slider qsRows;
+    private MaterialButtonToggleGroup qsTiles;
+    private MaterialSwitch qsShade;
+    private MaterialSwitch qsTrack;
     private boolean qsLoading;
     private boolean qsDirty;
     private boolean amoledOn;
+    // The options as last read or applied: a change of the row height alone needs no AMOLED
+    private float savedRows;
+    private boolean savedShade;
+    private boolean savedTrack;
+    private int savedTile;
 
     private final AmoledJobs.Listener jobs = new AmoledJobs.Listener() {
         @Override
@@ -199,11 +208,11 @@ public class AmoledSettingsActivity extends AppCompatActivity {
     // Quick settings
 
     private void setUpQuickSettings() {
-        Slider slider = findViewById(R.id.amoled_qs_row_slider);
+        Slider slider = qsRows = findViewById(R.id.amoled_qs_row_slider);
         TextView value = findViewById(R.id.amoled_qs_row_value);
-        MaterialButtonToggleGroup tiles = findViewById(R.id.amoled_qs_tile_group);
-        MaterialSwitch shade = findViewById(R.id.amoled_qs_shade);
-        MaterialSwitch track = findViewById(R.id.amoled_qs_track);
+        MaterialButtonToggleGroup tiles = qsTiles = findViewById(R.id.amoled_qs_tile_group);
+        MaterialSwitch shade = qsShade = findViewById(R.id.amoled_qs_shade);
+        MaterialSwitch track = qsTrack = findViewById(R.id.amoled_qs_track);
         qsApply = findViewById(R.id.amoled_qs_apply);
         qsOffNote = findViewById(R.id.amoled_qs_off_note);
 
@@ -218,6 +227,7 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         tiles.check(AmoledRules.TILE_BLUE.equals(tile) ? R.id.amoled_qs_tile_blue :
                 AmoledRules.TILE_STOCK.equals(tile) ? R.id.amoled_qs_tile_stock :
                         R.id.amoled_qs_tile_white);
+        rememberQsChoice();
         qsLoading = false;
 
         slider.addOnChangeListener((s, v, fromUser) -> {
@@ -232,7 +242,9 @@ public class AmoledSettingsActivity extends AppCompatActivity {
 
         qsApply.setOnClickListener(v -> {
             if (needsRoot()) return;
-            if (!amoledOn) return; // the button is off then; a late tap does nothing
+            // Without AMOLED only the row height applies; the button is off otherwise, so a
+            // late tap does nothing
+            if (!amoledOn && !onlyRowsChanged()) return;
             QsOptions chosen = new QsOptions();
             float rows = slider.getValue() / 100f;
             chosen.aspect = rows >= QsOptions.STOCK_ASPECT - 0.005f ? 0 : rows;
@@ -246,6 +258,7 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                     AmoledRules.TILE_WHITE);
             prefs.edit().putString(AmoledRules.PREF_ACTIVE_TILE, tileChoice)
                     .putBoolean(AmoledRules.PREF_QS_CHOSEN, true).apply();
+            rememberQsChoice();
             qsDirty = false;
             qsApply.setEnabled(false);
             boolean colorsChanged = !tileChoice.equals(previousTile);
@@ -284,15 +297,33 @@ public class AmoledSettingsActivity extends AppCompatActivity {
 
     private void qsChanged() {
         if (qsLoading) return;
-        qsDirty = true;
+        qsDirty = qsRows.getValue() != savedRows || qsShade.isChecked() != savedShade ||
+                qsTrack.isChecked() != savedTrack || qsTiles.getCheckedButtonId() != savedTile;
         updateQsApply();
     }
 
+    private void rememberQsChoice() {
+        savedRows = qsRows.getValue();
+        savedShade = qsShade.isChecked();
+        savedTrack = qsTrack.isChecked();
+        savedTile = qsTiles.getCheckedButtonId();
+    }
+
     /**
-     * The quick settings colors and switches act on top of AMOLED: no apply while it is off.
+     * Only the panel row height differs from what is applied: the module lays out the panel
+     * with or without AMOLED.
+     */
+    private boolean onlyRowsChanged() {
+        return qsRows.getValue() != savedRows && qsShade.isChecked() == savedShade &&
+                qsTrack.isChecked() == savedTrack && qsTiles.getCheckedButtonId() == savedTile;
+    }
+
+    /**
+     * The quick settings colors and switches act on top of AMOLED: while it is off only a row
+     * height change can be applied.
      */
     private void updateQsApply() {
-        qsApply.setEnabled(amoledOn && qsDirty);
+        qsApply.setEnabled(qsDirty && (amoledOn || onlyRowsChanged()));
         qsOffNote.setVisibility(amoledOn ? View.GONE : View.VISIBLE);
     }
 

@@ -6,7 +6,7 @@
   -->
 
 <resources>
-    <string name="app_name" translatable="false">substratum</string>
+    <string name="app_name" translatable="false">Reborn</string>
     <string name="legacy_app_name" translatable="false">substratum legacy</string>
     <string name="samsung_app_name" translatable="false">sungstratum</string>
     <string name="samsung_oreo_app_name" translatable="false">sungstromeda</string>
@@ -654,7 +654,7 @@
     <string name="amoled_app_switched_on_restart">%1$s: AMOLED on from its next start</string>
     <string name="amoled_app_switched_off_restart">%1$s: stock from its next start</string>
     <string name="amoled_app_switched_on_reapply">%1$s: reading its colors again</string>
-    <string name="amoled_qs_needs_amoled">Apply AMOLED first: these colors and switches act on top of it.</string>
+    <string name="amoled_qs_needs_amoled">The colors and switches act on top of AMOLED: apply it first. The row height applies without it.</string>
     <string name="system_amoled_saved_off">Saved; applies with AMOLED</string>
     <string name="system_amoled_restore_no_root">Root not available, AMOLED was not restored</string>
     <string name="system_amoled_try_again">Try again</string>
@@ -744,7 +744,7 @@
     <string name="notification_channel_andromeda">Theme system status</string>
     <string name="notification_channel_andromeda_description">Theme system connection status notification</string>
     <!-- Nav drawer -->
-    <string name="nav_main">substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Themes</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Manager</string>

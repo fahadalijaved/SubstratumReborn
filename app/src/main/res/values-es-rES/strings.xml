@@ -528,7 +528,7 @@
     <string name="notification_channel_andromeda">Estado del sistema de temas</string>
     <string name="notification_channel_andromeda_description">Notificación del estado de conexión del sistema de temas</string>
     <!-- Nav drawer -->
-    <string name="nav_main">Substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Temas</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Gestor Avanzado</string>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 SubstratumReborn
+  ~ SPDX-License-Identifier: GPL-3.0-Or-Later
+  -->
+
+<!-- The Reborn shell: Home, setup checklist, AMOLED, Themes and Applied -->
+<resources>
+    <string name="reborn_classic_title">Reborn Classic</string>
+    <string name="reborn_classic">Classic Substratum</string>
+    <string name="reborn_settings_title">Settings</string>
+    <string name="reborn_back">Back</string>
+    <string name="reborn_more">More options</string>
+    <string name="reborn_close">Close</string>
+    <string name="reborn_cancel">Cancel</string>
+    <string name="reborn_fix">Fix</string>
+    <string name="reborn_recheck">Check again</string>
+    <string name="reborn_on">On</string>
+    <string name="reborn_off">Off</string>
+    <string name="reborn_never">never</string>
+    <string name="reborn_reading">Reading…</string>
+    <string name="reborn_failed">That did not work: is root still granted?</string>
+    <string name="reborn_needs_root">Reborn needs root for that</string>
+
+    <!-- Tabs -->
+    <string name="reborn_tab_home">Home</string>
+    <string name="reborn_tab_amoled">AMOLED</string>
+    <string name="reborn_tab_themes">Themes</string>
+    <string name="reborn_tab_applied">Applied</string>
+
+    <!-- Status chip states, read out with the chip text -->
+    <string name="reborn_state_ok">OK</string>
+    <string name="reborn_state_warn">Warning</string>
+    <string name="reborn_state_error">Problem</string>
+    <string name="reborn_state_unknown">Unknown</string>
+    <string name="reborn_state_off">Off</string>
+
+    <!-- Home -->
+    <string name="reborn_home_title">Reborn</string>
+    <string name="reborn_home_subtitle">Substratum, reborn for One UI</string>
+    <string name="reborn_setup_action">Setup checklist</string>
+    <string name="reborn_hero_overline">System status</string>
+    <string name="reborn_checking">Checking root, LSPosed and SystemUI…</string>
+    <string name="reborn_checked_at">Checked at %1$s</string>
+    <string name="reborn_checking_headline">Checking</string>
+    <string name="reborn_checking_text">Reading root, the LSPosed module and the SystemUI heartbeat.</string>
+    <string name="reborn_hero_ok">All systems go</string>
+    <string name="reborn_hero_ok_text">Root, the LSPosed module and the SystemUI hooks all work.</string>
+    <string name="reborn_hero_root_missing">Root missing</string>
+    <string name="reborn_hero_root_missing_text">Grant Reborn root in KernelSU, then come back here.</string>
+    <string name="reborn_hero_paused">Hooks paused</string>
+    <string name="reborn_hero_paused_text">The kill switch is on: SystemUI and every app run stock until you resume.</string>
+    <string name="reborn_hero_inactive">Module inactive</string>
+    <string name="reborn_hero_inactive_text">Enable Reborn in LSPosed, then restart SystemUI.</string>
+    <string name="reborn_hero_attention">Needs attention</string>
+    <plurals name="reborn_hero_attention_text">
+        <item quantity="one">One thing to fix below.</item>
+        <item quantity="other">%d things to fix below.</item>
+    </plurals>
+
+    <string name="reborn_row_root">Root</string>
+    <string name="reborn_row_lsposed">LSPosed module</string>
+    <string name="reborn_row_systemui">SystemUI hooks</string>
+    <string name="reborn_row_engine">Engine</string>
+    <string name="reborn_row_system">System</string>
+
+    <string name="reborn_value_not_granted">Not granted</string>
+    <string name="reborn_value_enabled">Enabled</string>
+    <plurals name="reborn_value_lsposed_enabled">
+        <item quantity="one">Enabled · %d app</item>
+        <item quantity="other">Enabled · %d apps</item>
+    </plurals>
+    <string name="reborn_value_disabled">Disabled</string>
+    <string name="reborn_value_not_added">Not in LSPosed</string>
+    <string name="reborn_value_unreadable">Unknown</string>
+    <string name="reborn_value_needs_root">Needs root</string>
+    <string name="reborn_value_paused">Paused</string>
+    <string name="reborn_value_guard_tripped">Guard tripped</string>
+    <string name="reborn_value_no_heartbeat">No heartbeat</string>
+    <string name="reborn_value_old_build">Old build (%1$d)</string>
+    <string name="reborn_value_hooked">Hooked · guard ok</string>
+    <plurals name="reborn_value_scope_apps">
+        <item quantity="one">All set · %d app</item>
+        <item quantity="other">All set · %d apps</item>
+    </plurals>
+    <plurals name="reborn_value_scope_missing">
+        <item quantity="one">%d missing</item>
+        <item quantity="other">%d missing</item>
+    </plurals>
+
+    <string name="reborn_issue_root_title">Root missing</string>
+    <string name="reborn_issue_root_text">Reborn needs root from KernelSU for everything else. Fix opens the KernelSU manager.</string>
+    <string name="reborn_issue_paused_title">Hooks are paused</string>
+    <string name="reborn_issue_paused_text">The module leaves SystemUI and every app stock. Fix resumes it and restarts SystemUI.</string>
+    <string name="reborn_issue_module_title">LSPosed module is off</string>
+    <string name="reborn_issue_module_text">Enable Reborn in the LSPosed manager, then restart SystemUI.</string>
+    <string name="reborn_issue_module_missing_text">LSPosed does not list Reborn as a module yet: open the LSPosed manager and enable it.</string>
+    <string name="reborn_issue_engine_title">Engine is not LSPosed</string>
+    <string name="reborn_issue_engine_text">Reborn is set to %1$s. Fix switches it to fabricated overlays + LSPosed.</string>
+    <string name="reborn_issue_engine_mismatch_text">Reborn is set to %1$s, but the LSPosed module is active. Fix uses the LSPosed engine.</string>
+    <string name="reborn_issue_guard_title">SystemUI guard tripped</string>
+    <string name="reborn_issue_guard_text">After repeated crashes the module left SystemUI stock. Fix clears the guard and restarts SystemUI.</string>
+    <string name="reborn_issue_heartbeat_title">No heartbeat from SystemUI</string>
+    <string name="reborn_issue_heartbeat_text">SystemUI has not reported the module since boot. Fix restarts SystemUI.</string>
+    <string name="reborn_issue_stock_title">SystemUI still runs stock</string>
+    <string name="reborn_issue_stock_text">Hooks are on again, but SystemUI started while they were paused. Fix restarts it.</string>
+    <string name="reborn_issue_old_title">SystemUI runs an older build</string>
+    <string name="reborn_issue_old_text">SystemUI reports build %1$d, this is %2$d: restart SystemUI.</string>
+
+    <string name="reborn_applied_now">Applied now</string>
+    <string name="reborn_amoled_title">AMOLED for every app</string>
+    <string name="reborn_amoled_summary">%1$d of %2$d apps · applied %3$s</string>
+    <string name="reborn_amoled_off_summary">Not applied: apps use their own colours</string>
+    <string name="reborn_survived_reboot">Survived reboot</string>
+    <string name="reborn_restart_needed">%1$d need a restart</string>
+    <string name="reborn_overlays_on">theme overlays on</string>
+    <string name="reborn_qs_tweaks">Quick settings</string>
+    <string name="reborn_qs_shade">Opaque shade</string>
+    <string name="reborn_qs_tracks">Dark tracks</string>
+    <string name="reborn_qs_rows">Rows %1$s</string>
+    <string name="reborn_qs_rows_stock">Stock rows</string>
+
+    <string name="reborn_quick_actions">Quick actions</string>
+    <string name="reborn_action_restart">Restart SystemUI</string>
+    <string name="reborn_action_restart_text">Reloads the module\'s hooks</string>
+    <string name="reborn_action_pause">Pause hooks</string>
+    <string name="reborn_action_pause_text">Kill switch: everything stock</string>
+    <string name="reborn_action_resume">Resume hooks</string>
+    <string name="reborn_action_resume_text">Hooks paused right now</string>
+    <string name="reborn_action_soft_reboot">Soft reboot</string>
+    <string name="reborn_action_soft_reboot_text">Restarts Android, root stays</string>
+    <string name="reborn_action_setup">Setup checklist</string>
+    <string name="reborn_action_setup_text">Root, LSPosed, scope, hooks</string>
+
+    <string name="reborn_restarting_systemui">Restarting SystemUI…</string>
+    <string name="reborn_guard_reset">Guard cleared, restarting SystemUI…</string>
+    <string name="reborn_engine_switched">Reborn now uses fabricated overlays + LSPosed</string>
+    <string name="reborn_paused_done">Hooks paused, SystemUI restarting</string>
+    <string name="reborn_resumed_done">Hooks resumed, SystemUI restarting</string>
+    <string name="reborn_no_root_manager">No KernelSU manager found: open your root manager and allow Reborn</string>
+    <string name="reborn_no_lsposed">LSPosed did not open: use the LSPosed notification</string>
+
+    <string name="reborn_pause_title">Pause hooks?</string>
+    <string name="reborn_pause_text">The module stops changing SystemUI and apps, and SystemUI restarts. Resume brings AMOLED back.</string>
+    <string name="reborn_pause">Pause</string>
+    <string name="reborn_resume_title">Resume hooks?</string>
+    <string name="reborn_resume_text">The module hooks SystemUI and apps again, and SystemUI restarts.</string>
+    <string name="reborn_resume">Resume</string>
+    <string name="reborn_soft_reboot_title">Soft reboot?</string>
+    <string name="reborn_soft_reboot_text">Restarts Android without a full reboot; root stays</string>
+    <string name="reborn_soft_reboot">Soft reboot</string>
+
+    <!-- Setup checklist -->
+    <string name="reborn_setup_title">Set up Reborn</string>
+    <string name="reborn_setup_subtitle">%1$d of 4 ready</string>
+    <string name="reborn_setup_intro">Four checks, each live. Fix the ones that are not ready, then carry on to Home.</string>
+    <string name="reborn_setup_done">Go to Home</string>
+    <string name="reborn_setup_skip">Skip for now</string>
+    <string name="reborn_step_number">Step %1$d</string>
+    <string name="reborn_step_root">Root granted</string>
+    <string name="reborn_step_root_text">Reborn applies themes and restarts SystemUI as root. Allow it in the KernelSU manager.</string>
+    <string name="reborn_step_module">LSPosed module enabled</string>
+    <string name="reborn_step_module_text">Reborn\'s engine runs as an LSPosed module. Enable it in the LSPosed manager.</string>
+    <string name="reborn_step_scope">Scope complete</string>
+    <string name="reborn_step_scope_text">The module needs System UI, Settings and Reborn itself in its LSPosed scope.</string>
+    <string name="reborn_scope_missing_list">Add to the scope:\n%1$s</string>
+    <string name="reborn_scope_systemui">System UI</string>
+    <string name="reborn_scope_settings">Settings</string>
+    <string name="reborn_scope_self">Reborn</string>
+    <string name="reborn_step_hooks">SystemUI hooked</string>
+    <string name="reborn_step_hooks_text">SystemUI reports the module after it starts. A restart of SystemUI loads it.</string>
+
+    <!-- AMOLED tab -->
+    <string name="reborn_amoled_apps">%1$d of %2$d apps themed</string>
+    <string name="reborn_amoled_rules">Rules</string>
+    <string name="reborn_amoled_no_rules">Not installed</string>
+    <string name="reborn_amoled_applied">Applied</string>
+    <string name="reborn_amoled_restored">Restored</string>
+    <string name="reborn_amoled_unsupported">%1$d apps refuse it</string>
+    <string name="reborn_amoled_open">Open AMOLED settings</string>
+
+    <!-- Themes tab -->
+    <plurals name="reborn_themes_count">
+        <item quantity="one">%d theme installed</item>
+        <item quantity="other">%d themes installed</item>
+    </plurals>
+    <string name="reborn_themes_empty">No themes yet</string>
+    <string name="reborn_theme_failed">This theme did not open</string>
+    <string name="reborn_themes_empty_text">Classic Substratum can install the bundled Reborn AMOLED theme.</string>
+
+    <!-- Applied tab -->
+    <string name="reborn_applied_soon">Everything applied, in one place</string>
+    <string name="reborn_applied_soon_text">Compiled overlays, AMOLED and quick settings tweaks will be listed here with one Undo. Until then the Classic overlay manager has the overlays.</string>
+    <string name="reborn_applied_open_manager">Open overlay manager</string>
+</resources>

@@ -490,7 +490,7 @@ Ciò significa che la sovrapposizione con la priorità più alta verrà caricata
     <string name="notification_channel_andromeda">Stato del tema di sistema</string>
     <string name="notification_channel_andromeda_description">Notifica di stato della connessione del tema di sistema</string>
     <!-- Nav drawer -->
-    <string name="nav_main">substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Temi</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Gestore</string>

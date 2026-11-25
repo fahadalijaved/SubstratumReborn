@@ -11,7 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import projekt.substratum.activities.launch.SplashScreenActivity;
+import projekt.substratum.reborn.RebornActivity;
 
 public class LaunchActivity extends Activity {
 
@@ -21,8 +21,7 @@ public class LaunchActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = new Intent(this, SplashScreenActivity.class);
-        intent.putExtra("first_run", Substratum.getPreferences().getBoolean("first_run", true));
+        Intent intent = new Intent(this, RebornActivity.class);
         this.startActivity(intent);
         this.finish();
     }

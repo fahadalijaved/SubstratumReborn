@@ -481,7 +481,7 @@
     <string name="notification_channel_andromeda">État du thème système</string>
     <string name="notification_channel_andromeda_description">Notification d’état de connexion du thème système</string>
     <!-- Nav drawer -->
-    <string name="nav_main">Substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Thèmes</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Gestionnaire</string>

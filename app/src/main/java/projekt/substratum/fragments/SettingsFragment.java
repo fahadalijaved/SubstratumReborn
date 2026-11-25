@@ -324,7 +324,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         // App Theme
         Preference appTheme = getPreferenceManager().findPreference("app_theme");
         String selectedTheme;
-        switch (prefs.getString(APP_THEME, DEFAULT_THEME)) {
+        switch (prefs.getString(APP_THEME, AUTO_THEME)) {
             case AUTO_THEME:
                 selectedTheme =
                         String.format(getString(R.string.app_theme_text),

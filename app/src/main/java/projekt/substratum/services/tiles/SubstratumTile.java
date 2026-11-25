@@ -12,14 +12,14 @@ import android.content.Intent;
 import android.service.quicksettings.TileService;
 
 import projekt.substratum.LaunchActivity;
-import projekt.substratum.LauncherActivity;
+import projekt.substratum.reborn.RebornActivity;
 
 public class SubstratumTile extends TileService {
 
     @Override
     public void onClick() {
         try {
-            Intent intent = new Intent(this, LauncherActivity.class);
+            Intent intent = new Intent(this, RebornActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivityAndCollapse(intent);
         } catch (ActivityNotFoundException ignored) {

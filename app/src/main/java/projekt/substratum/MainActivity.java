@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (!Systems.checkOMS(context)) {
             switchToStockToolbar(getString(R.string.legacy_app_name));
         } else {
-            switchToStockToolbar(getString(R.string.nav_main));
+            switchToStockToolbar(getString(R.string.reborn_classic_title));
         }
     }
 
@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (!Systems.checkOMS(context)) {
             switchToStockToolbar(getString(R.string.legacy_app_name));
         } else {
-            switchToStockToolbar(getString(R.string.nav_main));
+            switchToStockToolbar(getString(R.string.reborn_classic_title));
         }
 
         if (!Systems.checkOMS(context) || isSamsung(context)) {
@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (!Systems.checkOMS(context)) {
             switchToStockToolbar(getString(R.string.legacy_app_name));
         } else {
-            switchToStockToolbar(getString(R.string.nav_main));
+            switchToStockToolbar(getString(R.string.reborn_classic_title));
         }
 
         getSupportActionBar().setHomeButtonEnabled(false);

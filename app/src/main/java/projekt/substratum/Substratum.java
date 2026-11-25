@@ -39,6 +39,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 import projekt.substratum.activities.crash.SubstratumCrash;
 import projekt.substratum.common.Broadcasts;
 import projekt.substratum.common.Packages;
+import projekt.substratum.common.RebornInit;
 import projekt.substratum.common.References;
 import projekt.substratum.common.Systems;
 import projekt.substratum.common.platform.ThemeManager;
@@ -250,7 +251,9 @@ public class Substratum extends Application {
         });
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String selectedTheme = preferences.getString(APP_THEME, DEFAULT_THEME);
+        // A stored "light" (the old default) becomes "follow the system", once; unset means auto
+        RebornInit.migrateAppTheme(preferences);
+        String selectedTheme = preferences.getString(APP_THEME, AUTO_THEME);
         if (!getApplicationContext().getResources().getBoolean(R.bool.forceAppDarkTheme)) {
             switch (selectedTheme) {
                 case AUTO_THEME:

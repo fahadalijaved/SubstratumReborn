@@ -450,7 +450,7 @@
     <string name="notification_channel_andromeda">Themasysteem status</string>
     <string name="notification_channel_andromeda_description">Themasysteem verbindingsstatusmelding</string>
     <!-- Nav drawer -->
-    <string name="nav_main">substratum</string>
+    <string name="nav_main">Reborn</string>
     <string name="nav_home">Thema\'s</string>
     <!-- Utilities -->
     <string name="nav_overlay_manager">Beheer</string>
