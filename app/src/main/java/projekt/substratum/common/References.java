@@ -250,19 +250,32 @@ public class References {
         return getMagiskDirectory() + "/system";
     }
 
+    /**
+     * Directory of the systemless module that carries the compiled overlays.
+     * <p>
+     * Magisk (18.1+), KernelSU and APatch all keep modules in /data/adb/modules. Only ancient
+     * Magisk builds used the image mount, and anything else falls back to writing to /system.
+     */
     public static String getMagiskDirectory() {
-        final int magiskVer = Integer.parseInt(Root.runCommand("su -V"));
         if (magiskDir != null)
             return magiskDir;
-        if (magiskVer >= 18000 && magiskVer <= 18100) {
-            magiskDir = "/sbin/.magisk/img/substratum";
-        } else if (magiskVer >= 18101) {
+        final String modulesRoot = Root.runCommand("test -d /data/adb/modules && echo 1");
+        if ("1".equals(modulesRoot)) {
             magiskDir = "/data/adb/modules/substratum";
         } else {
-            Log.d("MagiskCheck", "Magisk version cannot be lesser than 18.0, switching to system-installation");
-            magiskDir = "/";
+            int magiskVer = 0;
+            try {
+                magiskVer = Integer.parseInt(String.valueOf(Root.runCommand("su -V")).trim());
+            } catch (NumberFormatException ignored) {
+            }
+            if (magiskVer >= 18000 && magiskVer <= 18100) {
+                magiskDir = "/sbin/.magisk/img/substratum";
+            } else {
+                Log.d("MagiskCheck", "No module directory found, switching to system-installation");
+                magiskDir = "/";
+            }
         }
-        Log.d("MagiskCheck", String.format("Detected directory %s for version %d", magiskDir, magiskVer));
+        Log.d("MagiskCheck", String.format("Detected module directory %s", magiskDir));
         return magiskDir;
     }
 

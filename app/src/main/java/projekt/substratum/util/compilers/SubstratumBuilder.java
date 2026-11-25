@@ -354,6 +354,7 @@ public class SubstratumBuilder {
                     final String overlay = References.getPieDir() + "_" + overlayName + ".apk";
                     FileOperations.move(context, signedOverlayAPKPath, overlay);
                     FileOperations.setPermissions(644, overlay);
+                    FileOperations.setSystemFileContext(overlay);
                     FileOperations.mountSystemRO();
                 } else if (!Systems.isNewSamsungDeviceAndromeda(context)) {
                     specialSnowflake = false;
