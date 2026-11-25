@@ -110,7 +110,7 @@ image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the r
   "background": "#000000",
   "floating":   "#000000",
   "outline":    "#1f1f1f",
-  "blur":       "#fa000000",
+  "blur":       "#ff000000",
   "slider":     "#1a1a1a",
   "thumb":      "#2a2a2a",
   "include":    ["^(android|com\\.(samsung|sec|google|android)\\..*)$"],

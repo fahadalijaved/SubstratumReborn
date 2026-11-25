@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  *   "background": "#000000",      every dark surface: pages, cards, lists, buttons
  *   "floating":   "#000000",      popups, menus, dialogs, floating bars
  *   "outline":    "#1f1f1f",      outline of floating elements
- *   "blur":       "#fa000000",    tint over blurred panels (alpha = how much blur shows)
+ *   "blur":       "#ff000000",    tint over blurred panels (alpha = how much blur shows)
  *   "slider":     "#1a1a1a",      slider and seekbar tracks
  *   "thumb":      "#2a2a2a",      scrollbar thumbs
  *   "include":    ["^com\\.samsung\\..*"],   regexes of packages; default: Samsung, Google, system
@@ -47,7 +47,7 @@ public final class AmoledRules {
     int background = 0xff000000;
     int floating = 0xff000000;
     int outline = 0xff1f1f1f;
-    int blur = 0xfa000000;
+    int blur = 0xff000000;
     int slider = 0xff1a1a1a;
     int thumb = 0xff2a2a2a;
     final List<Pattern> include = new ArrayList<>();
@@ -63,12 +63,12 @@ public final class AmoledRules {
         r.include.add(Pattern.compile(
                 "^(android|com\\.(samsung|sec|google|android)\\..*|com\\.wssyncmldm|com\\.wssnps)$"));
         Map<String, Integer> sysui = new HashMap<>();
-        sysui.put("panel_bg_color", 0xfa000000);
-        sysui.put("panel_background_blur_color", 0xf2000000);
-        sysui.put("basic_token_effect_blur_surface", 0xf2000000);
-        sysui.put("basic_token_effect_blur_surface_dark", 0xf2000000);
-        sysui.put("basic_token_effect_blur_chip", 0xf2000000);
-        sysui.put("basic_token_effect_blur_chip_dark", 0xf2000000);
+        sysui.put("panel_bg_color", 0xff000000);
+        sysui.put("panel_background_blur_color", 0xff000000);
+        sysui.put("basic_token_effect_blur_surface", 0xff000000);
+        sysui.put("basic_token_effect_blur_surface_dark", 0xff000000);
+        sysui.put("basic_token_effect_blur_chip", 0xff000000);
+        sysui.put("basic_token_effect_blur_chip_dark", 0xff000000);
         sysui.put("qs_tile_layout_container_bg", 0xff000000);
         sysui.put("qs_tile_container_bg", 0xff000000);
         sysui.put("qs_tile_round_background_off", 0xff000000);
@@ -78,12 +78,12 @@ public final class AmoledRules {
         sysui.put("seekbar_color_expand", 0xfffcfcfc);
         sysui.put("qs_tile_round_background_on", 0xff387aff);
         sysui.put("qs_switch_off_background_color", 0xff242424);
-        sysui.put("qs_detail_layout_popup_menu_background_color", 0xfa000000);
+        sysui.put("qs_detail_layout_popup_menu_background_color", 0xff000000);
         sysui.put("qs_detail_layout_popup_menu_background_color_no_blur", 0xff000000);
-        sysui.put("sec_qs_detail_bg_color", 0xfa000000);
+        sysui.put("sec_qs_detail_bg_color", 0xff000000);
         sysui.put("notification_material_background_color", 0xff0a0a0a);
         sysui.put("notification_material_background_dimmed_color", 0xff0a0a0a);
-        sysui.put("notification_material_background_on_lockscreen", 0xf2000000);
+        sysui.put("notification_material_background_on_lockscreen", 0xff000000);
         sysui.put("sec_brightness_mirror_background_color", 0xff000000);
         sysui.put("qs_tile_container_bg_border_color", 0xff262626);
         sysui.put("qs_tile_icon_off_tint_color", 0xfffcfcff);
