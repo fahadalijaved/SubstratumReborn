@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import projekt.substratum.common.platform.QsOptions;
 import projekt.substratum.common.platform.XposedBackend;
 
 /**
@@ -45,8 +46,9 @@ final class QsAmoledHook {
 
     static void hook(ClassLoader loader) {
         if (!new File(XposedBackend.DIR, XposedBackend.AMOLED_FLAG).exists()) return;
-        opaqueShade(loader);
-        darkBarTrack(loader);
+        QsOptions options = QsOptions.read();
+        if (options.shade) opaqueShade(loader);
+        if (options.track) darkBarTrack(loader);
     }
 
     private static void opaqueShade(ClassLoader loader) {

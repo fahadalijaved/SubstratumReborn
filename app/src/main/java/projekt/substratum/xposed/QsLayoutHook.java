@@ -5,22 +5,19 @@
 
 package projekt.substratum.xposed;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import projekt.substratum.common.platform.XposedBackend;
+import projekt.substratum.common.platform.QsOptions;
 
 /**
  * One UI 9 quick settings layout: the panel is a grid whose rows are {@code cell width x aspect}
  * tall (0.917 stock), so the brightness and volume bars, which span one row, stay tall at high
- * densities. {@link XposedBackend#QS_CELL_ASPECT} holds a smaller aspect for the panel grid
- * ("QuickPanel"); without that file nothing changes.
+ * densities. {@link QsOptions#aspect} sets a smaller aspect for the panel grid ("QuickPanel");
+ * 0 (the default) changes nothing.
  */
 final class QsLayoutHook {
 
@@ -35,7 +32,7 @@ final class QsLayoutHook {
     }
 
     static void hook(ClassLoader loader) {
-        float aspect = readAspect();
+        float aspect = QsOptions.read().aspect;
         if (aspect <= 0) return;
         try {
             Method grid = null;
@@ -69,17 +66,6 @@ final class QsLayoutHook {
             XposedBridge.log(TAG + "panel cell aspect " + aspect);
         } catch (Throwable t) {
             XposedBridge.log(TAG + "layout left stock: " + t);
-        }
-    }
-
-    private static float readAspect() {
-        File file = new File(XposedBackend.DIR, XposedBackend.QS_CELL_ASPECT);
-        if (!file.exists()) return 0;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            float value = Float.parseFloat(reader.readLine().trim());
-            return value >= 0.3f && value <= 1.5f ? value : 0;
-        } catch (Exception e) {
-            return 0;
         }
     }
 }

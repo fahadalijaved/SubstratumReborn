@@ -54,6 +54,18 @@ public final class AmoledRules {
     final List<Pattern> exclude = new ArrayList<>();
     final Map<String, Map<String, Integer>> exact = new HashMap<>();
     final Map<String, List<Object[]>> patterns = new HashMap<>(); // {Pattern, Integer}
+    /**
+     * Quick settings row height the theme suggests, or 0
+     */
+    public float qsAspect;
+
+    public static final String PREF_ACTIVE_TILE = "amoled_active_tile";
+    public static final String PREF_DISABLED_APPS = "amoled_disabled_apps";
+    public static final String PREF_QS_CHOSEN = "amoled_qs_chosen";
+    public static final String TILE_WHITE = "white";
+    public static final String TILE_BLUE = "blue";
+    public static final String TILE_STOCK = "stock";
+    private static final String ACTIVE_TILE = "qs_tile_round_background_on";
 
     /**
      * Built-in rules, the same as Reborn AMOLED's rules.json.
@@ -156,7 +168,35 @@ public final class AmoledRules {
                 }
             }
         }
+        if (o.has("qs")) {
+            JSONObject qs = o.getJSONObject("qs");
+            if (qs.has("aspect")) r.qsAspect = (float) qs.getDouble("aspect");
+        }
         return r;
+    }
+
+    /**
+     * Choices made in Substratum override the theme: the color of active quick settings tiles.
+     */
+    public AmoledRules withUserOptions(android.content.SharedPreferences prefs) {
+        String tile = prefs.getString(PREF_ACTIVE_TILE, null);
+        if (tile == null) return this;
+        Map<String, Integer> sysui = exact.computeIfAbsent("com.android.systemui",
+                k -> new HashMap<>());
+        switch (tile) {
+            case TILE_WHITE:
+                sysui.put(ACTIVE_TILE, 0xffffffff);
+                break;
+            case TILE_BLUE:
+                sysui.put(ACTIVE_TILE, 0xff387aff);
+                break;
+            case TILE_STOCK:
+                sysui.remove(ACTIVE_TILE);
+                break;
+            default:
+                break;
+        }
+        return this;
     }
 
     boolean covers(String packageName) {

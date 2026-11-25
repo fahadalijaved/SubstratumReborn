@@ -251,32 +251,40 @@ public final class SystemAmoled {
     /**
      * Fabricated overlays do not survive a reboot on One UI: register again everything that was
      * applied, from the definitions kept in /data/system/substratum. AMOLED for every app comes
-     * back while its flag is set; Substratum overlays with fabricated values come back while
-     * they are enabled.
+     * back while its flag is set (except apps switched off); Substratum overlays with fabricated
+     * values come back while they are enabled.
      *
      * @return Number of overlays registered
      */
     public static int restoreAll() {
         String dir = FabricatedValues.DIR;
         String cache = XposedBackend.DIR;
-        String out = projekt.substratum.util.helpers.Root.runCommand(
-                "n=0; " +
-                // AMOLED for every app: target = file name without the suffix
-                "if [ -f " + cache + "/" + XposedBackend.AMOLED_FLAG + " ]; then " +
-                "for f in " + dir + "/*" + SUFFIX + ".xml; do [ -f \"$f\" ] || continue; " +
-                "o=$(basename \"$f\" .xml); t=${o%" + SUFFIX + "}; " +
-                "cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" >/dev/null 2>&1 && " +
-                "cmd overlay enable --user 0 com.android.shell:\"$o\" >/dev/null 2>&1 && n=$((n+1)); " +
-                "done; fi; " +
-                // Enabled Substratum overlays with fabricated values: target from the index
-                "for e in " + cache + "/*" + XposedBackend.ENABLED + "; do [ -f \"$e\" ] || continue; " +
-                "o=$(basename \"$e\" " + XposedBackend.ENABLED + "); f=" + dir + "/\"$o\".xml; " +
-                "[ -f \"$f\" ] || continue; " +
-                "t=$(sed -n 's/^target=//p' " + cache + "/\"$o\"" + XposedBackend.INDEX + "); " +
-                "[ -n \"$t\" ] || continue; " +
-                "cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" >/dev/null 2>&1 && " +
-                "cmd overlay enable --user 0 com.android.shell:\"$o\" >/dev/null 2>&1 && n=$((n+1)); " +
-                "done; echo restored=$n");
+        StringBuilder script = new StringBuilder("n=0; ");
+        if (new java.io.File(cache, XposedBackend.AMOLED_FLAG).exists()) {
+            String listing = projekt.substratum.util.helpers.Root.runCommand(
+                    "ls " + dir + " | grep '" + SUFFIX + ".xml$'");
+            java.util.Set<String> disabled = disabledApps();
+            if (listing != null) {
+                for (String file : listing.split("\\s+")) {
+                    if (!file.endsWith(SUFFIX + ".xml")) continue;
+                    String name = file.substring(0, file.length() - 4);
+                    String target = name.substring(0, name.length() - SUFFIX.length());
+                    if (disabled.contains(target)) continue;
+                    script.append(fabricateAndEnable(target, name, dir + '/' + file));
+                }
+            }
+        }
+        // Enabled Substratum overlays with fabricated values: target from the index
+        script.append("for e in ").append(cache).append("/*").append(XposedBackend.ENABLED)
+                .append("; do [ -f \"$e\" ] || continue; o=$(basename \"$e\" ")
+                .append(XposedBackend.ENABLED).append("); f=").append(dir)
+                .append("/\"$o\".xml; [ -f \"$f\" ] || continue; t=$(sed -n 's/^target=//p' ")
+                .append(cache).append("/\"$o\"").append(XposedBackend.INDEX)
+                .append("); [ -n \"$t\" ] || continue; ")
+                .append("cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" ")
+                .append(">/dev/null 2>&1 && cmd overlay enable --user 0 com.android.shell:\"$o\" ")
+                .append(">/dev/null 2>&1 && n=$((n+1)); done; echo restored=$n");
+        String out = projekt.substratum.util.helpers.Root.runCommand(script.toString());
         int restored = 0;
         if (out != null) {
             java.util.regex.Matcher m = Pattern.compile("restored=(\\d+)").matcher(out);
@@ -284,6 +292,114 @@ public final class SystemAmoled {
         }
         Log.i(TAG, "restored " + restored + " fabricated overlays after boot");
         return restored;
+    }
+
+    private static String fabricateAndEnable(String target, String name, String file) {
+        return "cmd overlay fabricate --target '" + target + "' --name '" + name + "' --file '" +
+                file + "' >/dev/null 2>&1 && cmd overlay enable --user 0 'com.android.shell:" +
+                name + "' >/dev/null 2>&1 && n=$((n+1)); ";
+    }
+
+    /**
+     * Apps the user switched off in Substratum: left out when applying and restoring.
+     */
+    public static java.util.Set<String> disabledApps() {
+        return new java.util.HashSet<>(projekt.substratum.Substratum.getPreferences()
+                .getStringSet(AmoledRules.PREF_DISABLED_APPS, new java.util.HashSet<>()));
+    }
+
+    /**
+     * How an app gets its AMOLED colors
+     */
+    public enum Kind {OVERLAY, MODULE, UNSUPPORTED}
+
+    public static final class AppState {
+        public final String packageName;
+        public final Kind kind;
+        public final boolean enabled;
+
+        AppState(String packageName, Kind kind, boolean enabled) {
+            this.packageName = packageName;
+            this.kind = kind;
+            this.enabled = enabled;
+        }
+    }
+
+    /**
+     * Every app AMOLED for every app has colors for (registered overlays and module lists),
+     * including apps switched off.
+     */
+    public static List<AppState> listApps() {
+        java.util.Map<String, AppState> apps = new java.util.TreeMap<>();
+        java.util.Set<String> disabled = disabledApps();
+        String overlays = projekt.substratum.util.helpers.Root.runCommand(
+                "cmd overlay list | grep '" + SUFFIX + "'");
+        java.util.Set<String> byModule = new java.util.HashSet<>();
+        String[] files = new java.io.File(XposedBackend.DIR).list();
+        if (files != null) {
+            for (String file : files) {
+                if (file.endsWith(XposedBackend.AMOLED_IDS)) {
+                    byModule.add(file.substring(0, file.length() - XposedBackend.AMOLED_IDS.length()));
+                } else if (file.endsWith(XposedBackend.AMOLED_IDS + OFF)) {
+                    byModule.add(file.substring(0, file.length() -
+                            (XposedBackend.AMOLED_IDS + OFF).length()));
+                }
+            }
+        }
+        if (overlays != null) {
+            java.util.regex.Matcher m = Pattern.compile(
+                    "\\[(.)\\] com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX) + "|" +
+                            "--- com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX))
+                    .matcher(overlays);
+            while (m.find()) {
+                if (m.group(2) != null) {
+                    String pkg = m.group(2);
+                    if (byModule.contains(pkg)) continue;
+                    apps.put(pkg, new AppState(pkg, Kind.OVERLAY, "x".equals(m.group(1))));
+                } else {
+                    String pkg = m.group(3);
+                    if (!byModule.contains(pkg)) {
+                        apps.put(pkg, new AppState(pkg, Kind.UNSUPPORTED, false));
+                    }
+                }
+            }
+        }
+        for (String pkg : byModule) {
+            apps.put(pkg, new AppState(pkg, Kind.MODULE, !disabled.contains(pkg)));
+        }
+        for (String pkg : disabled) {
+            if (!apps.containsKey(pkg)) apps.put(pkg, new AppState(pkg, Kind.OVERLAY, false));
+        }
+        return new ArrayList<>(apps.values());
+    }
+
+    private static final String OFF = ".off";
+
+    /**
+     * Switch one app's AMOLED colors on or off, remembered for applying and restoring.
+     */
+    public static void setAppEnabled(String pkg, boolean enabled) {
+        java.util.Set<String> disabled = disabledApps();
+        if (enabled) disabled.remove(pkg);
+        else disabled.add(pkg);
+        projekt.substratum.Substratum.getPreferences().edit()
+                .putStringSet(AmoledRules.PREF_DISABLED_APPS, disabled).apply();
+        String ids = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
+        String name = pkg + SUFFIX;
+        String definition = FabricatedValues.DIR + '/' + name + ".xml";
+        if (enabled) {
+            projekt.substratum.util.helpers.Root.runCommand(
+                    "[ -f '" + ids + OFF + "' ] && mv -f '" + ids + OFF + "' '" + ids + "'; " +
+                            "n=0; [ -f '" + definition + "' ] && { " +
+                            fabricateAndEnable(pkg, name, definition) + "}; true");
+        } else {
+            projekt.substratum.util.helpers.Root.runCommand(
+                    "[ -f '" + ids + "' ] && mv -f '" + ids + "' '" + ids + OFF + "'; " +
+                            "cmd overlay disable --user 0 'com.android.shell:" + name +
+                            "' >/dev/null 2>&1; true");
+        }
+        // Apps with module colors load them when they start
+        projekt.substratum.util.helpers.Root.runCommand("am force-stop " + pkg);
     }
 
     public static void removeAll(Context context) {
@@ -299,9 +415,10 @@ public final class SystemAmoled {
 
     private static List<String> targets(Context context, AmoledRules rules) {
         List<String> list = new ArrayList<>();
+        java.util.Set<String> disabled = disabledApps();
         for (PackageInfo info : context.getPackageManager().getInstalledPackages(0)) {
             String pkg = info.packageName;
-            if (!rules.covers(pkg)) continue;
+            if (!rules.covers(pkg) || disabled.contains(pkg)) continue;
             if (isOverlay(info)) continue; // overlays themselves
             list.add(pkg);
         }

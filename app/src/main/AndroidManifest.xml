@@ -231,6 +231,10 @@
             android:label="@string/restore_dialog_title"
             android:theme="@style/AppTheme.Dialog" />
         <activity
+            android:name=".activities.launch.AmoledSettingsActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".activities.launch.ManageSpaceActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_manage_space"

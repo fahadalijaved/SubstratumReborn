@@ -211,9 +211,20 @@ change. While AMOLED for every app is applied, the module (scoped to System UI) 
 |---|---|---|
 | Shade background | faded to a max alpha below 1, apps show through | fully opaque |
 | Brightness / volume track | 15% white drawn twice (grey) | 6% white (near black) |
-| Panel row height | `cell width x 0.917` | `cell width x` the value in `/data/resource-cache/substratum/qs-cell-aspect` (for example `0.65`; delete the file for stock) |
+| Panel row height | `cell width x 0.917` | `cell width x` the chosen value (for example `0.65`) |
 
-Restart System UI after changing `qs-cell-aspect`. The tile box columns are QuickStar's setting.
+All of it is set on Substratum's **AMOLED for every app** screen (tap the theme, or Themes menu >
+AMOLED for every app): panel row height, active tile color (white, blue, stock), solid shade,
+dark tracks, and a switch per app. The options live in
+`/data/resource-cache/substratum/qs-options` (`aspect=0.650`, `shade=1`, `track=1`) and take
+effect when System UI restarts, which the screen does for you. The tile box columns are
+QuickStar's setting.
+
+A rules theme can suggest a row height; it is used until the user picks one:
+
+```json
+"qs": { "aspect": 0.65 }
+```
 
 Apps whose resource names are obfuscated (Play Store) or that refuse overlays get their colors
 from the module inside their own process, by resource id and, for Compose screens, by their

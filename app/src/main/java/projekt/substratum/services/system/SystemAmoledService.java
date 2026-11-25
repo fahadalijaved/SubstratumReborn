@@ -32,6 +32,7 @@ public class SystemAmoledService extends Service {
     public static final String EXTRA_THEME = "theme";
     public static final String EXTRA_ONLY = "only";
     public static final String EXTRA_RESTORE = "restore";
+    public static final String EXTRA_RESTART_SYSTEMUI = "restart_systemui";
     public static final String EXTRA_DONE = "done";
     public static final String EXTRA_TOTAL = "total";
     public static final String EXTRA_PACKAGE = "package";
@@ -49,6 +50,17 @@ public class SystemAmoledService extends Service {
                 .putExtra(EXTRA_APPLY, apply)
                 .putExtra(EXTRA_THEME, themePackage);
         context.startForegroundService(intent);
+    }
+
+    /**
+     * Apply to System UI only (quick settings colors), then restart it so every part reloads.
+     */
+    public static void applySystemUi(Context context, String themePackage) {
+        context.startForegroundService(new Intent(context, SystemAmoledService.class)
+                .putExtra(EXTRA_APPLY, true)
+                .putExtra(EXTRA_THEME, themePackage)
+                .putExtra(EXTRA_ONLY, "com.android.systemui")
+                .putExtra(EXTRA_RESTART_SYSTEMUI, true));
     }
 
     @Override
@@ -87,8 +99,20 @@ public class SystemAmoledService extends Service {
                             Log.w("SubstratumAmoled", "Using default rules, " + theme + ": " + e);
                         }
                     }
+                    rules.withUserOptions(projekt.substratum.Substratum.getPreferences());
                     int[] done = SystemAmoled.applyAll(this, rules, this::progress,
                             only == null ? null : java.util.Arrays.asList(only.split(",")));
+                    // The theme's quick settings layout, unless one was chosen in Substratum
+                    if (rules.qsAspect > 0 && !projekt.substratum.Substratum.getPreferences()
+                            .getBoolean(AmoledRules.PREF_QS_CHOSEN, false)) {
+                        projekt.substratum.common.platform.QsOptions options =
+                                projekt.substratum.common.platform.QsOptions.read();
+                        options.aspect = rules.qsAspect;
+                        options.write(this);
+                    }
+                    if (intent != null && intent.getBooleanExtra(EXTRA_RESTART_SYSTEMUI, false)) {
+                        projekt.substratum.common.platform.QsOptions.restartSystemUi();
+                    }
                     result = getString(R.string.system_amoled_done, done[0], done[1]);
                     Log.i("SubstratumAmoled", "applied to " + done[0] + " apps, " + done[1] +
                             " colors");

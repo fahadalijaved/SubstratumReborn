@@ -45,5 +45,8 @@
     "com.android.settings": {
       "^sec_dashboard_(?!.*(text|layer)).*_color\\d*$": "#262626"
     }
+  },
+  "qs": {
+    "aspect": 0.65
   }
 }
