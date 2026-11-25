@@ -1,0 +1,3080 @@
+anim/accelerate_decelerate_interpolator PUBLIC
+anim/accelerate_interpolator PUBLIC
+anim/anticipate_interpolator PUBLIC
+anim/anticipate_overshoot_interpolator PUBLIC
+anim/bounce_interpolator PUBLIC
+anim/cycle_interpolator PUBLIC
+anim/decelerate_interpolator PUBLIC
+anim/fade_in PUBLIC
+anim/fade_out PUBLIC
+anim/linear_interpolator PUBLIC
+anim/overshoot_interpolator PUBLIC
+anim/slide_in_left PUBLIC
+anim/slide_out_right PUBLIC
+animator/fade_in PUBLIC
+animator/fade_out PUBLIC
+array/config_keySystemUuidMapping PUBLIC
+array/config_optionalIpSecAlgorithms PUBLIC STAGED_ID=0x01d90000
+array/config_watchFacePermissions PUBLIC STAGED
+array/emailAddressTypes PUBLIC
+array/imProtocols PUBLIC
+array/organizationTypes PUBLIC
+array/phoneTypes PUBLIC
+array/postalAddressTypes PUBLIC
+attr/absListViewStyle PUBLIC
+attr/accessibilityDataSensitive PUBLIC STAGED_ID=0x01ce0004
+attr/accessibilityEventTypes PUBLIC
+attr/accessibilityFeedbackType PUBLIC
+attr/accessibilityFlags PUBLIC
+attr/accessibilityHeading PUBLIC
+attr/accessibilityLiveRegion PUBLIC
+attr/accessibilityPaneTitle PUBLIC
+attr/accessibilityTraversalAfter PUBLIC
+attr/accessibilityTraversalBefore PUBLIC
+attr/accountPreferences PUBLIC
+attr/accountType PUBLIC
+attr/action PUBLIC
+attr/actionBarDivider PUBLIC
+attr/actionBarItemBackground PUBLIC
+attr/actionBarPopupTheme PUBLIC
+attr/actionBarSize PUBLIC
+attr/actionBarSplitStyle PUBLIC
+attr/actionBarStyle PUBLIC
+attr/actionBarTabBarStyle PUBLIC
+attr/actionBarTabStyle PUBLIC
+attr/actionBarTabTextStyle PUBLIC
+attr/actionBarTheme PUBLIC
+attr/actionBarWidgetTheme PUBLIC
+attr/actionButtonStyle PUBLIC
+attr/actionDropDownStyle PUBLIC
+attr/actionLayout PUBLIC
+attr/actionMenuTextAppearance PUBLIC
+attr/actionMenuTextColor PUBLIC
+attr/actionModeBackground PUBLIC
+attr/actionModeCloseButtonStyle PUBLIC
+attr/actionModeCloseDrawable PUBLIC
+attr/actionModeCopyDrawable PUBLIC
+attr/actionModeCutDrawable PUBLIC
+attr/actionModeFindDrawable PUBLIC
+attr/actionModePasteDrawable PUBLIC
+attr/actionModeSelectAllDrawable PUBLIC
+attr/actionModeShareDrawable PUBLIC
+attr/actionModeSplitBackground PUBLIC
+attr/actionModeStyle PUBLIC
+attr/actionModeWebSearchDrawable PUBLIC
+attr/actionOverflowButtonStyle PUBLIC
+attr/actionOverflowMenuStyle PUBLIC
+attr/actionProviderClass PUBLIC
+attr/actionViewClass PUBLIC
+attr/activatedBackgroundIndicator PUBLIC
+attr/activityCloseEnterAnimation PUBLIC
+attr/activityCloseExitAnimation PUBLIC
+attr/activityOpenEnterAnimation PUBLIC
+attr/activityOpenExitAnimation PUBLIC
+attr/adServiceTypes PUBLIC STAGED_ID=0x01b70001
+attr/addPrintersActivity PUBLIC
+attr/addStatesFromChildren PUBLIC
+attr/adjustViewBounds PUBLIC
+attr/advancedPrintOptionsActivity PUBLIC
+attr/alertDialogIcon PUBLIC
+attr/alertDialogStyle PUBLIC
+attr/alertDialogTheme PUBLIC
+attr/alignmentMode PUBLIC
+attr/allContactsName PUBLIC
+attr/allow PUBLIC STAGED_ID=0x01bd0006
+attr/allowAudioPlaybackCapture PUBLIC
+attr/allowBackup PUBLIC
+attr/allowClearUserData PUBLIC
+attr/allowClearUserDataOnFailedRestore PUBLIC
+attr/allowClickWhenDisabled PUBLIC
+attr/allowCrossUidActivitySwitchFromBelow PUBLIC STAGED_ID=0x01bd0019
+attr/allowEmbedded PUBLIC
+attr/allowGameAngleDriver PUBLIC STAGED_ID=0x01df000b
+attr/allowGameDownscaling PUBLIC STAGED_ID=0x01df000c
+attr/allowGameFpsOverride PUBLIC STAGED_ID=0x01df000d
+attr/allowNativeHeapPointerTagging PUBLIC
+attr/allowParallelSyncs PUBLIC
+attr/allowSharedIsolatedProcess PUBLIC STAGED_ID=0x01ce000b
+attr/allowSingleTap PUBLIC
+attr/allowTaskReparenting PUBLIC
+attr/allowUndo PUBLIC
+attr/allowUntrustedActivityEmbedding PUBLIC STAGED_ID=0x01df001e
+attr/allowUpdateOwnership PUBLIC STAGED_ID=0x01ce000e
+attr/alpha PUBLIC
+attr/alphabeticModifiers PUBLIC
+attr/alphabeticShortcut PUBLIC
+attr/alternateLauncherIcons PUBLIC STAGED
+attr/alternateLauncherLabels PUBLIC STAGED
+attr/alwaysDrawnWithCache PUBLIC
+attr/alwaysRetainTaskState PUBLIC
+attr/amPmBackgroundColor PUBLIC
+attr/amPmTextColor PUBLIC
+attr/ambientShadowAlpha PUBLIC
+attr/angle PUBLIC
+attr/animateFirstView PUBLIC
+attr/animateLayoutChanges PUBLIC
+attr/animateOnClick PUBLIC
+attr/animatedImageDrawable PUBLIC
+attr/animation PUBLIC
+attr/animationCache PUBLIC
+attr/animationDuration PUBLIC
+attr/animationOrder PUBLIC
+attr/animationResolution PUBLIC
+attr/antialias PUBLIC
+attr/anyDensity PUBLIC
+attr/apduServiceBanner PUBLIC
+attr/apiKey PUBLIC
+attr/appCategory PUBLIC
+attr/appComponentFactory PUBLIC
+attr/attributionTags PUBLIC
+attr/attributionsAreUserVisible PUBLIC
+attr/author PUBLIC
+attr/authorities PUBLIC
+attr/autoAdvanceViewId PUBLIC
+attr/autoCompleteTextViewStyle PUBLIC
+attr/autoHandwritingEnabled PUBLIC STAGED_ID=0x01df0013
+attr/autoLink PUBLIC
+attr/autoMirrored PUBLIC
+attr/autoRemoveFromRecents PUBLIC
+attr/autoRevokePermissions PUBLIC
+attr/autoSizeMaxTextSize PUBLIC
+attr/autoSizeMinTextSize PUBLIC
+attr/autoSizePresetSizes PUBLIC
+attr/autoSizeStepGranularity PUBLIC
+attr/autoSizeTextType PUBLIC
+attr/autoStart PUBLIC
+attr/autoText PUBLIC
+attr/autoTransact PUBLIC STAGED_ID=0x01bd0011
+attr/autoUrlDetect PUBLIC
+attr/autoVerify PUBLIC
+attr/autofillHints PUBLIC
+attr/autofilledHighlight PUBLIC
+attr/backdropColor PUBLIC STAGED_ID=0x01df0027
+attr/background PUBLIC
+attr/backgroundDimAmount PUBLIC
+attr/backgroundDimColor PUBLIC STAGED
+attr/backgroundDimEnabled PUBLIC
+attr/backgroundPermission PUBLIC STAGED_ID=0x01b70004
+attr/backgroundSplit PUBLIC
+attr/backgroundStacked PUBLIC
+attr/backgroundTint PUBLIC
+attr/backgroundTintMode PUBLIC
+attr/backupAgent PUBLIC
+attr/backupAgentProcess PUBLIC STAGED_ID=0x01a2000e
+attr/backupInForeground PUBLIC
+attr/banner PUBLIC
+attr/baseline PUBLIC
+attr/baselineAlignBottom PUBLIC
+attr/baselineAligned PUBLIC
+attr/baselineAlignedChildIndex PUBLIC
+attr/bitmap PUBLIC
+attr/borderlessButtonStyle PUBLIC
+attr/bottom PUBLIC
+attr/bottomBright PUBLIC
+attr/bottomDark PUBLIC
+attr/bottomLeftRadius PUBLIC
+attr/bottomMedium PUBLIC
+attr/bottomOffset PUBLIC
+attr/bottomRightRadius PUBLIC
+attr/breadCrumbShortTitle PUBLIC
+attr/breadCrumbTitle PUBLIC
+attr/breakStrategy PUBLIC
+attr/bufferType PUBLIC
+attr/button PUBLIC
+attr/buttonBarButtonStyle PUBLIC
+attr/buttonBarNegativeButtonStyle PUBLIC
+attr/buttonBarNeutralButtonStyle PUBLIC
+attr/buttonBarPositiveButtonStyle PUBLIC
+attr/buttonBarStyle PUBLIC
+attr/buttonCornerRadius PUBLIC
+attr/buttonGravity PUBLIC
+attr/buttonStyle PUBLIC
+attr/buttonStyleInset PUBLIC
+attr/buttonStyleSmall PUBLIC
+attr/buttonStyleToggle PUBLIC
+attr/buttonTint PUBLIC
+attr/buttonTintMode PUBLIC
+attr/cacheColorHint PUBLIC
+attr/calendarTextColor PUBLIC
+attr/calendarViewShown PUBLIC
+attr/calendarViewStyle PUBLIC
+attr/canControlMagnification PUBLIC
+attr/canDisplayOnRemoteDevices PUBLIC STAGED_ID=0x01df0003
+attr/canPauseRecording PUBLIC
+attr/canPerformGestures PUBLIC
+attr/canRecord PUBLIC
+attr/canRequestEnhancedWebAccessibility PUBLIC
+attr/canRequestFilterKeyEvents PUBLIC
+attr/canRequestFingerprintGestures PUBLIC
+attr/canRequestTouchExplorationMode PUBLIC
+attr/canRetrieveWindowContent PUBLIC
+attr/canTakeScreenshot PUBLIC
+attr/candidatesTextStyleSpans PUBLIC
+attr/cantSaveState PUBLIC
+attr/capability PUBLIC STAGED_ID=0x01ce0015
+attr/capitalize PUBLIC
+attr/category PUBLIC
+attr/centerBright PUBLIC
+attr/centerColor PUBLIC
+attr/centerDark PUBLIC
+attr/centerMedium PUBLIC
+attr/centerX PUBLIC
+attr/centerY PUBLIC
+attr/certDigest PUBLIC
+attr/checkBoxPreferenceStyle PUBLIC
+attr/checkMark PUBLIC
+attr/checkMarkTint PUBLIC
+attr/checkMarkTintMode PUBLIC
+attr/checkable PUBLIC
+attr/checkableBehavior PUBLIC
+attr/checkboxStyle PUBLIC
+attr/checked PUBLIC
+attr/checkedButton PUBLIC
+attr/checkedTextViewStyle PUBLIC
+attr/childDivider PUBLIC
+attr/childIndicator PUBLIC
+attr/childIndicatorEnd PUBLIC
+attr/childIndicatorLeft PUBLIC
+attr/childIndicatorRight PUBLIC
+attr/childIndicatorStart PUBLIC
+attr/choiceMode PUBLIC
+attr/classLoader PUBLIC
+attr/clearTaskOnLaunch PUBLIC
+attr/clickable PUBLIC
+attr/clipChildren PUBLIC
+attr/clipOrientation PUBLIC
+attr/clipToOutline PUBLIC
+attr/clipToPadding PUBLIC
+attr/closeIcon PUBLIC
+attr/codes PUBLIC
+attr/collapseColumns PUBLIC
+attr/collapseContentDescription PUBLIC
+attr/collapseIcon PUBLIC
+attr/color PUBLIC
+attr/colorAccent PUBLIC
+attr/colorActivatedHighlight PUBLIC
+attr/colorBackground PUBLIC
+attr/colorBackgroundCacheHint PUBLIC
+attr/colorBackgroundFloating PUBLIC
+attr/colorButtonNormal PUBLIC
+attr/colorControlActivated PUBLIC
+attr/colorControlHighlight PUBLIC
+attr/colorControlNormal PUBLIC
+attr/colorEdgeEffect PUBLIC
+attr/colorError PUBLIC
+attr/colorFocusedHighlight PUBLIC
+attr/colorForeground PUBLIC
+attr/colorForegroundInverse PUBLIC
+attr/colorLongPressedHighlight PUBLIC
+attr/colorMode PUBLIC
+attr/colorMultiSelectHighlight PUBLIC
+attr/colorPressedHighlight PUBLIC
+attr/colorPrimary PUBLIC
+attr/colorPrimaryDark PUBLIC
+attr/colorSecondary PUBLIC
+attr/columnCount PUBLIC
+attr/columnDelay PUBLIC
+attr/columnOrderPreserved PUBLIC
+attr/columnWidth PUBLIC
+attr/commitIcon PUBLIC
+attr/compatibleWidthLimitDp PUBLIC
+attr/compileSdkVersion PUBLIC
+attr/compileSdkVersionCodename PUBLIC
+attr/completionHint PUBLIC
+attr/completionHintView PUBLIC
+attr/completionThreshold PUBLIC
+attr/configChanges PUBLIC
+attr/configure PUBLIC
+attr/constantSize PUBLIC
+attr/content PUBLIC
+attr/contentAgeHint PUBLIC
+attr/contentAuthority PUBLIC
+attr/contentDescription PUBLIC
+attr/contentInsetEnd PUBLIC
+attr/contentInsetEndWithActions PUBLIC
+attr/contentInsetLeft PUBLIC
+attr/contentInsetRight PUBLIC
+attr/contentInsetStart PUBLIC
+attr/contentInsetStartWithNavigation PUBLIC
+attr/contentSensitivity PUBLIC STAGED_ID=0x01bd0016
+attr/contextClickable PUBLIC
+attr/contextDescription PUBLIC
+attr/contextPopupMenuStyle PUBLIC
+attr/contextUri PUBLIC
+attr/controlX1 PUBLIC
+attr/controlX2 PUBLIC
+attr/controlY1 PUBLIC
+attr/controlY2 PUBLIC
+attr/countDown PUBLIC
+attr/country PUBLIC
+attr/cropToPadding PUBLIC
+attr/crossProfile PUBLIC
+attr/cursorVisible PUBLIC
+attr/customNavigationLayout PUBLIC
+attr/customTokens PUBLIC
+attr/cycles PUBLIC
+attr/dashGap PUBLIC
+attr/dashWidth PUBLIC
+attr/data PUBLIC
+attr/dataExtractionRules PUBLIC
+attr/datePickerDialogTheme PUBLIC
+attr/datePickerMode PUBLIC
+attr/datePickerStyle PUBLIC
+attr/dateTextAppearance PUBLIC
+attr/dayOfWeekBackground PUBLIC
+attr/dayOfWeekTextAppearance PUBLIC
+attr/debuggable PUBLIC
+attr/defaultFocusHighlightEnabled PUBLIC
+attr/defaultHeight PUBLIC
+attr/defaultLocale PUBLIC STAGED_ID=0x01bd0000
+attr/defaultToDeviceProtectedStorage PUBLIC
+attr/defaultValue PUBLIC
+attr/defaultWidth PUBLIC
+attr/delay PUBLIC
+attr/dependency PUBLIC
+attr/descendantFocusability PUBLIC
+attr/description PUBLIC
+attr/detachWallpaper PUBLIC
+attr/detailColumn PUBLIC
+attr/detailSocialSummary PUBLIC
+attr/detailsElementBackground PUBLIC
+attr/dial PUBLIC
+attr/dialTint PUBLIC
+attr/dialTintMode PUBLIC
+attr/dialogCornerRadius PUBLIC
+attr/dialogIcon PUBLIC
+attr/dialogLayout PUBLIC
+attr/dialogMessage PUBLIC
+attr/dialogPreferenceStyle PUBLIC
+attr/dialogPreferredPadding PUBLIC
+attr/dialogTheme PUBLIC
+attr/dialogTitle PUBLIC
+attr/digits PUBLIC
+attr/directBootAware PUBLIC
+attr/direction PUBLIC
+attr/directionDescriptions PUBLIC
+attr/directionPriority PUBLIC
+attr/disableDependentsState PUBLIC
+attr/disabledAlpha PUBLIC
+attr/displayOptions PUBLIC
+attr/dither PUBLIC
+attr/divider PUBLIC
+attr/dividerHeight PUBLIC
+attr/dividerHorizontal PUBLIC
+attr/dividerPadding PUBLIC
+attr/dividerVertical PUBLIC
+attr/documentLaunchMode PUBLIC
+attr/drawSelectorOnTop PUBLIC
+attr/drawable PUBLIC
+attr/drawableBottom PUBLIC
+attr/drawableEnd PUBLIC
+attr/drawableLeft PUBLIC
+attr/drawablePadding PUBLIC
+attr/drawableRight PUBLIC
+attr/drawableStart PUBLIC
+attr/drawableTint PUBLIC
+attr/drawableTintMode PUBLIC
+attr/drawableTop PUBLIC
+attr/drawingCacheQuality PUBLIC
+attr/dreamCategory PUBLIC STAGED_ID=0x01b70003
+attr/dropDownAnchor PUBLIC
+attr/dropDownHeight PUBLIC
+attr/dropDownHintAppearance PUBLIC
+attr/dropDownHorizontalOffset PUBLIC
+attr/dropDownItemStyle PUBLIC
+attr/dropDownListViewStyle PUBLIC
+attr/dropDownSelector PUBLIC
+attr/dropDownSpinnerStyle PUBLIC
+attr/dropDownVerticalOffset PUBLIC
+attr/dropDownWidth PUBLIC
+attr/duplicateParentState PUBLIC
+attr/duration PUBLIC
+attr/editTextBackground PUBLIC
+attr/editTextColor PUBLIC
+attr/editTextPreferenceStyle PUBLIC
+attr/editTextStyle PUBLIC
+attr/editable PUBLIC
+attr/editorExtras PUBLIC
+attr/effectColor PUBLIC
+attr/elegantTextHeight PUBLIC
+attr/elevation PUBLIC
+attr/ellipsize PUBLIC
+attr/embeddedViewTheme PUBLIC STAGED_ID=0x01a20017
+attr/ems PUBLIC
+attr/enableOnBackInvokedCallback PUBLIC STAGED_ID=0x01df0021
+attr/enableTextStylingShortcuts PUBLIC STAGED_ID=0x01ce0005
+attr/enableVrMode PUBLIC
+attr/enabled PUBLIC
+attr/end PUBLIC
+attr/endColor PUBLIC
+attr/endX PUBLIC
+attr/endY PUBLIC
+attr/endYear PUBLIC
+attr/enforceNavigationBarContrast PUBLIC
+attr/enforceStatusBarContrast PUBLIC
+attr/enterFadeDuration PUBLIC
+attr/entries PUBLIC
+attr/entryValues PUBLIC
+attr/eventsInterceptionEnabled PUBLIC
+attr/excludeClass PUBLIC
+attr/excludeFromRecents PUBLIC
+attr/excludeId PUBLIC
+attr/excludeName PUBLIC
+attr/exitFadeDuration PUBLIC
+attr/expandableListPreferredChildIndicatorLeft PUBLIC
+attr/expandableListPreferredChildIndicatorRight PUBLIC
+attr/expandableListPreferredChildPaddingLeft PUBLIC
+attr/expandableListPreferredItemIndicatorLeft PUBLIC
+attr/expandableListPreferredItemIndicatorRight PUBLIC
+attr/expandableListPreferredItemPaddingLeft PUBLIC
+attr/expandableListViewStyle PUBLIC
+attr/expandableListViewWhiteStyle PUBLIC
+attr/exported PUBLIC
+attr/externalService PUBLIC
+attr/extraTension PUBLIC
+attr/extractNativeLibs PUBLIC
+attr/factor PUBLIC
+attr/fadeDuration PUBLIC
+attr/fadeEnabled PUBLIC
+attr/fadeOffset PUBLIC
+attr/fadeScrollbars PUBLIC
+attr/fadingEdge PUBLIC
+attr/fadingEdgeLength PUBLIC
+attr/fadingMode PUBLIC
+attr/fallbackLineSpacing PUBLIC
+attr/fastScrollAlwaysVisible PUBLIC
+attr/fastScrollEnabled PUBLIC
+attr/fastScrollOverlayPosition PUBLIC
+attr/fastScrollPreviewBackgroundLeft PUBLIC
+attr/fastScrollPreviewBackgroundRight PUBLIC
+attr/fastScrollStyle PUBLIC
+attr/fastScrollTextColor PUBLIC
+attr/fastScrollThumbDrawable PUBLIC
+attr/fastScrollTrackDrawable PUBLIC
+attr/featureFlag PUBLIC STAGED_ID=0x01bd0004
+attr/fillAfter PUBLIC
+attr/fillAlpha PUBLIC
+attr/fillBefore PUBLIC
+attr/fillColor PUBLIC
+attr/fillEnabled PUBLIC
+attr/fillType PUBLIC
+attr/fillViewport PUBLIC
+attr/filter PUBLIC
+attr/filterTouchesWhenObscured PUBLIC
+attr/fingerprintAuthDrawable PUBLIC
+attr/finishOnCloseSystemDialogs PUBLIC
+attr/finishOnTaskLaunch PUBLIC
+attr/firstBaselineToTopHeight PUBLIC
+attr/firstDayOfWeek PUBLIC
+attr/fitsSystemWindows PUBLIC
+attr/flipInterval PUBLIC
+attr/focusable PUBLIC
+attr/focusableInTouchMode PUBLIC
+attr/focusedByDefault PUBLIC
+attr/focusedMonthDateColor PUBLIC
+attr/focusedSearchResultHighlightColor PUBLIC STAGED_ID=0x01ce0011
+attr/font PUBLIC
+attr/fontFamily PUBLIC
+attr/fontFeatureSettings PUBLIC
+attr/fontProviderAuthority PUBLIC
+attr/fontProviderCerts PUBLIC
+attr/fontProviderPackage PUBLIC
+attr/fontProviderQuery PUBLIC
+attr/fontProviderSystemFontFamily PUBLIC
+attr/fontStyle PUBLIC
+attr/fontVariationSettings PUBLIC
+attr/fontWeight PUBLIC
+attr/footerDividersEnabled PUBLIC
+attr/forceDarkAllowed PUBLIC
+attr/forceHasOverlappingRendering PUBLIC
+attr/forceQueryable PUBLIC
+attr/forceUriPermissions PUBLIC
+attr/foreground PUBLIC
+attr/foregroundGravity PUBLIC
+attr/foregroundServiceType PUBLIC
+attr/foregroundTint PUBLIC
+attr/foregroundTintMode PUBLIC
+attr/format PUBLIC
+attr/format12Hour PUBLIC
+attr/format24Hour PUBLIC
+attr/fraction PUBLIC
+attr/fragment PUBLIC
+attr/fragmentAdvancedPattern PUBLIC STAGED_ID=0x01bd000e
+attr/fragmentAllowEnterTransitionOverlap PUBLIC
+attr/fragmentAllowReturnTransitionOverlap PUBLIC
+attr/fragmentCloseEnterAnimation PUBLIC
+attr/fragmentCloseExitAnimation PUBLIC
+attr/fragmentEnterTransition PUBLIC
+attr/fragmentExitTransition PUBLIC
+attr/fragmentFadeEnterAnimation PUBLIC
+attr/fragmentFadeExitAnimation PUBLIC
+attr/fragmentOpenEnterAnimation PUBLIC
+attr/fragmentOpenExitAnimation PUBLIC
+attr/fragmentPattern PUBLIC STAGED_ID=0x01bd000d
+attr/fragmentPrefix PUBLIC STAGED_ID=0x01bd000c
+attr/fragmentReenterTransition PUBLIC
+attr/fragmentReturnTransition PUBLIC
+attr/fragmentSharedElementEnterTransition PUBLIC
+attr/fragmentSharedElementReturnTransition PUBLIC
+attr/fragmentSuffix PUBLIC STAGED_ID=0x01bd000f
+attr/freezesText PUBLIC
+attr/fromAlpha PUBLIC
+attr/fromDegrees PUBLIC
+attr/fromExtendBottom PUBLIC STAGED_ID=0x01df0017
+attr/fromExtendLeft PUBLIC STAGED_ID=0x01df0014
+attr/fromExtendRight PUBLIC STAGED_ID=0x01df0016
+attr/fromExtendTop PUBLIC STAGED_ID=0x01df0015
+attr/fromId PUBLIC
+attr/fromScene PUBLIC
+attr/fromXDelta PUBLIC
+attr/fromXScale PUBLIC
+attr/fromYDelta PUBLIC
+attr/fromYScale PUBLIC
+attr/fullBackupContent PUBLIC
+attr/fullBackupOnly PUBLIC
+attr/fullBright PUBLIC
+attr/fullDark PUBLIC
+attr/functionalTest PUBLIC
+attr/galleryItemBackground PUBLIC
+attr/galleryStyle PUBLIC
+attr/gameSessionService PUBLIC STAGED_ID=0x01df0008
+attr/gestureColor PUBLIC
+attr/gestureStrokeAngleThreshold PUBLIC
+attr/gestureStrokeLengthThreshold PUBLIC
+attr/gestureStrokeSquarenessThreshold PUBLIC
+attr/gestureStrokeType PUBLIC
+attr/gestureStrokeWidth PUBLIC
+attr/glEsVersion PUBLIC
+attr/goIcon PUBLIC
+attr/gradientRadius PUBLIC
+attr/grantUriPermissions PUBLIC
+attr/gravity PUBLIC
+attr/gridViewStyle PUBLIC
+attr/groupIndicator PUBLIC
+attr/gwpAsanMode PUBLIC
+attr/hand_hour PUBLIC
+attr/hand_hourTint PUBLIC
+attr/hand_hourTintMode PUBLIC
+attr/hand_minute PUBLIC
+attr/hand_minuteTint PUBLIC
+attr/hand_minuteTintMode PUBLIC
+attr/hand_second PUBLIC
+attr/hand_secondTint PUBLIC
+attr/hand_secondTintMode PUBLIC
+attr/handle PUBLIC
+attr/handleProfiling PUBLIC
+attr/handwritingBoundsOffsetBottom PUBLIC STAGED_ID=0x01ce0003
+attr/handwritingBoundsOffsetLeft PUBLIC STAGED_ID=0x01ce0000
+attr/handwritingBoundsOffsetRight PUBLIC STAGED_ID=0x01ce0002
+attr/handwritingBoundsOffsetTop PUBLIC STAGED_ID=0x01ce0001
+attr/hapticFeedbackEnabled PUBLIC
+attr/hardwareAccelerated PUBLIC
+attr/hasCode PUBLIC
+attr/hasFragileUserData PUBLIC
+attr/hash PUBLIC
+attr/headerAmPmTextAppearance PUBLIC
+attr/headerBackground PUBLIC
+attr/headerDayOfMonthTextAppearance PUBLIC
+attr/headerDividersEnabled PUBLIC
+attr/headerMonthTextAppearance PUBLIC
+attr/headerTimeTextAppearance PUBLIC
+attr/headerYearTextAppearance PUBLIC
+attr/height PUBLIC
+attr/hideOnContentScroll PUBLIC
+attr/hint PUBLIC
+attr/homeAsUpIndicator PUBLIC
+attr/homeLayout PUBLIC
+attr/horizontalDivider PUBLIC
+attr/horizontalGap PUBLIC
+attr/horizontalScrollViewStyle PUBLIC
+attr/horizontalSpacing PUBLIC
+attr/host PUBLIC
+attr/hotSpotX PUBLIC
+attr/hotSpotY PUBLIC
+attr/hotwordDetectionService PUBLIC
+attr/htmlDescription PUBLIC
+attr/hyphenationFrequency PUBLIC
+attr/icon PUBLIC
+attr/iconColor PUBLIC STAGED_ID=0x01a20013
+attr/iconPreview PUBLIC
+attr/iconSpaceReserved PUBLIC
+attr/iconTint PUBLIC
+attr/iconTintMode PUBLIC
+attr/iconifiedByDefault PUBLIC
+attr/id PUBLIC
+attr/identifier PUBLIC
+attr/ignoreGravity PUBLIC
+attr/imageButtonStyle PUBLIC
+attr/imageWellStyle PUBLIC
+attr/imeActionId PUBLIC
+attr/imeActionLabel PUBLIC
+attr/imeExtractEnterAnimation PUBLIC
+attr/imeExtractExitAnimation PUBLIC
+attr/imeFullscreenBackground PUBLIC
+attr/imeOptions PUBLIC
+attr/imeSubtypeExtraValue PUBLIC
+attr/imeSubtypeLocale PUBLIC
+attr/imeSubtypeMode PUBLIC
+attr/immersive PUBLIC
+attr/importantForAccessibility PUBLIC
+attr/importantForAutofill PUBLIC
+attr/importantForContentCapture PUBLIC
+attr/inAnimation PUBLIC
+attr/includeFontPadding PUBLIC
+attr/includeInGlobalSearch PUBLIC
+attr/indeterminate PUBLIC
+attr/indeterminateBehavior PUBLIC
+attr/indeterminateDrawable PUBLIC
+attr/indeterminateDuration PUBLIC
+attr/indeterminateOnly PUBLIC
+attr/indeterminateProgressStyle PUBLIC
+attr/indeterminateTint PUBLIC
+attr/indeterminateTintMode PUBLIC
+attr/indicatorEnd PUBLIC
+attr/indicatorLeft PUBLIC
+attr/indicatorRight PUBLIC
+attr/indicatorStart PUBLIC
+attr/inflatedId PUBLIC
+attr/inheritShowWhenLocked PUBLIC
+attr/initOrder PUBLIC
+attr/initialKeyguardLayout PUBLIC
+attr/initialLayout PUBLIC
+attr/inlineSuggestion PUBLIC STAGED_ID=0x01a20018
+attr/innerRadius PUBLIC
+attr/innerRadiusRatio PUBLIC
+attr/inputMethod PUBLIC
+attr/inputType PUBLIC
+attr/inset PUBLIC
+attr/insetBottom PUBLIC
+attr/insetLeft PUBLIC
+attr/insetRight PUBLIC
+attr/insetTop PUBLIC
+attr/installLocation PUBLIC
+attr/intentMatchingFlags PUBLIC STAGED_ID=0x01b70006
+attr/interactiveUiTimeout PUBLIC
+attr/interpolator PUBLIC
+attr/intro PUBLIC STAGED_ID=0x01df0020
+attr/isAccessibilityTool PUBLIC
+attr/isAlwaysSyncable PUBLIC
+attr/isAsciiCapable PUBLIC
+attr/isAuxiliary PUBLIC
+attr/isCredential PUBLIC STAGED_ID=0x01ce000f
+attr/isDefault PUBLIC
+attr/isFeatureSplit PUBLIC
+attr/isGame PUBLIC
+attr/isIndicator PUBLIC
+attr/isLightTheme PUBLIC
+attr/isModifier PUBLIC
+attr/isRepeatable PUBLIC
+attr/isScrollContainer PUBLIC
+attr/isSplitRequired PUBLIC
+attr/isStatic PUBLIC
+attr/isSticky PUBLIC
+attr/isVirtualDeviceOnly PUBLIC STAGED_ID=0x01bd0001
+attr/isVrOnly PUBLIC
+attr/isolatedProcess PUBLIC
+attr/isolatedSplits PUBLIC
+attr/itemBackground PUBLIC
+attr/itemIconDisabledAlpha PUBLIC
+attr/itemPadding PUBLIC
+attr/itemTextAppearance PUBLIC
+attr/justificationMode PUBLIC
+attr/keepScreenOn PUBLIC
+attr/key PUBLIC
+attr/keyBackground PUBLIC
+attr/keyEdgeFlags PUBLIC
+attr/keyHeight PUBLIC
+attr/keyIcon PUBLIC
+attr/keyLabel PUBLIC
+attr/keyOutputText PUBLIC
+attr/keyPreviewHeight PUBLIC
+attr/keyPreviewLayout PUBLIC
+attr/keyPreviewOffset PUBLIC
+attr/keySet PUBLIC
+attr/keyTextColor PUBLIC
+attr/keyTextSize PUBLIC
+attr/keyWidth PUBLIC
+attr/keyboardLayout PUBLIC
+attr/keyboardLayoutType PUBLIC STAGED_ID=0x01ce000d
+attr/keyboardLocale PUBLIC STAGED_ID=0x01ce000c
+attr/keyboardMode PUBLIC
+attr/keyboardNavigationCluster PUBLIC
+attr/keycode PUBLIC
+attr/killAfterRestore PUBLIC
+attr/knownActivityEmbeddingCerts PUBLIC STAGED_ID=0x01df001f
+attr/knownCerts PUBLIC
+attr/lStar PUBLIC
+attr/label PUBLIC
+attr/labelFor PUBLIC
+attr/labelTextSize PUBLIC
+attr/languageSettingsActivity PUBLIC STAGED_ID=0x01b70002
+attr/languageTag PUBLIC
+attr/largeHeap PUBLIC
+attr/largeScreens PUBLIC
+attr/largestWidthLimitDp PUBLIC
+attr/lastBaselineToBottomHeight PUBLIC
+attr/launchMode PUBLIC
+attr/launchTaskBehindSourceAnimation PUBLIC
+attr/launchTaskBehindTargetAnimation PUBLIC
+attr/layerType PUBLIC
+attr/layout PUBLIC
+attr/layoutAnimation PUBLIC
+attr/layoutDirection PUBLIC
+attr/layoutLabel PUBLIC STAGED_ID=0x01b70007
+attr/layoutMode PUBLIC
+attr/layout_above PUBLIC
+attr/layout_alignBaseline PUBLIC
+attr/layout_alignBottom PUBLIC
+attr/layout_alignEnd PUBLIC
+attr/layout_alignLeft PUBLIC
+attr/layout_alignParentBottom PUBLIC
+attr/layout_alignParentEnd PUBLIC
+attr/layout_alignParentLeft PUBLIC
+attr/layout_alignParentRight PUBLIC
+attr/layout_alignParentStart PUBLIC
+attr/layout_alignParentTop PUBLIC
+attr/layout_alignRight PUBLIC
+attr/layout_alignStart PUBLIC
+attr/layout_alignTop PUBLIC
+attr/layout_alignWithParentIfMissing PUBLIC
+attr/layout_below PUBLIC
+attr/layout_centerHorizontal PUBLIC
+attr/layout_centerInParent PUBLIC
+attr/layout_centerVertical PUBLIC
+attr/layout_column PUBLIC
+attr/layout_columnSpan PUBLIC
+attr/layout_columnWeight PUBLIC
+attr/layout_gravity PUBLIC
+attr/layout_height PUBLIC
+attr/layout_margin PUBLIC
+attr/layout_marginBottom PUBLIC
+attr/layout_marginEnd PUBLIC
+attr/layout_marginHorizontal PUBLIC
+attr/layout_marginLeft PUBLIC
+attr/layout_marginRight PUBLIC
+attr/layout_marginStart PUBLIC
+attr/layout_marginTop PUBLIC
+attr/layout_marginVertical PUBLIC
+attr/layout_row PUBLIC
+attr/layout_rowSpan PUBLIC
+attr/layout_rowWeight PUBLIC
+attr/layout_scale PUBLIC
+attr/layout_span PUBLIC
+attr/layout_toEndOf PUBLIC
+attr/layout_toLeftOf PUBLIC
+attr/layout_toRightOf PUBLIC
+attr/layout_toStartOf PUBLIC
+attr/layout_weight PUBLIC
+attr/layout_width PUBLIC
+attr/layout_x PUBLIC
+attr/layout_y PUBLIC
+attr/left PUBLIC
+attr/letterSpacing PUBLIC
+attr/level PUBLIC
+attr/lineBreakStyle PUBLIC STAGED_ID=0x01df0023
+attr/lineBreakWordStyle PUBLIC STAGED_ID=0x01df0024
+attr/lineHeight PUBLIC
+attr/lineSpacingExtra PUBLIC
+attr/lineSpacingMultiplier PUBLIC
+attr/lines PUBLIC
+attr/linksClickable PUBLIC
+attr/listChoiceBackgroundIndicator PUBLIC
+attr/listChoiceIndicatorMultiple PUBLIC
+attr/listChoiceIndicatorSingle PUBLIC
+attr/listDivider PUBLIC
+attr/listDividerAlertDialog PUBLIC
+attr/listMenuViewStyle PUBLIC
+attr/listPopupWindowStyle PUBLIC
+attr/listPreferredItemHeight PUBLIC
+attr/listPreferredItemHeightLarge PUBLIC
+attr/listPreferredItemHeightSmall PUBLIC
+attr/listPreferredItemPaddingEnd PUBLIC
+attr/listPreferredItemPaddingLeft PUBLIC
+attr/listPreferredItemPaddingRight PUBLIC
+attr/listPreferredItemPaddingStart PUBLIC
+attr/listSelector PUBLIC
+attr/listSeparatorTextViewStyle PUBLIC
+attr/listViewStyle PUBLIC
+attr/listViewWhiteStyle PUBLIC
+attr/localeConfig PUBLIC STAGED_ID=0x01df000e
+attr/lockTaskMode PUBLIC
+attr/logo PUBLIC
+attr/logoDescription PUBLIC
+attr/longClickable PUBLIC
+attr/loopViews PUBLIC
+attr/manageSpaceActivity PUBLIC
+attr/mapViewStyle PUBLIC
+attr/marqueeRepeatLimit PUBLIC
+attr/matchOrder PUBLIC
+attr/max PUBLIC
+attr/maxAspectRatio PUBLIC
+attr/maxButtonHeight PUBLIC
+attr/maxDate PUBLIC
+attr/maxDrawableHeight PUBLIC STAGED_ID=0x01df0026
+attr/maxDrawableWidth PUBLIC STAGED_ID=0x01df0025
+attr/maxEms PUBLIC
+attr/maxHeight PUBLIC
+attr/maxItemsPerRow PUBLIC
+attr/maxLength PUBLIC
+attr/maxLevel PUBLIC
+attr/maxLines PUBLIC
+attr/maxLongVersionCode PUBLIC
+attr/maxRecents PUBLIC
+attr/maxResizeHeight PUBLIC
+attr/maxResizeWidth PUBLIC
+attr/maxRows PUBLIC
+attr/maxSdkVersion PUBLIC
+attr/maxWidth PUBLIC
+attr/maximumAngle PUBLIC
+attr/measureAllChildren PUBLIC
+attr/measureWithLargestChild PUBLIC
+attr/mediaRouteButtonStyle PUBLIC
+attr/mediaRouteTypes PUBLIC
+attr/memtagMode PUBLIC
+attr/menuCategory PUBLIC
+attr/mimeGroup PUBLIC
+attr/mimeType PUBLIC
+attr/min PUBLIC
+attr/minAspectRatio PUBLIC
+attr/minDate PUBLIC
+attr/minEms PUBLIC
+attr/minExtensionVersion PUBLIC
+attr/minHeight PUBLIC
+attr/minLevel PUBLIC
+attr/minLines PUBLIC
+attr/minResizeHeight PUBLIC
+attr/minResizeWidth PUBLIC
+attr/minSdkVersion PUBLIC
+attr/minWidth PUBLIC
+attr/minimumHorizontalAngle PUBLIC
+attr/minimumVerticalAngle PUBLIC
+attr/mipMap PUBLIC
+attr/mirrorForRtl PUBLIC
+attr/mode PUBLIC
+attr/moreIcon PUBLIC
+attr/multiArch PUBLIC
+attr/multiprocess PUBLIC
+attr/name PUBLIC
+attr/nativeHeapZeroInitialized PUBLIC
+attr/nativeService PUBLIC STAGED_ID=0x01a20005
+attr/navigationBarColor PUBLIC
+attr/navigationBarDividerColor PUBLIC
+attr/navigationContentDescription PUBLIC
+attr/navigationIcon PUBLIC
+attr/navigationMode PUBLIC
+attr/negativeButtonText PUBLIC
+attr/nestedScrollingEnabled PUBLIC
+attr/networkSecurityConfig PUBLIC
+attr/nextClusterForward PUBLIC
+attr/nextFocusDown PUBLIC
+attr/nextFocusForward PUBLIC
+attr/nextFocusLeft PUBLIC
+attr/nextFocusRight PUBLIC
+attr/nextFocusUp PUBLIC
+attr/noHistory PUBLIC
+attr/nonInteractiveUiTimeout PUBLIC
+attr/normalScreens PUBLIC
+attr/notificationTimeout PUBLIC
+attr/numColumns PUBLIC
+attr/numStars PUBLIC
+attr/numberPickerStyle PUBLIC
+attr/numbersBackgroundColor PUBLIC
+attr/numbersInnerTextColor PUBLIC
+attr/numbersSelectorColor PUBLIC
+attr/numbersTextColor PUBLIC
+attr/numeric PUBLIC
+attr/numericModifiers PUBLIC
+attr/numericShortcut PUBLIC
+attr/offset PUBLIC
+attr/onClick PUBLIC
+attr/oneshot PUBLIC
+attr/opacity PUBLIC
+attr/opticalInsetBottom PUBLIC
+attr/opticalInsetLeft PUBLIC
+attr/opticalInsetRight PUBLIC
+attr/opticalInsetTop PUBLIC
+attr/optional PUBLIC STAGED
+attr/order PUBLIC
+attr/orderInCategory PUBLIC
+attr/ordering PUBLIC
+attr/orderingFromXml PUBLIC
+attr/orientation PUBLIC
+attr/outAnimation PUBLIC
+attr/outlineAmbientShadowColor PUBLIC
+attr/outlineProvider PUBLIC
+attr/outlineSpotShadowColor PUBLIC
+attr/overScrollFooter PUBLIC
+attr/overScrollHeader PUBLIC
+attr/overScrollMode PUBLIC
+attr/overlapAnchor PUBLIC
+attr/overridesImplicitlyEnabledSubtype PUBLIC
+attr/packageNames PUBLIC
+attr/packageType PUBLIC
+attr/padding PUBLIC
+attr/paddingBottom PUBLIC
+attr/paddingEnd PUBLIC
+attr/paddingHorizontal PUBLIC
+attr/paddingLeft PUBLIC
+attr/paddingMode PUBLIC
+attr/paddingRight PUBLIC
+attr/paddingStart PUBLIC
+attr/paddingTop PUBLIC
+attr/paddingVertical PUBLIC
+attr/pageSizeCompat PUBLIC STAGED_ID=0x01b7000a
+attr/panelBackground PUBLIC
+attr/panelColorBackground PUBLIC
+attr/panelColorForeground PUBLIC
+attr/panelFullBackground PUBLIC
+attr/panelTextAppearance PUBLIC
+attr/parentActivityName PUBLIC
+attr/password PUBLIC
+attr/passwordsActivity PUBLIC
+attr/path PUBLIC
+attr/pathAdvancedPattern PUBLIC
+attr/pathData PUBLIC
+attr/pathPattern PUBLIC
+attr/pathPrefix PUBLIC
+attr/pathSuffix PUBLIC
+attr/patternPathData PUBLIC
+attr/permission PUBLIC
+attr/permissionFlags PUBLIC
+attr/permissionGroup PUBLIC
+attr/permissionGroupFlags PUBLIC
+attr/persistableMode PUBLIC
+attr/persistent PUBLIC
+attr/persistentDrawingCache PUBLIC
+attr/persistentWhenFeatureAvailable PUBLIC
+attr/phoneNumber PUBLIC
+attr/physicalKeyboardHintLanguageTag PUBLIC STAGED_ID=0x01ce0009
+attr/physicalKeyboardHintLayoutType PUBLIC STAGED_ID=0x01ce000a
+attr/pivotX PUBLIC
+attr/pivotY PUBLIC
+attr/playHomeTransitionSound PUBLIC
+attr/pointerIcon PUBLIC
+attr/popupAnimationStyle PUBLIC
+attr/popupBackground PUBLIC
+attr/popupCharacters PUBLIC
+attr/popupElevation PUBLIC
+attr/popupEnterTransition PUBLIC
+attr/popupExitTransition PUBLIC
+attr/popupKeyboard PUBLIC
+attr/popupLayout PUBLIC
+attr/popupMenuStyle PUBLIC
+attr/popupTheme PUBLIC
+attr/popupWindowStyle PUBLIC
+attr/port PUBLIC
+attr/positiveButtonText PUBLIC
+attr/preferKeepClear PUBLIC STAGED_ID=0x01df0012
+attr/preferMinimalPostProcessing PUBLIC
+attr/preferenceCategoryStyle PUBLIC
+attr/preferenceFragmentStyle PUBLIC
+attr/preferenceInformationStyle PUBLIC
+attr/preferenceLayoutChild PUBLIC
+attr/preferenceScreenStyle PUBLIC
+attr/preferenceStyle PUBLIC
+attr/presentationTheme PUBLIC
+attr/preserveLegacyExternalStorage PUBLIC
+attr/previewImage PUBLIC
+attr/previewLayout PUBLIC
+attr/primaryContentAlpha PUBLIC
+attr/priority PUBLIC
+attr/privateComputeCore PUBLIC STAGED_ID=0x01a2000d
+attr/privateImeOptions PUBLIC
+attr/process PUBLIC
+attr/progress PUBLIC
+attr/progressBackgroundTint PUBLIC
+attr/progressBackgroundTintMode PUBLIC
+attr/progressBarPadding PUBLIC
+attr/progressBarStyle PUBLIC
+attr/progressBarStyleHorizontal PUBLIC
+attr/progressBarStyleInverse PUBLIC
+attr/progressBarStyleLarge PUBLIC
+attr/progressBarStyleLargeInverse PUBLIC
+attr/progressBarStyleSmall PUBLIC
+attr/progressBarStyleSmallInverse PUBLIC
+attr/progressBarStyleSmallTitle PUBLIC
+attr/progressDrawable PUBLIC
+attr/progressTint PUBLIC
+attr/progressTintMode PUBLIC
+attr/prompt PUBLIC
+attr/propertyName PUBLIC
+attr/propertyXName PUBLIC
+attr/propertyYName PUBLIC
+attr/protectionLevel PUBLIC
+attr/publicKey PUBLIC
+attr/purposeString PUBLIC STAGED
+attr/query PUBLIC STAGED_ID=0x01bd0007
+attr/queryActionMsg PUBLIC
+attr/queryAdvancedPattern PUBLIC STAGED_ID=0x01bd000a
+attr/queryAfterZeroResults PUBLIC
+attr/queryBackground PUBLIC
+attr/queryHint PUBLIC
+attr/queryPattern PUBLIC STAGED_ID=0x01bd0009
+attr/queryPrefix PUBLIC STAGED_ID=0x01bd0008
+attr/querySuffix PUBLIC STAGED_ID=0x01bd000b
+attr/quickContactBadgeStyleSmallWindowLarge PUBLIC
+attr/quickContactBadgeStyleSmallWindowMedium PUBLIC
+attr/quickContactBadgeStyleSmallWindowSmall PUBLIC
+attr/quickContactBadgeStyleWindowLarge PUBLIC
+attr/quickContactBadgeStyleWindowMedium PUBLIC
+attr/quickContactBadgeStyleWindowSmall PUBLIC
+attr/radioButtonStyle PUBLIC
+attr/radius PUBLIC
+attr/rating PUBLIC
+attr/ratingBarStyle PUBLIC
+attr/ratingBarStyleIndicator PUBLIC
+attr/ratingBarStyleSmall PUBLIC
+attr/readPermission PUBLIC
+attr/recognitionService PUBLIC
+attr/recreateOnConfigChanges PUBLIC
+attr/recycleEnabled PUBLIC
+attr/relinquishTaskIdentity PUBLIC
+attr/reparent PUBLIC
+attr/reparentWithOverlay PUBLIC
+attr/repeatCount PUBLIC
+attr/repeatMode PUBLIC
+attr/reqFiveWayNav PUBLIC
+attr/reqHardKeyboard PUBLIC
+attr/reqKeyboardType PUBLIC
+attr/reqNavigation PUBLIC
+attr/reqTouchScreen PUBLIC
+attr/requestForegroundServiceExemption PUBLIC
+attr/requestLegacyExternalStorage PUBLIC
+attr/requestRawExternalStorageAccess PUBLIC
+attr/requireContentUriPermissionFromCaller PUBLIC STAGED_ID=0x01bd0013
+attr/requireDeviceScreenOn PUBLIC
+attr/requireDeviceUnlock PUBLIC
+attr/required PUBLIC
+attr/requiredAccountType PUBLIC
+attr/requiredDisplayCategory PUBLIC STAGED_ID=0x01ce0006
+attr/requiredFeature PUBLIC
+attr/requiredForAllUsers PUBLIC
+attr/requiredNotFeature PUBLIC
+attr/requiredSplitTypes PUBLIC STAGED_ID=0x01df0001
+attr/requiredSystemPropertyName PUBLIC
+attr/requiredSystemPropertyValue PUBLIC
+attr/requiresFadingEdge PUBLIC
+attr/requiresSmallestWidthDp PUBLIC
+attr/resetEnabledSettingsOnAppDataCleared PUBLIC STAGED_ID=0x01df0005
+attr/resizeClip PUBLIC
+attr/resizeMode PUBLIC
+attr/resizeable PUBLIC
+attr/resizeableActivity PUBLIC
+attr/resource PUBLIC
+attr/resourcesMap PUBLIC
+attr/restoreAnyVersion PUBLIC
+attr/restoreNeedsApplication PUBLIC
+attr/restrictedAccountType PUBLIC
+attr/restrictionType PUBLIC
+attr/resumeWhilePausing PUBLIC
+attr/reversible PUBLIC
+attr/revisionCode PUBLIC
+attr/right PUBLIC
+attr/ringtonePreferenceStyle PUBLIC
+attr/ringtoneType PUBLIC
+attr/rollbackDataPolicy PUBLIC
+attr/rotation PUBLIC
+attr/rotationAnimation PUBLIC
+attr/rotationX PUBLIC
+attr/rotationY PUBLIC
+attr/roundIcon PUBLIC
+attr/rowCount PUBLIC
+attr/rowDelay PUBLIC
+attr/rowEdgeFlags PUBLIC
+attr/rowHeight PUBLIC
+attr/rowOrderPreserved PUBLIC
+attr/saveEnabled PUBLIC
+attr/scaleGravity PUBLIC
+attr/scaleHeight PUBLIC
+attr/scaleType PUBLIC
+attr/scaleWidth PUBLIC
+attr/scaleX PUBLIC
+attr/scaleY PUBLIC
+attr/scheme PUBLIC
+attr/screenDensity PUBLIC
+attr/screenOrientation PUBLIC
+attr/screenReaderFocusable PUBLIC
+attr/screenSize PUBLIC
+attr/scrollHorizontally PUBLIC
+attr/scrollIndicators PUBLIC
+attr/scrollViewStyle PUBLIC
+attr/scrollX PUBLIC
+attr/scrollY PUBLIC
+attr/scrollbarAlwaysDrawHorizontalTrack PUBLIC
+attr/scrollbarAlwaysDrawVerticalTrack PUBLIC
+attr/scrollbarDefaultDelayBeforeFade PUBLIC
+attr/scrollbarFadeDuration PUBLIC
+attr/scrollbarSize PUBLIC
+attr/scrollbarStyle PUBLIC
+attr/scrollbarThumbHorizontal PUBLIC
+attr/scrollbarThumbVertical PUBLIC
+attr/scrollbarTrackHorizontal PUBLIC
+attr/scrollbarTrackVertical PUBLIC
+attr/scrollbars PUBLIC
+attr/scrollingCache PUBLIC
+attr/sdkVersion PUBLIC
+attr/searchButtonText PUBLIC
+attr/searchHintIcon PUBLIC
+attr/searchIcon PUBLIC
+attr/searchKeyphrase PUBLIC
+attr/searchKeyphraseId PUBLIC
+attr/searchKeyphraseRecognitionFlags PUBLIC
+attr/searchKeyphraseSupportedLocales PUBLIC
+attr/searchMode PUBLIC
+attr/searchResultHighlightColor PUBLIC STAGED_ID=0x01ce0010
+attr/searchSettingsDescription PUBLIC
+attr/searchSuggestAuthority PUBLIC
+attr/searchSuggestIntentAction PUBLIC
+attr/searchSuggestIntentData PUBLIC
+attr/searchSuggestPath PUBLIC
+attr/searchSuggestSelection PUBLIC
+attr/searchSuggestThreshold PUBLIC
+attr/searchViewStyle PUBLIC
+attr/secondaryContentAlpha PUBLIC
+attr/secondaryProgress PUBLIC
+attr/secondaryProgressTint PUBLIC
+attr/secondaryProgressTintMode PUBLIC
+attr/secureElementName PUBLIC
+attr/seekBarStyle PUBLIC
+attr/segmentedButtonStyle PUBLIC
+attr/selectAllOnFocus PUBLIC
+attr/selectable PUBLIC
+attr/selectableAsDefault PUBLIC
+attr/selectableItemBackground PUBLIC
+attr/selectableItemBackgroundBorderless PUBLIC
+attr/selectedDateVerticalBar PUBLIC
+attr/selectedWeekBackgroundColor PUBLIC
+attr/selectionDividerHeight PUBLIC
+attr/sessionService PUBLIC
+attr/settingsActivity PUBLIC
+attr/settingsSliceUri PUBLIC
+attr/settingsSubtitle PUBLIC STAGED_ID=0x01ce0014
+attr/setupActivity PUBLIC
+attr/shadowColor PUBLIC
+attr/shadowDx PUBLIC
+attr/shadowDy PUBLIC
+attr/shadowRadius PUBLIC
+attr/shape PUBLIC
+attr/shareInterpolator PUBLIC
+attr/sharedUserId PUBLIC
+attr/sharedUserLabel PUBLIC
+attr/sharedUserMaxSdkVersion PUBLIC STAGED_ID=0x01df0000
+attr/shell PUBLIC
+attr/shiftDrawingOffsetForStartOverhang PUBLIC STAGED_ID=0x01bd001a
+attr/shortLabel PUBLIC STAGED_ID=0x01a2000c
+attr/shortcutDisabledMessage PUBLIC
+attr/shortcutId PUBLIC
+attr/shortcutLongLabel PUBLIC
+attr/shortcutShortLabel PUBLIC
+attr/shouldDefaultToObserveMode PUBLIC STAGED_ID=0x01bd0018
+attr/shouldDisableView PUBLIC
+attr/shouldUseDefaultUnfoldTransition PUBLIC STAGED_ID=0x01ff0000
+attr/showAsAction PUBLIC
+attr/showBackdrop PUBLIC STAGED_ID=0x01df000f
+attr/showClockAndComplications PUBLIC STAGED_ID=0x01df0007
+attr/showDefault PUBLIC
+attr/showDividers PUBLIC
+attr/showForAllUsers PUBLIC
+attr/showInInputMethodPicker PUBLIC
+attr/showMetadataInPreview PUBLIC
+attr/showOnLockScreen PUBLIC
+attr/showSilent PUBLIC
+attr/showText PUBLIC
+attr/showWeekNumber PUBLIC
+attr/showWhenLocked PUBLIC
+attr/shownWeekCount PUBLIC
+attr/shrinkColumns PUBLIC
+attr/singleLine PUBLIC
+attr/singleLineTitle PUBLIC
+attr/singleUser PUBLIC
+attr/slideEdge PUBLIC
+attr/smallIcon PUBLIC
+attr/smallScreens PUBLIC
+attr/smoothScrollbar PUBLIC
+attr/solidColor PUBLIC
+attr/soundEffectsEnabled PUBLIC
+attr/spacing PUBLIC
+attr/spinnerDropDownItemStyle PUBLIC
+attr/spinnerItemStyle PUBLIC
+attr/spinnerMode PUBLIC
+attr/spinnerStyle PUBLIC
+attr/spinnersShown PUBLIC
+attr/splashScreenTheme PUBLIC
+attr/splitMotionEvents PUBLIC
+attr/splitName PUBLIC
+attr/splitTrack PUBLIC
+attr/splitTypes PUBLIC STAGED_ID=0x01df0002
+attr/spotShadowAlpha PUBLIC
+attr/src PUBLIC
+attr/ssp PUBLIC
+attr/sspAdvancedPattern PUBLIC
+attr/sspPattern PUBLIC
+attr/sspPrefix PUBLIC
+attr/sspSuffix PUBLIC
+attr/stackFromBottom PUBLIC
+attr/stackViewStyle PUBLIC
+attr/starStyle PUBLIC
+attr/start PUBLIC
+attr/startColor PUBLIC
+attr/startDelay PUBLIC
+attr/startOffset PUBLIC
+attr/startX PUBLIC
+attr/startY PUBLIC
+attr/startYear PUBLIC
+attr/stateListAnimator PUBLIC
+attr/stateNotNeeded PUBLIC
+attr/state_above_anchor PUBLIC
+attr/state_accelerated PUBLIC
+attr/state_activated PUBLIC
+attr/state_active PUBLIC
+attr/state_checkable PUBLIC
+attr/state_checked PUBLIC
+attr/state_drag_can_accept PUBLIC
+attr/state_drag_hovered PUBLIC
+attr/state_empty PUBLIC
+attr/state_enabled PUBLIC
+attr/state_expanded PUBLIC
+attr/state_first PUBLIC
+attr/state_focused PUBLIC
+attr/state_hovered PUBLIC
+attr/state_last PUBLIC
+attr/state_long_pressable PUBLIC
+attr/state_middle PUBLIC
+attr/state_multiline PUBLIC
+attr/state_pressed PUBLIC
+attr/state_selected PUBLIC
+attr/state_single PUBLIC
+attr/state_window_focused PUBLIC
+attr/staticWallpaperPreview PUBLIC
+attr/statusBarColor PUBLIC
+attr/stepSize PUBLIC
+attr/stopWithTask PUBLIC
+attr/streamType PUBLIC
+attr/stretchColumns PUBLIC
+attr/stretchMode PUBLIC
+attr/strokeAlpha PUBLIC
+attr/strokeColor PUBLIC
+attr/strokeLineCap PUBLIC
+attr/strokeLineJoin PUBLIC
+attr/strokeMiterLimit PUBLIC
+attr/strokeWidth PUBLIC
+attr/stylusHandwritingSettingsActivity PUBLIC STAGED_ID=0x01ce0012
+attr/subMenuArrow PUBLIC
+attr/submitBackground PUBLIC
+attr/subtitle PUBLIC
+attr/subtitleTextAppearance PUBLIC
+attr/subtitleTextColor PUBLIC
+attr/subtitleTextStyle PUBLIC
+attr/subtypeExtraValue PUBLIC
+attr/subtypeId PUBLIC
+attr/subtypeLocale PUBLIC
+attr/suggestActionMsg PUBLIC
+attr/suggestActionMsgColumn PUBLIC
+attr/suggestionBackgroundColor PUBLIC STAGED_ID=0x01a20014
+attr/suggestionCornerRadius PUBLIC STAGED_ID=0x01a20015
+attr/suggestionRowLayout PUBLIC
+attr/summary PUBLIC
+attr/summaryColumn PUBLIC
+attr/summaryOff PUBLIC
+attr/summaryOn PUBLIC
+attr/supplementalDescription PUBLIC STAGED_ID=0x01b70005
+attr/supportedTypes PUBLIC STAGED_ID=0x01df0004
+attr/supportsAmbientMode PUBLIC
+attr/supportsAssist PUBLIC
+attr/supportsBatteryGameMode PUBLIC STAGED_ID=0x01df0009
+attr/supportsConnectionlessStylusHandwriting PUBLIC STAGED_ID=0x01bd0017
+attr/supportsInlineSuggestions PUBLIC
+attr/supportsInlineSuggestionsWithTouchExploration PUBLIC STAGED_ID=0x01df0022
+attr/supportsLaunchVoiceAssistFromKeyguard PUBLIC
+attr/supportsLocalInteraction PUBLIC
+attr/supportsMultipleDisplays PUBLIC
+attr/supportsPerformanceGameMode PUBLIC STAGED_ID=0x01df000a
+attr/supportsPictureInPicture PUBLIC
+attr/supportsRtl PUBLIC
+attr/supportsStylusHandwriting PUBLIC STAGED_ID=0x01df0006
+attr/supportsSwitchingToNextInputMethod PUBLIC
+attr/supportsUploading PUBLIC
+attr/suppressesSpellChecker PUBLIC
+attr/switchMinWidth PUBLIC
+attr/switchPadding PUBLIC
+attr/switchPreferenceStyle PUBLIC
+attr/switchStyle PUBLIC
+attr/switchTextAppearance PUBLIC
+attr/switchTextOff PUBLIC
+attr/switchTextOn PUBLIC
+attr/syncable PUBLIC
+attr/systemUserOnly PUBLIC STAGED_ID=0x01bd0005
+attr/tabStripEnabled PUBLIC
+attr/tabStripLeft PUBLIC
+attr/tabStripRight PUBLIC
+attr/tabWidgetStyle PUBLIC
+attr/tag PUBLIC
+attr/targetActivity PUBLIC
+attr/targetCellHeight PUBLIC
+attr/targetCellWidth PUBLIC
+attr/targetClass PUBLIC
+attr/targetDescriptions PUBLIC
+attr/targetId PUBLIC
+attr/targetName PUBLIC
+attr/targetPackage PUBLIC
+attr/targetProcesses PUBLIC
+attr/targetSandboxVersion PUBLIC
+attr/targetSdkVersion PUBLIC
+attr/taskAffinity PUBLIC
+attr/taskCloseEnterAnimation PUBLIC
+attr/taskCloseExitAnimation PUBLIC
+attr/taskOpenEnterAnimation PUBLIC
+attr/taskOpenExitAnimation PUBLIC
+attr/taskToBackEnterAnimation PUBLIC
+attr/taskToBackExitAnimation PUBLIC
+attr/taskToFrontEnterAnimation PUBLIC
+attr/taskToFrontExitAnimation PUBLIC
+attr/tension PUBLIC
+attr/testOnly PUBLIC
+attr/text PUBLIC
+attr/textAlignment PUBLIC
+attr/textAllCaps PUBLIC
+attr/textAppearance PUBLIC
+attr/textAppearanceButton PUBLIC
+attr/textAppearanceInverse PUBLIC
+attr/textAppearanceLarge PUBLIC
+attr/textAppearanceLargeInverse PUBLIC
+attr/textAppearanceLargePopupMenu PUBLIC
+attr/textAppearanceListItem PUBLIC
+attr/textAppearanceListItemSecondary PUBLIC
+attr/textAppearanceListItemSmall PUBLIC
+attr/textAppearanceMedium PUBLIC
+attr/textAppearanceMediumInverse PUBLIC
+attr/textAppearancePopupMenuHeader PUBLIC
+attr/textAppearanceSearchResultSubtitle PUBLIC
+attr/textAppearanceSearchResultTitle PUBLIC
+attr/textAppearanceSmall PUBLIC
+attr/textAppearanceSmallInverse PUBLIC
+attr/textAppearanceSmallPopupMenu PUBLIC
+attr/textCheckMark PUBLIC
+attr/textCheckMarkInverse PUBLIC
+attr/textColor PUBLIC
+attr/textColorAlertDialogListItem PUBLIC
+attr/textColorHighlight PUBLIC
+attr/textColorHighlightInverse PUBLIC
+attr/textColorHint PUBLIC
+attr/textColorHintInverse PUBLIC
+attr/textColorLink PUBLIC
+attr/textColorLinkInverse PUBLIC
+attr/textColorPrimary PUBLIC
+attr/textColorPrimaryDisableOnly PUBLIC
+attr/textColorPrimaryInverse PUBLIC
+attr/textColorPrimaryInverseDisableOnly PUBLIC
+attr/textColorPrimaryInverseNoDisable PUBLIC
+attr/textColorPrimaryNoDisable PUBLIC
+attr/textColorSecondary PUBLIC
+attr/textColorSecondaryInverse PUBLIC
+attr/textColorSecondaryInverseNoDisable PUBLIC
+attr/textColorSecondaryNoDisable PUBLIC
+attr/textColorTertiary PUBLIC
+attr/textColorTertiaryInverse PUBLIC
+attr/textCursorDrawable PUBLIC
+attr/textDirection PUBLIC
+attr/textEditNoPasteWindowLayout PUBLIC
+attr/textEditPasteWindowLayout PUBLIC
+attr/textEditSideNoPasteWindowLayout PUBLIC
+attr/textEditSidePasteWindowLayout PUBLIC
+attr/textEditSuggestionItemLayout PUBLIC
+attr/textFilterEnabled PUBLIC
+attr/textFontWeight PUBLIC
+attr/textIsSelectable PUBLIC
+attr/textLocale PUBLIC
+attr/textOff PUBLIC
+attr/textOn PUBLIC
+attr/textScaleX PUBLIC
+attr/textSelectHandle PUBLIC
+attr/textSelectHandleLeft PUBLIC
+attr/textSelectHandleRight PUBLIC
+attr/textSelectHandleWindowStyle PUBLIC
+attr/textSize PUBLIC
+attr/textStyle PUBLIC
+attr/textSuggestionsWindowStyle PUBLIC
+attr/textViewStyle PUBLIC
+attr/theme PUBLIC
+attr/thickness PUBLIC
+attr/thicknessRatio PUBLIC
+attr/thumb PUBLIC
+attr/thumbOffset PUBLIC
+attr/thumbPosition PUBLIC
+attr/thumbTextPadding PUBLIC
+attr/thumbTint PUBLIC
+attr/thumbTintMode PUBLIC
+attr/thumbnail PUBLIC
+attr/tickMark PUBLIC
+attr/tickMarkTint PUBLIC
+attr/tickMarkTintMode PUBLIC
+attr/tileMode PUBLIC
+attr/tileModeX PUBLIC
+attr/tileModeY PUBLIC
+attr/tileService PUBLIC STAGED_ID=0x01df001c
+attr/timePickerDialogTheme PUBLIC
+attr/timePickerMode PUBLIC
+attr/timePickerStyle PUBLIC
+attr/timeZone PUBLIC
+attr/tint PUBLIC
+attr/tintMode PUBLIC
+attr/title PUBLIC
+attr/titleCondensed PUBLIC
+attr/titleMargin PUBLIC
+attr/titleMarginBottom PUBLIC
+attr/titleMarginEnd PUBLIC
+attr/titleMarginStart PUBLIC
+attr/titleMarginTop PUBLIC
+attr/titleTextAppearance PUBLIC
+attr/titleTextColor PUBLIC
+attr/titleTextStyle PUBLIC
+attr/toAlpha PUBLIC
+attr/toDegrees PUBLIC
+attr/toExtendBottom PUBLIC STAGED_ID=0x01df001b
+attr/toExtendLeft PUBLIC STAGED_ID=0x01df0018
+attr/toExtendRight PUBLIC STAGED_ID=0x01df001a
+attr/toExtendTop PUBLIC STAGED_ID=0x01df0019
+attr/toId PUBLIC
+attr/toScene PUBLIC
+attr/toXDelta PUBLIC
+attr/toXScale PUBLIC
+attr/toYDelta PUBLIC
+attr/toYScale PUBLIC
+attr/toolbarStyle PUBLIC
+attr/tooltipText PUBLIC
+attr/top PUBLIC
+attr/topBright PUBLIC
+attr/topDark PUBLIC
+attr/topLeftRadius PUBLIC
+attr/topOffset PUBLIC
+attr/topRightRadius PUBLIC
+attr/touchscreenBlocksFocus PUBLIC
+attr/track PUBLIC
+attr/trackTint PUBLIC
+attr/trackTintMode PUBLIC
+attr/transcriptMode PUBLIC
+attr/transformPivotX PUBLIC
+attr/transformPivotY PUBLIC
+attr/transition PUBLIC
+attr/transitionGroup PUBLIC
+attr/transitionName PUBLIC
+attr/transitionOrdering PUBLIC
+attr/transitionVisibilityMode PUBLIC
+attr/translateX PUBLIC
+attr/translateY PUBLIC
+attr/translationX PUBLIC
+attr/translationY PUBLIC
+attr/translationZ PUBLIC
+attr/trimPathEnd PUBLIC
+attr/trimPathOffset PUBLIC
+attr/trimPathStart PUBLIC
+attr/ttcIndex PUBLIC
+attr/tunerCount PUBLIC
+attr/turnScreenOn PUBLIC
+attr/type PUBLIC
+attr/typeface PUBLIC
+attr/uiOptions PUBLIC
+attr/uncertainGestureColor PUBLIC
+attr/unfocusedMonthDateColor PUBLIC
+attr/unselectedAlpha PUBLIC
+attr/updatePeriodMillis PUBLIC
+attr/use32bitAbi PUBLIC
+attr/useAppZygote PUBLIC
+attr/useBoundsForWidth PUBLIC STAGED_ID=0x01bd0010
+attr/useDefaultMargins PUBLIC
+attr/useEmbeddedDex PUBLIC
+attr/useIntrinsicSizeAsMinimum PUBLIC
+attr/useLevel PUBLIC
+attr/useLocalePreferredLineHeightForMinimum PUBLIC STAGED_ID=0x01bd0015
+attr/userRestriction PUBLIC
+attr/userSelectable PUBLIC STAGED_ID=0x01a20004
+attr/userVisible PUBLIC
+attr/usesAssistData PUBLIC STAGED_ID=0x01a20009
+attr/usesAssistScreenshots PUBLIC STAGED_ID=0x01a2000a
+attr/usesAssistStructureScreenContent PUBLIC STAGED_ID=0x01a2000b
+attr/usesCleartextTraffic PUBLIC
+attr/usesNonSdkApi PUBLIC
+attr/usesPermissionFlags PUBLIC
+attr/value PUBLIC
+attr/valueFrom PUBLIC
+attr/valueTo PUBLIC
+attr/valueType PUBLIC
+attr/variablePadding PUBLIC
+attr/vendor PUBLIC
+attr/version PUBLIC
+attr/versionCode PUBLIC
+attr/versionCodeMajor PUBLIC
+attr/versionMajor PUBLIC
+attr/versionName PUBLIC
+attr/verticalCorrection PUBLIC
+attr/verticalDivider PUBLIC
+attr/verticalGap PUBLIC
+attr/verticalScrollbarPosition PUBLIC
+attr/verticalSpacing PUBLIC
+attr/viewportHeight PUBLIC
+attr/viewportWidth PUBLIC
+attr/visibility PUBLIC
+attr/visible PUBLIC
+attr/visibleToInstantApps PUBLIC
+attr/visualQueryDetectionService PUBLIC STAGED_ID=0x01ce0008
+attr/vmSafeMode PUBLIC
+attr/voiceIcon PUBLIC
+attr/voiceLanguage PUBLIC
+attr/voiceLanguageModel PUBLIC
+attr/voiceMaxResults PUBLIC
+attr/voicePromptText PUBLIC
+attr/voiceSearchMode PUBLIC
+attr/wallpaperCloseEnterAnimation PUBLIC
+attr/wallpaperCloseExitAnimation PUBLIC
+attr/wallpaperIntraCloseEnterAnimation PUBLIC
+attr/wallpaperIntraCloseExitAnimation PUBLIC
+attr/wallpaperIntraOpenEnterAnimation PUBLIC
+attr/wallpaperIntraOpenExitAnimation PUBLIC
+attr/wallpaperOpenEnterAnimation PUBLIC
+attr/wallpaperOpenExitAnimation PUBLIC
+attr/wantsRoleHolderPriority PUBLIC STAGED_ID=0x01b7000b
+attr/webTextViewStyle PUBLIC
+attr/webViewStyle PUBLIC
+attr/weekDayTextAppearance PUBLIC
+attr/weekNumberColor PUBLIC
+attr/weekSeparatorLineColor PUBLIC
+attr/weightSum PUBLIC
+attr/widgetCategory PUBLIC
+attr/widgetFeatures PUBLIC
+attr/widgetLayout PUBLIC
+attr/width PUBLIC
+attr/windowActionBar PUBLIC
+attr/windowActionBarOverlay PUBLIC
+attr/windowActionModeOverlay PUBLIC
+attr/windowActivityTransitions PUBLIC
+attr/windowAllowEnterTransitionOverlap PUBLIC
+attr/windowAllowReturnTransitionOverlap PUBLIC
+attr/windowAnimationStyle PUBLIC
+attr/windowBackground PUBLIC
+attr/windowBackgroundBlurRadius PUBLIC
+attr/windowBackgroundFallback PUBLIC
+attr/windowBlurBehindEnabled PUBLIC
+attr/windowBlurBehindRadius PUBLIC
+attr/windowClipToOutline PUBLIC
+attr/windowCloseOnTouchOutside PUBLIC
+attr/windowContentOverlay PUBLIC
+attr/windowContentTransitionManager PUBLIC
+attr/windowContentTransitions PUBLIC
+attr/windowDisablePreview PUBLIC
+attr/windowDrawsSystemBarBackgrounds PUBLIC
+attr/windowElevation PUBLIC
+attr/windowEnableSplitTouch PUBLIC
+attr/windowEnterAnimation PUBLIC
+attr/windowEnterTransition PUBLIC
+attr/windowExitAnimation PUBLIC
+attr/windowExitTransition PUBLIC
+attr/windowFrame PUBLIC
+attr/windowFullscreen PUBLIC
+attr/windowHideAnimation PUBLIC
+attr/windowIsFloating PUBLIC
+attr/windowIsFrameRatePowerSavingsBalanced PUBLIC STAGED_ID=0x01bd001b
+attr/windowIsTranslucent PUBLIC
+attr/windowLayoutAffinity PUBLIC
+attr/windowLayoutInDisplayCutoutMode PUBLIC
+attr/windowLightNavigationBar PUBLIC
+attr/windowLightStatusBar PUBLIC
+attr/windowMinWidthMajor PUBLIC
+attr/windowMinWidthMinor PUBLIC
+attr/windowNoDisplay PUBLIC
+attr/windowNoMoveAnimation PUBLIC STAGED_ID=0x01ce0013
+attr/windowNoTitle PUBLIC
+attr/windowOptOutEdgeToEdgeEnforcement PUBLIC STAGED_ID=0x01bd0012
+attr/windowOverscan PUBLIC
+attr/windowReenterTransition PUBLIC
+attr/windowReturnTransition PUBLIC
+attr/windowSharedElementEnterTransition PUBLIC
+attr/windowSharedElementExitTransition PUBLIC
+attr/windowSharedElementReenterTransition PUBLIC
+attr/windowSharedElementReturnTransition PUBLIC
+attr/windowSharedElementsUseOverlay PUBLIC
+attr/windowShowAnimation PUBLIC
+attr/windowShowWallpaper PUBLIC
+attr/windowSoftInputMode PUBLIC
+attr/windowSplashScreenAnimatedIcon PUBLIC
+attr/windowSplashScreenAnimationDuration PUBLIC
+attr/windowSplashScreenBackground PUBLIC
+attr/windowSplashScreenBehavior PUBLIC STAGED_ID=0x01df001d
+attr/windowSplashScreenBrandingImage PUBLIC
+attr/windowSplashScreenIconBackgroundColor PUBLIC
+attr/windowSplashscreenContent PUBLIC
+attr/windowSwipeToDismiss PUBLIC
+attr/windowTitleBackgroundStyle PUBLIC
+attr/windowTitleSize PUBLIC
+attr/windowTitleStyle PUBLIC
+attr/windowTransitionBackgroundFadeDuration PUBLIC
+attr/windowTranslucentNavigation PUBLIC
+attr/windowTranslucentStatus PUBLIC
+attr/writePermission PUBLIC
+attr/x PUBLIC
+attr/xlargeScreens PUBLIC
+attr/y PUBLIC
+attr/yearListItemTextAppearance PUBLIC
+attr/yearListSelectorColor PUBLIC
+attr/yesNoPreferenceStyle PUBLIC
+attr/zAdjustment PUBLIC
+attr/zygotePreloadName PUBLIC
+attr/zygotePreloadNativeFunc PUBLIC STAGED_ID=0x01a20008
+attr/zygotePreloadNativeLib PUBLIC STAGED_ID=0x01a20007
+bool/config_assistantOnTopOfDream PUBLIC
+bool/config_enableDefaultNotes PUBLIC STAGED_ID=0x01be0001
+bool/config_enableDefaultNotesForWorkProfile PUBLIC STAGED_ID=0x01be0002
+bool/config_enableMaterialDesignInPackageInstaller PUBLIC STAGED_ID=0x01a30000
+bool/config_enableQrCodeScannerOnLockScreen PUBLIC STAGED_ID=0x01cf0001
+bool/config_perDisplayFocusEnabled PUBLIC
+bool/config_preventImeStartupUnlessTextEditor PUBLIC STAGED_ID=0x01cf0000
+bool/config_remoteInsetsControllerControlsSystemBars PUBLIC
+bool/config_safetyProtectionEnabled PUBLIC STAGED_ID=0x01be0000
+bool/config_sendPackageName PUBLIC
+bool/config_showDefaultAssistant PUBLIC
+bool/config_showDefaultEmergency PUBLIC
+bool/config_showDefaultHome PUBLIC
+color/background_dark PUBLIC
+color/background_light PUBLIC
+color/black PUBLIC
+color/darker_gray PUBLIC
+color/holo_blue_bright PUBLIC
+color/holo_blue_dark PUBLIC
+color/holo_blue_light PUBLIC
+color/holo_green_dark PUBLIC
+color/holo_green_light PUBLIC
+color/holo_orange_dark PUBLIC
+color/holo_orange_light PUBLIC
+color/holo_purple PUBLIC
+color/holo_red_dark PUBLIC
+color/holo_red_light PUBLIC
+color/primary_text_dark PUBLIC
+color/primary_text_dark_nodisable PUBLIC
+color/primary_text_light PUBLIC
+color/primary_text_light_nodisable PUBLIC
+color/secondary_text_dark PUBLIC
+color/secondary_text_dark_nodisable PUBLIC
+color/secondary_text_light PUBLIC
+color/secondary_text_light_nodisable PUBLIC
+color/system_accent1_0 PUBLIC
+color/system_accent1_10 PUBLIC
+color/system_accent1_100 PUBLIC
+color/system_accent1_1000 PUBLIC
+color/system_accent1_200 PUBLIC
+color/system_accent1_300 PUBLIC
+color/system_accent1_400 PUBLIC
+color/system_accent1_50 PUBLIC
+color/system_accent1_500 PUBLIC
+color/system_accent1_600 PUBLIC
+color/system_accent1_700 PUBLIC
+color/system_accent1_800 PUBLIC
+color/system_accent1_900 PUBLIC
+color/system_accent2_0 PUBLIC
+color/system_accent2_10 PUBLIC
+color/system_accent2_100 PUBLIC
+color/system_accent2_1000 PUBLIC
+color/system_accent2_200 PUBLIC
+color/system_accent2_300 PUBLIC
+color/system_accent2_400 PUBLIC
+color/system_accent2_50 PUBLIC
+color/system_accent2_500 PUBLIC
+color/system_accent2_600 PUBLIC
+color/system_accent2_700 PUBLIC
+color/system_accent2_800 PUBLIC
+color/system_accent2_900 PUBLIC
+color/system_accent3_0 PUBLIC
+color/system_accent3_10 PUBLIC
+color/system_accent3_100 PUBLIC
+color/system_accent3_1000 PUBLIC
+color/system_accent3_200 PUBLIC
+color/system_accent3_300 PUBLIC
+color/system_accent3_400 PUBLIC
+color/system_accent3_50 PUBLIC
+color/system_accent3_500 PUBLIC
+color/system_accent3_600 PUBLIC
+color/system_accent3_700 PUBLIC
+color/system_accent3_800 PUBLIC
+color/system_accent3_900 PUBLIC
+color/system_background_dark PUBLIC STAGED_ID=0x01c90043
+color/system_background_light PUBLIC STAGED_ID=0x01c9000c
+color/system_control_activated_dark PUBLIC STAGED_ID=0x01c90061
+color/system_control_activated_light PUBLIC STAGED_ID=0x01c9002a
+color/system_control_highlight_dark PUBLIC STAGED_ID=0x01c90063
+color/system_control_highlight_light PUBLIC STAGED_ID=0x01c9002c
+color/system_control_normal_dark PUBLIC STAGED_ID=0x01c90062
+color/system_control_normal_light PUBLIC STAGED_ID=0x01c9002b
+color/system_error_0 PUBLIC
+color/system_error_10 PUBLIC
+color/system_error_100 PUBLIC
+color/system_error_1000 PUBLIC
+color/system_error_200 PUBLIC
+color/system_error_300 PUBLIC
+color/system_error_400 PUBLIC
+color/system_error_50 PUBLIC
+color/system_error_500 PUBLIC
+color/system_error_600 PUBLIC
+color/system_error_700 PUBLIC
+color/system_error_800 PUBLIC
+color/system_error_900 PUBLIC
+color/system_error_container_dark PUBLIC STAGED_ID=0x01c90053
+color/system_error_container_light PUBLIC STAGED_ID=0x01c9001c
+color/system_error_dark PUBLIC STAGED_ID=0x01c90051
+color/system_error_dim_dark PUBLIC STAGED
+color/system_error_dim_light PUBLIC STAGED
+color/system_error_light PUBLIC STAGED_ID=0x01c9001a
+color/system_inverse_on_surface_dark PUBLIC STAGED_ID=0x019d0006
+color/system_inverse_on_surface_light PUBLIC STAGED_ID=0x019d0000
+color/system_inverse_primary_dark PUBLIC STAGED_ID=0x019d0007
+color/system_inverse_primary_light PUBLIC STAGED_ID=0x019d0001
+color/system_inverse_surface_dark PUBLIC STAGED_ID=0x019d0008
+color/system_inverse_surface_light PUBLIC STAGED_ID=0x019d0002
+color/system_neutral1_0 PUBLIC
+color/system_neutral1_10 PUBLIC
+color/system_neutral1_100 PUBLIC
+color/system_neutral1_1000 PUBLIC
+color/system_neutral1_200 PUBLIC
+color/system_neutral1_300 PUBLIC
+color/system_neutral1_400 PUBLIC
+color/system_neutral1_50 PUBLIC
+color/system_neutral1_500 PUBLIC
+color/system_neutral1_600 PUBLIC
+color/system_neutral1_700 PUBLIC
+color/system_neutral1_800 PUBLIC
+color/system_neutral1_900 PUBLIC
+color/system_neutral2_0 PUBLIC
+color/system_neutral2_10 PUBLIC
+color/system_neutral2_100 PUBLIC
+color/system_neutral2_1000 PUBLIC
+color/system_neutral2_200 PUBLIC
+color/system_neutral2_300 PUBLIC
+color/system_neutral2_400 PUBLIC
+color/system_neutral2_50 PUBLIC
+color/system_neutral2_500 PUBLIC
+color/system_neutral2_600 PUBLIC
+color/system_neutral2_700 PUBLIC
+color/system_neutral2_800 PUBLIC
+color/system_neutral2_900 PUBLIC
+color/system_notification_accent_color PUBLIC
+color/system_on_background_dark PUBLIC STAGED_ID=0x01c90044
+color/system_on_background_light PUBLIC STAGED_ID=0x01c9000d
+color/system_on_error_container_dark PUBLIC STAGED_ID=0x01c90054
+color/system_on_error_container_light PUBLIC STAGED_ID=0x01c9001d
+color/system_on_error_dark PUBLIC STAGED_ID=0x01c90052
+color/system_on_error_light PUBLIC STAGED_ID=0x01c9001b
+color/system_on_primary_container_dark PUBLIC STAGED_ID=0x01c90038
+color/system_on_primary_container_light PUBLIC STAGED_ID=0x01c90001
+color/system_on_primary_dark PUBLIC STAGED_ID=0x01c9003a
+color/system_on_primary_fixed PUBLIC
+color/system_on_primary_fixed_dark PUBLIC STAGED
+color/system_on_primary_fixed_light PUBLIC STAGED
+color/system_on_primary_fixed_variant PUBLIC
+color/system_on_primary_fixed_variant_dark PUBLIC STAGED
+color/system_on_primary_fixed_variant_light PUBLIC STAGED
+color/system_on_primary_light PUBLIC STAGED_ID=0x01c90003
+color/system_on_secondary_container_dark PUBLIC STAGED_ID=0x01c9003c
+color/system_on_secondary_container_light PUBLIC STAGED_ID=0x01c90005
+color/system_on_secondary_dark PUBLIC STAGED_ID=0x01c9003e
+color/system_on_secondary_fixed PUBLIC
+color/system_on_secondary_fixed_dark PUBLIC STAGED
+color/system_on_secondary_fixed_light PUBLIC STAGED
+color/system_on_secondary_fixed_variant PUBLIC
+color/system_on_secondary_fixed_variant_dark PUBLIC STAGED
+color/system_on_secondary_fixed_variant_light PUBLIC STAGED
+color/system_on_secondary_light PUBLIC STAGED_ID=0x01c90007
+color/system_on_surface_dark PUBLIC STAGED_ID=0x01c90046
+color/system_on_surface_disabled PUBLIC STAGED_ID=0x01b80001
+color/system_on_surface_light PUBLIC STAGED_ID=0x01c9000f
+color/system_on_surface_variant_dark PUBLIC STAGED_ID=0x01c9004f
+color/system_on_surface_variant_light PUBLIC STAGED_ID=0x01c90018
+color/system_on_tertiary_container_dark PUBLIC STAGED_ID=0x01c90040
+color/system_on_tertiary_container_light PUBLIC STAGED_ID=0x01c90009
+color/system_on_tertiary_dark PUBLIC STAGED_ID=0x01c90042
+color/system_on_tertiary_fixed PUBLIC
+color/system_on_tertiary_fixed_dark PUBLIC STAGED
+color/system_on_tertiary_fixed_light PUBLIC STAGED
+color/system_on_tertiary_fixed_variant PUBLIC
+color/system_on_tertiary_fixed_variant_dark PUBLIC STAGED
+color/system_on_tertiary_fixed_variant_light PUBLIC STAGED
+color/system_on_tertiary_light PUBLIC STAGED_ID=0x01c9000b
+color/system_outline_dark PUBLIC STAGED_ID=0x01c90050
+color/system_outline_disabled PUBLIC STAGED_ID=0x01b80002
+color/system_outline_light PUBLIC STAGED_ID=0x01c90019
+color/system_outline_variant_dark PUBLIC STAGED_ID=0x01c9007b
+color/system_outline_variant_light PUBLIC STAGED_ID=0x01c9007a
+color/system_palette_key_color_error_dark PUBLIC STAGED
+color/system_palette_key_color_error_light PUBLIC STAGED
+color/system_palette_key_color_neutral_dark PUBLIC STAGED_ID=0x01c9006c
+color/system_palette_key_color_neutral_light PUBLIC STAGED_ID=0x01c90035
+color/system_palette_key_color_neutral_variant_dark PUBLIC STAGED_ID=0x01c9006d
+color/system_palette_key_color_neutral_variant_light PUBLIC STAGED_ID=0x01c90036
+color/system_palette_key_color_primary_dark PUBLIC STAGED_ID=0x01c90069
+color/system_palette_key_color_primary_light PUBLIC STAGED_ID=0x01c90032
+color/system_palette_key_color_secondary_dark PUBLIC STAGED_ID=0x01c9006a
+color/system_palette_key_color_secondary_light PUBLIC STAGED_ID=0x01c90033
+color/system_palette_key_color_tertiary_dark PUBLIC STAGED_ID=0x01c9006b
+color/system_palette_key_color_tertiary_light PUBLIC STAGED_ID=0x01c90034
+color/system_primary_container_dark PUBLIC STAGED_ID=0x01c90037
+color/system_primary_container_light PUBLIC STAGED_ID=0x01c90000
+color/system_primary_dark PUBLIC STAGED_ID=0x01c90039
+color/system_primary_dim_dark PUBLIC STAGED
+color/system_primary_dim_light PUBLIC STAGED
+color/system_primary_fixed PUBLIC
+color/system_primary_fixed_dark PUBLIC STAGED
+color/system_primary_fixed_dim PUBLIC
+color/system_primary_fixed_dim_dark PUBLIC STAGED
+color/system_primary_fixed_dim_light PUBLIC STAGED
+color/system_primary_fixed_light PUBLIC STAGED
+color/system_primary_light PUBLIC STAGED_ID=0x01c90002
+color/system_scrim_dark PUBLIC STAGED_ID=0x019d0009
+color/system_scrim_light PUBLIC STAGED_ID=0x019d0003
+color/system_secondary_container_dark PUBLIC STAGED_ID=0x01c9003b
+color/system_secondary_container_light PUBLIC STAGED_ID=0x01c90004
+color/system_secondary_dark PUBLIC STAGED_ID=0x01c9003d
+color/system_secondary_dim_dark PUBLIC STAGED
+color/system_secondary_dim_light PUBLIC STAGED
+color/system_secondary_fixed PUBLIC
+color/system_secondary_fixed_dark PUBLIC STAGED
+color/system_secondary_fixed_dim PUBLIC
+color/system_secondary_fixed_dim_dark PUBLIC STAGED
+color/system_secondary_fixed_dim_light PUBLIC STAGED
+color/system_secondary_fixed_light PUBLIC STAGED
+color/system_secondary_light PUBLIC STAGED_ID=0x01c90006
+color/system_shadow_dark PUBLIC STAGED_ID=0x019d000a
+color/system_shadow_light PUBLIC STAGED_ID=0x019d0004
+color/system_surface_bright_dark PUBLIC STAGED_ID=0x01c9004c
+color/system_surface_bright_light PUBLIC STAGED_ID=0x01c90015
+color/system_surface_container_dark PUBLIC STAGED_ID=0x01c90049
+color/system_surface_container_high_dark PUBLIC STAGED_ID=0x01c9004a
+color/system_surface_container_high_light PUBLIC STAGED_ID=0x01c90013
+color/system_surface_container_highest_dark PUBLIC STAGED_ID=0x01c9004b
+color/system_surface_container_highest_light PUBLIC STAGED_ID=0x01c90014
+color/system_surface_container_light PUBLIC STAGED_ID=0x01c90012
+color/system_surface_container_low_dark PUBLIC STAGED_ID=0x01c90047
+color/system_surface_container_low_light PUBLIC STAGED_ID=0x01c90010
+color/system_surface_container_lowest_dark PUBLIC STAGED_ID=0x01c90048
+color/system_surface_container_lowest_light PUBLIC STAGED_ID=0x01c90011
+color/system_surface_dark PUBLIC STAGED_ID=0x01c90045
+color/system_surface_dim_dark PUBLIC STAGED_ID=0x01c9004d
+color/system_surface_dim_light PUBLIC STAGED_ID=0x01c90016
+color/system_surface_disabled PUBLIC STAGED_ID=0x01b80000
+color/system_surface_light PUBLIC STAGED_ID=0x01c9000e
+color/system_surface_tint_dark PUBLIC STAGED_ID=0x019d000b
+color/system_surface_tint_light PUBLIC STAGED_ID=0x019d0005
+color/system_surface_variant_dark PUBLIC STAGED_ID=0x01c9004e
+color/system_surface_variant_light PUBLIC STAGED_ID=0x01c90017
+color/system_tertiary_container_dark PUBLIC STAGED_ID=0x01c9003f
+color/system_tertiary_container_light PUBLIC STAGED_ID=0x01c90008
+color/system_tertiary_dark PUBLIC STAGED_ID=0x01c90041
+color/system_tertiary_dim_dark PUBLIC STAGED
+color/system_tertiary_dim_light PUBLIC STAGED
+color/system_tertiary_fixed PUBLIC
+color/system_tertiary_fixed_dark PUBLIC STAGED
+color/system_tertiary_fixed_dim PUBLIC
+color/system_tertiary_fixed_dim_dark PUBLIC STAGED
+color/system_tertiary_fixed_dim_light PUBLIC STAGED
+color/system_tertiary_fixed_light PUBLIC STAGED
+color/system_tertiary_light PUBLIC STAGED_ID=0x01c9000a
+color/system_text_hint_inverse_dark PUBLIC STAGED_ID=0x01c90068
+color/system_text_hint_inverse_light PUBLIC STAGED_ID=0x01c90031
+color/system_text_primary_inverse_dark PUBLIC STAGED_ID=0x01c90064
+color/system_text_primary_inverse_disable_only_dark PUBLIC STAGED_ID=0x01c90066
+color/system_text_primary_inverse_disable_only_light PUBLIC STAGED_ID=0x01c9002f
+color/system_text_primary_inverse_light PUBLIC STAGED_ID=0x01c9002d
+color/system_text_secondary_and_tertiary_inverse_dark PUBLIC STAGED_ID=0x01c90065
+color/system_text_secondary_and_tertiary_inverse_disabled_dark PUBLIC STAGED_ID=0x01c90067
+color/system_text_secondary_and_tertiary_inverse_disabled_light PUBLIC STAGED_ID=0x01c90030
+color/system_text_secondary_and_tertiary_inverse_light PUBLIC STAGED_ID=0x01c9002e
+color/tab_indicator_text PUBLIC
+color/tertiary_text_dark PUBLIC
+color/tertiary_text_light PUBLIC
+color/transparent PUBLIC
+color/white PUBLIC
+color/widget_edittext_dark PUBLIC
+dimen/app_icon_size PUBLIC
+dimen/config_motionExpressiveDefaultEffectDamping PUBLIC STAGED_ID=0x01af0009
+dimen/config_motionExpressiveDefaultSpatialDamping PUBLIC
+dimen/config_motionExpressiveFastEffectDamping PUBLIC STAGED_ID=0x01af0007
+dimen/config_motionExpressiveFastSpatialDamping PUBLIC
+dimen/config_motionExpressiveSlowEffectDamping PUBLIC STAGED_ID=0x01af000b
+dimen/config_motionExpressiveSlowSpatialDamping PUBLIC STAGED_ID=0x01af000a
+dimen/config_motionStandardDefaultEffectDamping PUBLIC STAGED_ID=0x01af0003
+dimen/config_motionStandardDefaultSpatialDamping PUBLIC STAGED_ID=0x01af0002
+dimen/config_motionStandardFastEffectDamping PUBLIC STAGED_ID=0x01af0001
+dimen/config_motionStandardFastSpatialDamping PUBLIC STAGED_ID=0x01af0000
+dimen/config_motionStandardSlowEffectDamping PUBLIC STAGED_ID=0x01af0005
+dimen/config_motionStandardSlowSpatialDamping PUBLIC STAGED_ID=0x01af0004
+dimen/config_restrictedIconSize PUBLIC
+dimen/config_shapeCornerRadiusLarge PUBLIC
+dimen/config_shapeCornerRadiusMedium PUBLIC
+dimen/config_shapeCornerRadiusSmall PUBLIC STAGED_ID=0x01af000d
+dimen/config_shapeCornerRadiusXlarge PUBLIC
+dimen/config_shapeCornerRadiusXsmall PUBLIC STAGED_ID=0x01af000c
+dimen/config_viewConfigurationHandwritingGestureLineMargin PUBLIC STAGED_ID=0x01ca0000
+dimen/dialog_min_width_major PUBLIC
+dimen/dialog_min_width_minor PUBLIC
+dimen/notification_large_icon_height PUBLIC
+dimen/notification_large_icon_width PUBLIC
+dimen/system_app_widget_background_radius PUBLIC
+dimen/system_app_widget_inner_radius PUBLIC
+dimen/thumbnail_height PUBLIC
+dimen/thumbnail_width PUBLIC
+drawable/alert_dark_frame PUBLIC
+drawable/alert_light_frame PUBLIC
+drawable/arrow_down_float PUBLIC
+drawable/arrow_up_float PUBLIC
+drawable/bottom_bar PUBLIC
+drawable/btn_default PUBLIC
+drawable/btn_default_small PUBLIC
+drawable/btn_dialog PUBLIC
+drawable/btn_dropdown PUBLIC
+drawable/btn_minus PUBLIC
+drawable/btn_plus PUBLIC
+drawable/btn_radio PUBLIC
+drawable/btn_star PUBLIC
+drawable/btn_star_big_off PUBLIC
+drawable/btn_star_big_on PUBLIC
+drawable/button_onoff_indicator_off PUBLIC
+drawable/button_onoff_indicator_on PUBLIC
+drawable/checkbox_off_background PUBLIC
+drawable/checkbox_on_background PUBLIC
+drawable/dark_header PUBLIC
+drawable/dialog_frame PUBLIC
+drawable/dialog_holo_dark_frame PUBLIC
+drawable/dialog_holo_light_frame PUBLIC
+drawable/divider_horizontal_bright PUBLIC
+drawable/divider_horizontal_dark PUBLIC
+drawable/divider_horizontal_dim_dark PUBLIC
+drawable/divider_horizontal_textfield PUBLIC
+drawable/edit_text PUBLIC
+drawable/editbox_background PUBLIC
+drawable/editbox_background_normal PUBLIC
+drawable/editbox_dropdown_dark_frame PUBLIC
+drawable/editbox_dropdown_light_frame PUBLIC
+drawable/gallery_thumb PUBLIC
+drawable/ic_btn_speak_now PUBLIC
+drawable/ic_delete PUBLIC
+drawable/ic_dialog_alert PUBLIC
+drawable/ic_dialog_dialer PUBLIC
+drawable/ic_dialog_email PUBLIC
+drawable/ic_dialog_info PUBLIC
+drawable/ic_dialog_map PUBLIC
+drawable/ic_info PUBLIC
+drawable/ic_input_add PUBLIC
+drawable/ic_input_delete PUBLIC
+drawable/ic_input_get PUBLIC
+drawable/ic_lock_idle_alarm PUBLIC
+drawable/ic_lock_idle_charging PUBLIC
+drawable/ic_lock_idle_lock PUBLIC
+drawable/ic_lock_idle_low_battery PUBLIC
+drawable/ic_lock_lock PUBLIC
+drawable/ic_lock_power_off PUBLIC
+drawable/ic_lock_silent_mode PUBLIC
+drawable/ic_lock_silent_mode_off PUBLIC
+drawable/ic_media_ff PUBLIC
+drawable/ic_media_next PUBLIC
+drawable/ic_media_pause PUBLIC
+drawable/ic_media_play PUBLIC
+drawable/ic_media_previous PUBLIC
+drawable/ic_media_rew PUBLIC
+drawable/ic_menu_add PUBLIC
+drawable/ic_menu_agenda PUBLIC
+drawable/ic_menu_always_landscape_portrait PUBLIC
+drawable/ic_menu_call PUBLIC
+drawable/ic_menu_camera PUBLIC
+drawable/ic_menu_close_clear_cancel PUBLIC
+drawable/ic_menu_compass PUBLIC
+drawable/ic_menu_crop PUBLIC
+drawable/ic_menu_day PUBLIC
+drawable/ic_menu_delete PUBLIC
+drawable/ic_menu_directions PUBLIC
+drawable/ic_menu_edit PUBLIC
+drawable/ic_menu_gallery PUBLIC
+drawable/ic_menu_help PUBLIC
+drawable/ic_menu_info_details PUBLIC
+drawable/ic_menu_manage PUBLIC
+drawable/ic_menu_mapmode PUBLIC
+drawable/ic_menu_month PUBLIC
+drawable/ic_menu_more PUBLIC
+drawable/ic_menu_my_calendar PUBLIC
+drawable/ic_menu_mylocation PUBLIC
+drawable/ic_menu_myplaces PUBLIC
+drawable/ic_menu_preferences PUBLIC
+drawable/ic_menu_recent_history PUBLIC
+drawable/ic_menu_report_image PUBLIC
+drawable/ic_menu_revert PUBLIC
+drawable/ic_menu_rotate PUBLIC
+drawable/ic_menu_save PUBLIC
+drawable/ic_menu_search PUBLIC
+drawable/ic_menu_send PUBLIC
+drawable/ic_menu_set_as PUBLIC
+drawable/ic_menu_share PUBLIC
+drawable/ic_menu_slideshow PUBLIC
+drawable/ic_menu_sort_alphabetically PUBLIC
+drawable/ic_menu_sort_by_size PUBLIC
+drawable/ic_menu_today PUBLIC
+drawable/ic_menu_upload PUBLIC
+drawable/ic_menu_upload_you_tube PUBLIC
+drawable/ic_menu_view PUBLIC
+drawable/ic_menu_week PUBLIC
+drawable/ic_menu_zoom PUBLIC
+drawable/ic_notification_clear_all PUBLIC
+drawable/ic_notification_overlay PUBLIC
+drawable/ic_partial_secure PUBLIC
+drawable/ic_popup_disk_full PUBLIC
+drawable/ic_popup_reminder PUBLIC
+drawable/ic_popup_sync PUBLIC
+drawable/ic_safety_protection PUBLIC STAGED_ID=0x01d80000
+drawable/ic_search_category_default PUBLIC
+drawable/ic_secure PUBLIC
+drawable/list_selector_background PUBLIC
+drawable/menu_frame PUBLIC
+drawable/menu_full_frame PUBLIC
+drawable/menuitem_background PUBLIC
+drawable/picture_frame PUBLIC
+drawable/presence_audio_away PUBLIC
+drawable/presence_audio_busy PUBLIC
+drawable/presence_audio_online PUBLIC
+drawable/presence_away PUBLIC
+drawable/presence_busy PUBLIC
+drawable/presence_invisible PUBLIC
+drawable/presence_offline PUBLIC
+drawable/presence_online PUBLIC
+drawable/presence_video_away PUBLIC
+drawable/presence_video_busy PUBLIC
+drawable/presence_video_online PUBLIC
+drawable/progress_horizontal PUBLIC
+drawable/progress_indeterminate_horizontal PUBLIC
+drawable/radiobutton_off_background PUBLIC
+drawable/radiobutton_on_background PUBLIC
+drawable/screen_background_dark PUBLIC
+drawable/screen_background_dark_transparent PUBLIC
+drawable/screen_background_light PUBLIC
+drawable/screen_background_light_transparent PUBLIC
+drawable/spinner_background PUBLIC
+drawable/spinner_dropdown_background PUBLIC
+drawable/star_big_off PUBLIC
+drawable/star_big_on PUBLIC
+drawable/star_off PUBLIC
+drawable/star_on PUBLIC
+drawable/stat_notify_call_mute PUBLIC
+drawable/stat_notify_chat PUBLIC
+drawable/stat_notify_error PUBLIC
+drawable/stat_notify_missed_call PUBLIC
+drawable/stat_notify_more PUBLIC
+drawable/stat_notify_sdcard PUBLIC
+drawable/stat_notify_sdcard_prepare PUBLIC
+drawable/stat_notify_sdcard_usb PUBLIC
+drawable/stat_notify_sync PUBLIC
+drawable/stat_notify_sync_noanim PUBLIC
+drawable/stat_notify_voicemail PUBLIC
+drawable/stat_sys_data_bluetooth PUBLIC
+drawable/stat_sys_download PUBLIC
+drawable/stat_sys_download_done PUBLIC
+drawable/stat_sys_headset PUBLIC
+drawable/stat_sys_phone_call PUBLIC
+drawable/stat_sys_phone_call_forward PUBLIC
+drawable/stat_sys_phone_call_on_hold PUBLIC
+drawable/stat_sys_speakerphone PUBLIC
+drawable/stat_sys_upload PUBLIC
+drawable/stat_sys_upload_done PUBLIC
+drawable/stat_sys_vp_phone_call PUBLIC
+drawable/stat_sys_vp_phone_call_on_hold PUBLIC
+drawable/stat_sys_warning PUBLIC
+drawable/status_bar_item_app_background PUBLIC
+drawable/status_bar_item_background PUBLIC
+drawable/sym_action_call PUBLIC
+drawable/sym_action_chat PUBLIC
+drawable/sym_action_email PUBLIC
+drawable/sym_call_incoming PUBLIC
+drawable/sym_call_missed PUBLIC
+drawable/sym_call_outgoing PUBLIC
+drawable/sym_contact_card PUBLIC
+drawable/sym_def_app_icon PUBLIC
+drawable/title_bar PUBLIC
+drawable/title_bar_tall PUBLIC
+drawable/toast_frame PUBLIC
+drawable/zoom_plate PUBLIC
+id/accessibilityActionContextClick PUBLIC
+id/accessibilityActionDragCancel PUBLIC STAGED_ID=0x01fe0002
+id/accessibilityActionDragDrop PUBLIC STAGED_ID=0x01fe0001
+id/accessibilityActionDragStart PUBLIC STAGED_ID=0x01fe0000
+id/accessibilityActionHideTooltip PUBLIC
+id/accessibilityActionImeEnter PUBLIC
+id/accessibilityActionMoveWindow PUBLIC
+id/accessibilityActionPageDown PUBLIC
+id/accessibilityActionPageLeft PUBLIC
+id/accessibilityActionPageRight PUBLIC
+id/accessibilityActionPageUp PUBLIC
+id/accessibilityActionPressAndHold PUBLIC
+id/accessibilityActionScrollDown PUBLIC
+id/accessibilityActionScrollInDirection PUBLIC STAGED_ID=0x01cd0003
+id/accessibilityActionScrollLeft PUBLIC
+id/accessibilityActionScrollRight PUBLIC
+id/accessibilityActionScrollToPosition PUBLIC
+id/accessibilityActionScrollUp PUBLIC
+id/accessibilityActionSetExtendedSelection PUBLIC STAGED_ID=0x01b20001
+id/accessibilityActionSetProgress PUBLIC
+id/accessibilityActionShowOnScreen PUBLIC
+id/accessibilityActionShowTextSuggestions PUBLIC STAGED_ID=0x01de0004
+id/accessibilityActionShowTooltip PUBLIC
+id/accessibilitySystemActionBack PUBLIC
+id/accessibilitySystemActionHome PUBLIC
+id/accessibilitySystemActionLockScreen PUBLIC
+id/accessibilitySystemActionNotifications PUBLIC
+id/accessibilitySystemActionPowerDialog PUBLIC
+id/accessibilitySystemActionQuickSettings PUBLIC
+id/accessibilitySystemActionRecents PUBLIC
+id/accessibilitySystemActionTakeScreenshot PUBLIC
+id/accessibilitySystemActionToggleSplitScreen PUBLIC
+id/addToDictionary PUBLIC
+id/autofill PUBLIC
+id/background PUBLIC
+id/bold PUBLIC STAGED_ID=0x01cd0000
+id/button1 PUBLIC
+id/button2 PUBLIC
+id/button3 PUBLIC
+id/candidatesArea PUBLIC
+id/checkbox PUBLIC
+id/closeButton PUBLIC
+id/content PUBLIC
+id/copy PUBLIC
+id/copyUrl PUBLIC
+id/custom PUBLIC
+id/cut PUBLIC
+id/edit PUBLIC
+id/empty PUBLIC
+id/extractArea PUBLIC
+id/hint PUBLIC
+id/home PUBLIC
+id/icon PUBLIC
+id/icon1 PUBLIC
+id/icon2 PUBLIC
+id/icon_frame PUBLIC
+id/input PUBLIC
+id/inputArea PUBLIC
+id/inputExtractAccessories PUBLIC STAGED_ID=0x01de0006
+id/inputExtractAction PUBLIC STAGED_ID=0x01de0005
+id/inputExtractEditText PUBLIC
+id/italic PUBLIC STAGED_ID=0x01cd0001
+id/keyboardView PUBLIC
+id/list PUBLIC
+id/list_container PUBLIC
+id/mask PUBLIC
+id/message PUBLIC
+id/navigationBarBackground PUBLIC
+id/paste PUBLIC
+id/pasteAsPlainText PUBLIC
+id/primary PUBLIC
+id/progress PUBLIC
+id/redo PUBLIC
+id/replaceText PUBLIC
+id/secondaryProgress PUBLIC
+id/selectAll PUBLIC
+id/selectTextMode PUBLIC
+id/selectedIcon PUBLIC
+id/shareText PUBLIC
+id/startSelectingText PUBLIC
+id/statusBarBackground PUBLIC
+id/stopSelectingText PUBLIC
+id/summary PUBLIC
+id/switchInputMethod PUBLIC
+id/switch_widget PUBLIC
+id/tabcontent PUBLIC
+id/tabhost PUBLIC
+id/tabs PUBLIC
+id/text1 PUBLIC
+id/text2 PUBLIC
+id/textAssist PUBLIC
+id/title PUBLIC
+id/toggle PUBLIC
+id/underline PUBLIC STAGED_ID=0x01cd0002
+id/undo PUBLIC
+id/widget_frame PUBLIC
+integer/config_longAnimTime PUBLIC
+integer/config_mediumAnimTime PUBLIC
+integer/config_motionExpressiveDefaultEffectStiffness PUBLIC
+integer/config_motionExpressiveDefaultSpatialStiffness PUBLIC
+integer/config_motionExpressiveFastEffectStiffness PUBLIC
+integer/config_motionExpressiveFastSpatialStiffness PUBLIC STAGED_ID=0x01a60006
+integer/config_motionExpressiveSlowEffectStiffness PUBLIC
+integer/config_motionExpressiveSlowSpatialStiffness PUBLIC STAGED_ID=0x01a6000a
+integer/config_motionStandardDefaultEffectStiffness PUBLIC
+integer/config_motionStandardDefaultSpatialStiffness PUBLIC
+integer/config_motionStandardFastEffectStiffness PUBLIC
+integer/config_motionStandardFastSpatialStiffness PUBLIC STAGED_ID=0x01a60000
+integer/config_motionStandardSlowEffectStiffness PUBLIC
+integer/config_motionStandardSlowSpatialStiffness PUBLIC
+integer/config_shortAnimTime PUBLIC
+integer/status_bar_notification_info_maxnum PUBLIC
+interpolator/accelerate_cubic PUBLIC
+interpolator/accelerate_decelerate PUBLIC
+interpolator/accelerate_quad PUBLIC
+interpolator/accelerate_quint PUBLIC
+interpolator/anticipate PUBLIC
+interpolator/anticipate_overshoot PUBLIC
+interpolator/bounce PUBLIC
+interpolator/cycle PUBLIC
+interpolator/decelerate_cubic PUBLIC
+interpolator/decelerate_quad PUBLIC
+interpolator/decelerate_quint PUBLIC
+interpolator/fast_out_extra_slow_in PUBLIC
+interpolator/fast_out_linear_in PUBLIC
+interpolator/fast_out_slow_in PUBLIC
+interpolator/linear PUBLIC
+interpolator/linear_out_slow_in PUBLIC
+interpolator/overshoot PUBLIC
+layout/activity_list_item PUBLIC
+layout/browser_link_context_header PUBLIC
+layout/expandable_list_content PUBLIC
+layout/list_content PUBLIC
+layout/preference_category PUBLIC
+layout/select_dialog_item PUBLIC
+layout/select_dialog_multichoice PUBLIC
+layout/select_dialog_singlechoice PUBLIC
+layout/simple_dropdown_item_1line PUBLIC
+layout/simple_expandable_list_item_1 PUBLIC
+layout/simple_expandable_list_item_2 PUBLIC
+layout/simple_gallery_item PUBLIC
+layout/simple_list_item_1 PUBLIC
+layout/simple_list_item_2 PUBLIC
+layout/simple_list_item_activated_1 PUBLIC
+layout/simple_list_item_activated_2 PUBLIC
+layout/simple_list_item_checked PUBLIC
+layout/simple_list_item_multiple_choice PUBLIC
+layout/simple_list_item_single_choice PUBLIC
+layout/simple_selectable_list_item PUBLIC
+layout/simple_spinner_dropdown_item PUBLIC
+layout/simple_spinner_item PUBLIC
+layout/test_list_item PUBLIC
+layout/two_line_list_item PUBLIC
+mipmap/sym_def_app_icon PUBLIC
+raw/loaderror PUBLIC
+raw/nodomain PUBLIC
+string/VideoView_error_button PUBLIC
+string/VideoView_error_text_invalid_progressive_playback PUBLIC
+string/VideoView_error_text_unknown PUBLIC
+string/VideoView_error_title PUBLIC
+string/autofill PUBLIC
+string/cancel PUBLIC
+string/config_customMediaKeyDispatcher PUBLIC
+string/config_customMediaSessionPolicyProvider PUBLIC
+string/config_defaultAssistant PUBLIC
+string/config_defaultAutomotiveNavigation PUBLIC STAGED_ID=0x01dc0004
+string/config_defaultBrowser PUBLIC
+string/config_defaultCallRedirection PUBLIC
+string/config_defaultCallScreening PUBLIC
+string/config_defaultDialer PUBLIC
+string/config_defaultNotes PUBLIC STAGED_ID=0x01cb0001
+string/config_defaultOnDeviceIntelligenceDeviceConfigNamespace PUBLIC STAGED
+string/config_defaultOnDeviceIntelligenceService PUBLIC STAGED
+string/config_defaultOnDeviceSandboxedInferenceService PUBLIC STAGED
+string/config_defaultRetailDemo PUBLIC STAGED_ID=0x01ba0000
+string/config_defaultRingtoneVibrationSound PUBLIC
+string/config_defaultSms PUBLIC
+string/config_defaultWallet PUBLIC STAGED_ID=0x01ba0001
+string/config_devicePolicyManagement PUBLIC STAGED_ID=0x01dc0001
+string/config_feedbackIntentExtraKey PUBLIC
+string/config_feedbackIntentNameKey PUBLIC
+string/config_helpIntentExtraKey PUBLIC
+string/config_helpIntentNameKey PUBLIC
+string/config_helpPackageNameKey PUBLIC
+string/config_helpPackageNameValue PUBLIC
+string/config_systemActivityRecognizer PUBLIC
+string/config_systemAmbientAudioIntelligence PUBLIC
+string/config_systemAppProtectionService PUBLIC STAGED_ID=0x01dc0002
+string/config_systemAudioIntelligence PUBLIC
+string/config_systemAutomotiveCalendarSyncManager PUBLIC STAGED_ID=0x01dc0003
+string/config_systemAutomotiveCluster PUBLIC
+string/config_systemAutomotiveProjection PUBLIC
+string/config_systemBluetoothStack PUBLIC STAGED_ID=0x01dc0007
+string/config_systemCallStreaming PUBLIC STAGED_ID=0x01cb0003
+string/config_systemCompanionDeviceProvider PUBLIC
+string/config_systemContacts PUBLIC
+string/config_systemDependencyInstaller PUBLIC STAGED_ID=0x01b40000
+string/config_systemFinancedDeviceController PUBLIC STAGED_ID=0x01cb0002
+string/config_systemGallery PUBLIC
+string/config_systemNotificationIntelligence PUBLIC
+string/config_systemSettingsIntelligence PUBLIC STAGED_ID=0x01dc0006
+string/config_systemShell PUBLIC
+string/config_systemSpeechRecognizer PUBLIC
+string/config_systemSupervision PUBLIC STAGED_ID=0x01dc0000
+string/config_systemTelevisionNotificationHandler PUBLIC
+string/config_systemTextIntelligence PUBLIC
+string/config_systemUi PUBLIC
+string/config_systemUiIntelligence PUBLIC
+string/config_systemVendorIntelligence PUBLIC STAGED_ID=0x01b40002
+string/config_systemVisualIntelligence PUBLIC
+string/config_systemWearHealthService PUBLIC STAGED_ID=0x01cb0000
+string/config_systemWellbeing PUBLIC
+string/config_systemWifiCoexManager PUBLIC
+string/copy PUBLIC
+string/copyUrl PUBLIC
+string/cut PUBLIC
+string/defaultMsisdnAlphaTag PUBLIC
+string/defaultVoiceMailAlphaTag PUBLIC
+string/dialog_alert_title PUBLIC
+string/emptyPhoneNumber PUBLIC
+string/fingerprint_icon_content_description PUBLIC
+string/httpErrorBadUrl PUBLIC
+string/httpErrorUnsupportedScheme PUBLIC
+string/no PUBLIC
+string/ok PUBLIC
+string/paste PUBLIC
+string/paste_as_plain_text PUBLIC
+string/safety_protection_display_text PUBLIC STAGED_ID=0x01dc0005
+string/search_go PUBLIC
+string/selectAll PUBLIC
+string/selectTextMode PUBLIC
+string/status_bar_notification_info_overflow PUBLIC
+string/unknownName PUBLIC
+string/untitled PUBLIC
+string/yes PUBLIC
+style/Animation PUBLIC
+style/Animation.Activity PUBLIC
+style/Animation.Dialog PUBLIC
+style/Animation.InputMethod PUBLIC
+style/Animation.Toast PUBLIC
+style/Animation.Translucent PUBLIC
+style/ButtonBar PUBLIC
+style/DeviceDefault.ButtonBar PUBLIC
+style/DeviceDefault.ButtonBar.AlertDialog PUBLIC
+style/DeviceDefault.Light.ButtonBar PUBLIC
+style/DeviceDefault.Light.ButtonBar.AlertDialog PUBLIC
+style/DeviceDefault.Light.SegmentedButton PUBLIC
+style/DeviceDefault.SegmentedButton PUBLIC
+style/Holo.ButtonBar PUBLIC
+style/Holo.ButtonBar.AlertDialog PUBLIC
+style/Holo.Light.ButtonBar PUBLIC
+style/Holo.Light.ButtonBar.AlertDialog PUBLIC
+style/Holo.Light.SegmentedButton PUBLIC
+style/Holo.SegmentedButton PUBLIC
+style/MediaButton PUBLIC
+style/MediaButton.Ffwd PUBLIC
+style/MediaButton.Next PUBLIC
+style/MediaButton.Pause PUBLIC
+style/MediaButton.Play PUBLIC
+style/MediaButton.Previous PUBLIC
+style/MediaButton.Rew PUBLIC
+style/TextAppearance PUBLIC
+style/TextAppearance.DeviceDefault PUBLIC
+style/TextAppearance.DeviceDefault.DialogWindowTitle PUBLIC
+style/TextAppearance.DeviceDefault.Headline PUBLIC STAGED_ID=0x01dd0000
+style/TextAppearance.DeviceDefault.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Large PUBLIC
+style/TextAppearance.DeviceDefault.Large.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Medium PUBLIC
+style/TextAppearance.DeviceDefault.Medium.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.SearchResult.Subtitle PUBLIC
+style/TextAppearance.DeviceDefault.SearchResult.Title PUBLIC
+style/TextAppearance.DeviceDefault.Small PUBLIC
+style/TextAppearance.DeviceDefault.Small.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Widget PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionBar.Menu PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionBar.Subtitle PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionBar.Subtitle.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionBar.Title PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionBar.Title.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionMode.Subtitle PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionMode.Subtitle.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionMode.Title PUBLIC
+style/TextAppearance.DeviceDefault.Widget.ActionMode.Title.Inverse PUBLIC
+style/TextAppearance.DeviceDefault.Widget.Button PUBLIC
+style/TextAppearance.DeviceDefault.Widget.DropDownHint PUBLIC
+style/TextAppearance.DeviceDefault.Widget.DropDownItem PUBLIC
+style/TextAppearance.DeviceDefault.Widget.EditText PUBLIC
+style/TextAppearance.DeviceDefault.Widget.IconMenu.Item PUBLIC
+style/TextAppearance.DeviceDefault.Widget.PopupMenu PUBLIC
+style/TextAppearance.DeviceDefault.Widget.PopupMenu.Large PUBLIC
+style/TextAppearance.DeviceDefault.Widget.PopupMenu.Small PUBLIC
+style/TextAppearance.DeviceDefault.Widget.TabWidget PUBLIC
+style/TextAppearance.DeviceDefault.Widget.TextView PUBLIC
+style/TextAppearance.DeviceDefault.Widget.TextView.PopupMenu PUBLIC
+style/TextAppearance.DeviceDefault.Widget.TextView.SpinnerItem PUBLIC
+style/TextAppearance.DeviceDefault.WindowTitle PUBLIC
+style/TextAppearance.DialogWindowTitle PUBLIC
+style/TextAppearance.Holo PUBLIC
+style/TextAppearance.Holo.DialogWindowTitle PUBLIC
+style/TextAppearance.Holo.Inverse PUBLIC
+style/TextAppearance.Holo.Large PUBLIC
+style/TextAppearance.Holo.Large.Inverse PUBLIC
+style/TextAppearance.Holo.Medium PUBLIC
+style/TextAppearance.Holo.Medium.Inverse PUBLIC
+style/TextAppearance.Holo.SearchResult.Subtitle PUBLIC
+style/TextAppearance.Holo.SearchResult.Title PUBLIC
+style/TextAppearance.Holo.Small PUBLIC
+style/TextAppearance.Holo.Small.Inverse PUBLIC
+style/TextAppearance.Holo.Widget PUBLIC
+style/TextAppearance.Holo.Widget.ActionBar.Menu PUBLIC
+style/TextAppearance.Holo.Widget.ActionBar.Subtitle PUBLIC
+style/TextAppearance.Holo.Widget.ActionBar.Subtitle.Inverse PUBLIC
+style/TextAppearance.Holo.Widget.ActionBar.Title PUBLIC
+style/TextAppearance.Holo.Widget.ActionBar.Title.Inverse PUBLIC
+style/TextAppearance.Holo.Widget.ActionMode.Subtitle PUBLIC
+style/TextAppearance.Holo.Widget.ActionMode.Subtitle.Inverse PUBLIC
+style/TextAppearance.Holo.Widget.ActionMode.Title PUBLIC
+style/TextAppearance.Holo.Widget.ActionMode.Title.Inverse PUBLIC
+style/TextAppearance.Holo.Widget.Button PUBLIC
+style/TextAppearance.Holo.Widget.DropDownHint PUBLIC
+style/TextAppearance.Holo.Widget.DropDownItem PUBLIC
+style/TextAppearance.Holo.Widget.EditText PUBLIC
+style/TextAppearance.Holo.Widget.IconMenu.Item PUBLIC
+style/TextAppearance.Holo.Widget.PopupMenu PUBLIC
+style/TextAppearance.Holo.Widget.PopupMenu.Large PUBLIC
+style/TextAppearance.Holo.Widget.PopupMenu.Small PUBLIC
+style/TextAppearance.Holo.Widget.TabWidget PUBLIC
+style/TextAppearance.Holo.Widget.TextView PUBLIC
+style/TextAppearance.Holo.Widget.TextView.PopupMenu PUBLIC
+style/TextAppearance.Holo.Widget.TextView.SpinnerItem PUBLIC
+style/TextAppearance.Holo.WindowTitle PUBLIC
+style/TextAppearance.Inverse PUBLIC
+style/TextAppearance.Large PUBLIC
+style/TextAppearance.Large.Inverse PUBLIC
+style/TextAppearance.Material PUBLIC
+style/TextAppearance.Material.Body1 PUBLIC
+style/TextAppearance.Material.Body2 PUBLIC
+style/TextAppearance.Material.Button PUBLIC
+style/TextAppearance.Material.Caption PUBLIC
+style/TextAppearance.Material.DialogWindowTitle PUBLIC
+style/TextAppearance.Material.Display1 PUBLIC
+style/TextAppearance.Material.Display2 PUBLIC
+style/TextAppearance.Material.Display3 PUBLIC
+style/TextAppearance.Material.Display4 PUBLIC
+style/TextAppearance.Material.Headline PUBLIC
+style/TextAppearance.Material.Inverse PUBLIC
+style/TextAppearance.Material.Large PUBLIC
+style/TextAppearance.Material.Large.Inverse PUBLIC
+style/TextAppearance.Material.Medium PUBLIC
+style/TextAppearance.Material.Medium.Inverse PUBLIC
+style/TextAppearance.Material.Menu PUBLIC
+style/TextAppearance.Material.Notification PUBLIC
+style/TextAppearance.Material.Notification.Emphasis PUBLIC
+style/TextAppearance.Material.Notification.Info PUBLIC
+style/TextAppearance.Material.Notification.Line2 PUBLIC
+style/TextAppearance.Material.Notification.Time PUBLIC
+style/TextAppearance.Material.Notification.Title PUBLIC
+style/TextAppearance.Material.SearchResult.Subtitle PUBLIC
+style/TextAppearance.Material.SearchResult.Title PUBLIC
+style/TextAppearance.Material.Small PUBLIC
+style/TextAppearance.Material.Small.Inverse PUBLIC
+style/TextAppearance.Material.Subhead PUBLIC
+style/TextAppearance.Material.Title PUBLIC
+style/TextAppearance.Material.Widget PUBLIC
+style/TextAppearance.Material.Widget.ActionBar.Menu PUBLIC
+style/TextAppearance.Material.Widget.ActionBar.Subtitle PUBLIC
+style/TextAppearance.Material.Widget.ActionBar.Subtitle.Inverse PUBLIC
+style/TextAppearance.Material.Widget.ActionBar.Title PUBLIC
+style/TextAppearance.Material.Widget.ActionBar.Title.Inverse PUBLIC
+style/TextAppearance.Material.Widget.ActionMode.Subtitle PUBLIC
+style/TextAppearance.Material.Widget.ActionMode.Subtitle.Inverse PUBLIC
+style/TextAppearance.Material.Widget.ActionMode.Title PUBLIC
+style/TextAppearance.Material.Widget.ActionMode.Title.Inverse PUBLIC
+style/TextAppearance.Material.Widget.Button PUBLIC
+style/TextAppearance.Material.Widget.Button.Borderless.Colored PUBLIC
+style/TextAppearance.Material.Widget.Button.Colored PUBLIC
+style/TextAppearance.Material.Widget.Button.Inverse PUBLIC
+style/TextAppearance.Material.Widget.DropDownHint PUBLIC
+style/TextAppearance.Material.Widget.DropDownItem PUBLIC
+style/TextAppearance.Material.Widget.EditText PUBLIC
+style/TextAppearance.Material.Widget.IconMenu.Item PUBLIC
+style/TextAppearance.Material.Widget.PopupMenu PUBLIC
+style/TextAppearance.Material.Widget.PopupMenu.Large PUBLIC
+style/TextAppearance.Material.Widget.PopupMenu.Small PUBLIC
+style/TextAppearance.Material.Widget.TabWidget PUBLIC
+style/TextAppearance.Material.Widget.TextView PUBLIC
+style/TextAppearance.Material.Widget.TextView.PopupMenu PUBLIC
+style/TextAppearance.Material.Widget.TextView.SpinnerItem PUBLIC
+style/TextAppearance.Material.Widget.Toolbar.Subtitle PUBLIC
+style/TextAppearance.Material.Widget.Toolbar.Title PUBLIC
+style/TextAppearance.Material.WindowTitle PUBLIC
+style/TextAppearance.Medium PUBLIC
+style/TextAppearance.Medium.Inverse PUBLIC
+style/TextAppearance.SearchResult.Subtitle PUBLIC
+style/TextAppearance.SearchResult.Title PUBLIC
+style/TextAppearance.Small PUBLIC
+style/TextAppearance.Small.Inverse PUBLIC
+style/TextAppearance.StatusBar.EventContent PUBLIC
+style/TextAppearance.StatusBar.EventContent.Title PUBLIC
+style/TextAppearance.StatusBar.Icon PUBLIC
+style/TextAppearance.StatusBar.Title PUBLIC
+style/TextAppearance.SuggestionHighlight PUBLIC
+style/TextAppearance.Theme PUBLIC
+style/TextAppearance.Theme.Dialog PUBLIC
+style/TextAppearance.Widget PUBLIC
+style/TextAppearance.Widget.Button PUBLIC
+style/TextAppearance.Widget.DropDownHint PUBLIC
+style/TextAppearance.Widget.DropDownItem PUBLIC
+style/TextAppearance.Widget.EditText PUBLIC
+style/TextAppearance.Widget.IconMenu.Item PUBLIC
+style/TextAppearance.Widget.PopupMenu.Large PUBLIC
+style/TextAppearance.Widget.PopupMenu.Small PUBLIC
+style/TextAppearance.Widget.TabWidget PUBLIC
+style/TextAppearance.Widget.TextView PUBLIC
+style/TextAppearance.Widget.TextView.PopupMenu PUBLIC
+style/TextAppearance.Widget.TextView.SpinnerItem PUBLIC
+style/TextAppearance.WindowTitle PUBLIC
+style/Theme PUBLIC
+style/Theme.Black PUBLIC
+style/Theme.Black.NoTitleBar PUBLIC
+style/Theme.Black.NoTitleBar.Fullscreen PUBLIC
+style/Theme.DeviceDefault PUBLIC
+style/Theme.DeviceDefault.DayNight PUBLIC
+style/Theme.DeviceDefault.Dialog PUBLIC
+style/Theme.DeviceDefault.Dialog.Alert PUBLIC
+style/Theme.DeviceDefault.Dialog.MinWidth PUBLIC
+style/Theme.DeviceDefault.Dialog.NoActionBar PUBLIC
+style/Theme.DeviceDefault.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.DeviceDefault.DialogWhenLarge PUBLIC
+style/Theme.DeviceDefault.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.DeviceDefault.DocumentsUI PUBLIC
+style/Theme.DeviceDefault.InputMethod PUBLIC
+style/Theme.DeviceDefault.Light PUBLIC
+style/Theme.DeviceDefault.Light.DarkActionBar PUBLIC
+style/Theme.DeviceDefault.Light.Dialog PUBLIC
+style/Theme.DeviceDefault.Light.Dialog.Alert PUBLIC
+style/Theme.DeviceDefault.Light.Dialog.MinWidth PUBLIC
+style/Theme.DeviceDefault.Light.Dialog.NoActionBar PUBLIC
+style/Theme.DeviceDefault.Light.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.DeviceDefault.Light.DialogWhenLarge PUBLIC
+style/Theme.DeviceDefault.Light.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.DeviceDefault.Light.NoActionBar PUBLIC
+style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen PUBLIC
+style/Theme.DeviceDefault.Light.NoActionBar.Overscan PUBLIC
+style/Theme.DeviceDefault.Light.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.DeviceDefault.Light.Panel PUBLIC
+style/Theme.DeviceDefault.NoActionBar PUBLIC
+style/Theme.DeviceDefault.NoActionBar.Fullscreen PUBLIC
+style/Theme.DeviceDefault.NoActionBar.Overscan PUBLIC
+style/Theme.DeviceDefault.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.DeviceDefault.Panel PUBLIC
+style/Theme.DeviceDefault.Settings PUBLIC
+style/Theme.DeviceDefault.Wallpaper PUBLIC
+style/Theme.DeviceDefault.Wallpaper.NoTitleBar PUBLIC
+style/Theme.Dialog PUBLIC
+style/Theme.Holo PUBLIC
+style/Theme.Holo.Dialog PUBLIC
+style/Theme.Holo.Dialog.MinWidth PUBLIC
+style/Theme.Holo.Dialog.NoActionBar PUBLIC
+style/Theme.Holo.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.Holo.DialogWhenLarge PUBLIC
+style/Theme.Holo.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.Holo.InputMethod PUBLIC
+style/Theme.Holo.Light PUBLIC
+style/Theme.Holo.Light.DarkActionBar PUBLIC
+style/Theme.Holo.Light.Dialog PUBLIC
+style/Theme.Holo.Light.Dialog.MinWidth PUBLIC
+style/Theme.Holo.Light.Dialog.NoActionBar PUBLIC
+style/Theme.Holo.Light.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.Holo.Light.DialogWhenLarge PUBLIC
+style/Theme.Holo.Light.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.Holo.Light.NoActionBar PUBLIC
+style/Theme.Holo.Light.NoActionBar.Fullscreen PUBLIC
+style/Theme.Holo.Light.NoActionBar.Overscan PUBLIC
+style/Theme.Holo.Light.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.Holo.Light.Panel PUBLIC
+style/Theme.Holo.NoActionBar PUBLIC
+style/Theme.Holo.NoActionBar.Fullscreen PUBLIC
+style/Theme.Holo.NoActionBar.Overscan PUBLIC
+style/Theme.Holo.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.Holo.Panel PUBLIC
+style/Theme.Holo.Wallpaper PUBLIC
+style/Theme.Holo.Wallpaper.NoTitleBar PUBLIC
+style/Theme.InputMethod PUBLIC
+style/Theme.Leanback.FormWizard PUBLIC
+style/Theme.Light PUBLIC
+style/Theme.Light.NoTitleBar PUBLIC
+style/Theme.Light.NoTitleBar.Fullscreen PUBLIC
+style/Theme.Light.Panel PUBLIC
+style/Theme.Light.WallpaperSettings PUBLIC
+style/Theme.Material PUBLIC
+style/Theme.Material.Dialog PUBLIC
+style/Theme.Material.Dialog.Alert PUBLIC
+style/Theme.Material.Dialog.MinWidth PUBLIC
+style/Theme.Material.Dialog.NoActionBar PUBLIC
+style/Theme.Material.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.Material.Dialog.Presentation PUBLIC
+style/Theme.Material.DialogWhenLarge PUBLIC
+style/Theme.Material.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.Material.InputMethod PUBLIC
+style/Theme.Material.Light PUBLIC
+style/Theme.Material.Light.DarkActionBar PUBLIC
+style/Theme.Material.Light.Dialog PUBLIC
+style/Theme.Material.Light.Dialog.Alert PUBLIC
+style/Theme.Material.Light.Dialog.MinWidth PUBLIC
+style/Theme.Material.Light.Dialog.NoActionBar PUBLIC
+style/Theme.Material.Light.Dialog.NoActionBar.MinWidth PUBLIC
+style/Theme.Material.Light.Dialog.Presentation PUBLIC
+style/Theme.Material.Light.DialogWhenLarge PUBLIC
+style/Theme.Material.Light.DialogWhenLarge.DarkActionBar PUBLIC
+style/Theme.Material.Light.DialogWhenLarge.NoActionBar PUBLIC
+style/Theme.Material.Light.LightStatusBar PUBLIC
+style/Theme.Material.Light.NoActionBar PUBLIC
+style/Theme.Material.Light.NoActionBar.Fullscreen PUBLIC
+style/Theme.Material.Light.NoActionBar.Overscan PUBLIC
+style/Theme.Material.Light.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.Material.Light.Panel PUBLIC
+style/Theme.Material.Light.Voice PUBLIC
+style/Theme.Material.NoActionBar PUBLIC
+style/Theme.Material.NoActionBar.Fullscreen PUBLIC
+style/Theme.Material.NoActionBar.Overscan PUBLIC
+style/Theme.Material.NoActionBar.TranslucentDecor PUBLIC
+style/Theme.Material.Panel PUBLIC
+style/Theme.Material.Settings PUBLIC
+style/Theme.Material.Voice PUBLIC
+style/Theme.Material.Wallpaper PUBLIC
+style/Theme.Material.Wallpaper.NoTitleBar PUBLIC
+style/Theme.NoDisplay PUBLIC
+style/Theme.NoTitleBar PUBLIC
+style/Theme.NoTitleBar.Fullscreen PUBLIC
+style/Theme.NoTitleBar.OverlayActionModes PUBLIC
+style/Theme.Panel PUBLIC
+style/Theme.Translucent PUBLIC
+style/Theme.Translucent.NoTitleBar PUBLIC
+style/Theme.Translucent.NoTitleBar.Fullscreen PUBLIC
+style/Theme.Wallpaper PUBLIC
+style/Theme.Wallpaper.NoTitleBar PUBLIC
+style/Theme.Wallpaper.NoTitleBar.Fullscreen PUBLIC
+style/Theme.WallpaperSettings PUBLIC
+style/Theme.WithActionBar PUBLIC
+style/ThemeOverlay PUBLIC
+style/ThemeOverlay.DeviceDefault.Accent.DayNight PUBLIC
+style/ThemeOverlay.Material PUBLIC
+style/ThemeOverlay.Material.ActionBar PUBLIC
+style/ThemeOverlay.Material.Dark PUBLIC
+style/ThemeOverlay.Material.Dark.ActionBar PUBLIC
+style/ThemeOverlay.Material.Dialog PUBLIC
+style/ThemeOverlay.Material.Dialog.Alert PUBLIC
+style/ThemeOverlay.Material.Light PUBLIC
+style/Widget PUBLIC
+style/Widget.AbsListView PUBLIC
+style/Widget.ActionBar PUBLIC
+style/Widget.ActionBar.TabBar PUBLIC
+style/Widget.ActionBar.TabText PUBLIC
+style/Widget.ActionBar.TabView PUBLIC
+style/Widget.ActionButton PUBLIC
+style/Widget.ActionButton.CloseMode PUBLIC
+style/Widget.ActionButton.Overflow PUBLIC
+style/Widget.AutoCompleteTextView PUBLIC
+style/Widget.Button PUBLIC
+style/Widget.Button.Inset PUBLIC
+style/Widget.Button.Small PUBLIC
+style/Widget.Button.Toggle PUBLIC
+style/Widget.CalendarView PUBLIC
+style/Widget.CompoundButton PUBLIC
+style/Widget.CompoundButton.CheckBox PUBLIC
+style/Widget.CompoundButton.RadioButton PUBLIC
+style/Widget.CompoundButton.Star PUBLIC
+style/Widget.DatePicker PUBLIC
+style/Widget.DeviceDefault PUBLIC
+style/Widget.DeviceDefault.ActionBar PUBLIC
+style/Widget.DeviceDefault.ActionBar.Solid PUBLIC
+style/Widget.DeviceDefault.ActionBar.TabBar PUBLIC
+style/Widget.DeviceDefault.ActionBar.TabText PUBLIC
+style/Widget.DeviceDefault.ActionBar.TabView PUBLIC
+style/Widget.DeviceDefault.ActionButton PUBLIC
+style/Widget.DeviceDefault.ActionButton.CloseMode PUBLIC
+style/Widget.DeviceDefault.ActionButton.Overflow PUBLIC
+style/Widget.DeviceDefault.ActionButton.TextButton PUBLIC
+style/Widget.DeviceDefault.ActionMode PUBLIC
+style/Widget.DeviceDefault.AutoCompleteTextView PUBLIC
+style/Widget.DeviceDefault.Button PUBLIC
+style/Widget.DeviceDefault.Button.Borderless PUBLIC
+style/Widget.DeviceDefault.Button.Borderless.Colored PUBLIC
+style/Widget.DeviceDefault.Button.Borderless.Small PUBLIC
+style/Widget.DeviceDefault.Button.Colored PUBLIC
+style/Widget.DeviceDefault.Button.Inset PUBLIC
+style/Widget.DeviceDefault.Button.Small PUBLIC
+style/Widget.DeviceDefault.Button.Toggle PUBLIC
+style/Widget.DeviceDefault.CalendarView PUBLIC
+style/Widget.DeviceDefault.CheckedTextView PUBLIC
+style/Widget.DeviceDefault.CompoundButton.CheckBox PUBLIC
+style/Widget.DeviceDefault.CompoundButton.RadioButton PUBLIC
+style/Widget.DeviceDefault.CompoundButton.Star PUBLIC
+style/Widget.DeviceDefault.DatePicker PUBLIC
+style/Widget.DeviceDefault.DropDownItem PUBLIC
+style/Widget.DeviceDefault.DropDownItem.Spinner PUBLIC
+style/Widget.DeviceDefault.EditText PUBLIC
+style/Widget.DeviceDefault.ExpandableListView PUBLIC
+style/Widget.DeviceDefault.FastScroll PUBLIC
+style/Widget.DeviceDefault.GridView PUBLIC
+style/Widget.DeviceDefault.HorizontalScrollView PUBLIC
+style/Widget.DeviceDefault.ImageButton PUBLIC
+style/Widget.DeviceDefault.Light PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.Solid PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.Solid.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabBar PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabBar.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabText PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabText.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabView PUBLIC
+style/Widget.DeviceDefault.Light.ActionBar.TabView.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ActionButton PUBLIC
+style/Widget.DeviceDefault.Light.ActionButton.CloseMode PUBLIC
+style/Widget.DeviceDefault.Light.ActionButton.Overflow PUBLIC
+style/Widget.DeviceDefault.Light.ActionMode PUBLIC
+style/Widget.DeviceDefault.Light.ActionMode.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.AutoCompleteTextView PUBLIC
+style/Widget.DeviceDefault.Light.Button PUBLIC
+style/Widget.DeviceDefault.Light.Button.Borderless.Small PUBLIC
+style/Widget.DeviceDefault.Light.Button.Inset PUBLIC
+style/Widget.DeviceDefault.Light.Button.Small PUBLIC
+style/Widget.DeviceDefault.Light.Button.Toggle PUBLIC
+style/Widget.DeviceDefault.Light.CalendarView PUBLIC
+style/Widget.DeviceDefault.Light.CheckedTextView PUBLIC
+style/Widget.DeviceDefault.Light.CompoundButton.CheckBox PUBLIC
+style/Widget.DeviceDefault.Light.CompoundButton.RadioButton PUBLIC
+style/Widget.DeviceDefault.Light.CompoundButton.Star PUBLIC
+style/Widget.DeviceDefault.Light.DropDownItem PUBLIC
+style/Widget.DeviceDefault.Light.DropDownItem.Spinner PUBLIC
+style/Widget.DeviceDefault.Light.EditText PUBLIC
+style/Widget.DeviceDefault.Light.ExpandableListView PUBLIC
+style/Widget.DeviceDefault.Light.FastScroll PUBLIC
+style/Widget.DeviceDefault.Light.GridView PUBLIC
+style/Widget.DeviceDefault.Light.HorizontalScrollView PUBLIC
+style/Widget.DeviceDefault.Light.ImageButton PUBLIC
+style/Widget.DeviceDefault.Light.ListPopupWindow PUBLIC
+style/Widget.DeviceDefault.Light.ListView PUBLIC
+style/Widget.DeviceDefault.Light.ListView.DropDown PUBLIC
+style/Widget.DeviceDefault.Light.MediaRouteButton PUBLIC
+style/Widget.DeviceDefault.Light.PopupMenu PUBLIC
+style/Widget.DeviceDefault.Light.PopupWindow PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Horizontal PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Large PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Large.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Small PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Small.Inverse PUBLIC
+style/Widget.DeviceDefault.Light.ProgressBar.Small.Title PUBLIC
+style/Widget.DeviceDefault.Light.RatingBar PUBLIC
+style/Widget.DeviceDefault.Light.RatingBar.Indicator PUBLIC
+style/Widget.DeviceDefault.Light.RatingBar.Small PUBLIC
+style/Widget.DeviceDefault.Light.ScrollView PUBLIC
+style/Widget.DeviceDefault.Light.SeekBar PUBLIC
+style/Widget.DeviceDefault.Light.Spinner PUBLIC
+style/Widget.DeviceDefault.Light.StackView PUBLIC
+style/Widget.DeviceDefault.Light.Tab PUBLIC
+style/Widget.DeviceDefault.Light.TabWidget PUBLIC
+style/Widget.DeviceDefault.Light.TextView PUBLIC
+style/Widget.DeviceDefault.Light.TextView.SpinnerItem PUBLIC
+style/Widget.DeviceDefault.Light.WebTextView PUBLIC
+style/Widget.DeviceDefault.Light.WebView PUBLIC
+style/Widget.DeviceDefault.ListPopupWindow PUBLIC
+style/Widget.DeviceDefault.ListView PUBLIC
+style/Widget.DeviceDefault.ListView.DropDown PUBLIC
+style/Widget.DeviceDefault.MediaRouteButton PUBLIC
+style/Widget.DeviceDefault.PopupMenu PUBLIC
+style/Widget.DeviceDefault.PopupWindow PUBLIC
+style/Widget.DeviceDefault.ProgressBar PUBLIC
+style/Widget.DeviceDefault.ProgressBar.Horizontal PUBLIC
+style/Widget.DeviceDefault.ProgressBar.Large PUBLIC
+style/Widget.DeviceDefault.ProgressBar.Small PUBLIC
+style/Widget.DeviceDefault.ProgressBar.Small.Title PUBLIC
+style/Widget.DeviceDefault.RatingBar PUBLIC
+style/Widget.DeviceDefault.RatingBar.Indicator PUBLIC
+style/Widget.DeviceDefault.RatingBar.Small PUBLIC
+style/Widget.DeviceDefault.ScrollView PUBLIC
+style/Widget.DeviceDefault.SeekBar PUBLIC
+style/Widget.DeviceDefault.Spinner PUBLIC
+style/Widget.DeviceDefault.StackView PUBLIC
+style/Widget.DeviceDefault.Tab PUBLIC
+style/Widget.DeviceDefault.TabWidget PUBLIC
+style/Widget.DeviceDefault.TextView PUBLIC
+style/Widget.DeviceDefault.TextView.SpinnerItem PUBLIC
+style/Widget.DeviceDefault.WebTextView PUBLIC
+style/Widget.DeviceDefault.WebView PUBLIC
+style/Widget.DropDownItem PUBLIC
+style/Widget.DropDownItem.Spinner PUBLIC
+style/Widget.EditText PUBLIC
+style/Widget.ExpandableListView PUBLIC
+style/Widget.FastScroll PUBLIC
+style/Widget.FragmentBreadCrumbs PUBLIC
+style/Widget.Gallery PUBLIC
+style/Widget.GridView PUBLIC
+style/Widget.Holo PUBLIC
+style/Widget.Holo.ActionBar PUBLIC
+style/Widget.Holo.ActionBar.Solid PUBLIC
+style/Widget.Holo.ActionBar.TabBar PUBLIC
+style/Widget.Holo.ActionBar.TabText PUBLIC
+style/Widget.Holo.ActionBar.TabView PUBLIC
+style/Widget.Holo.ActionButton PUBLIC
+style/Widget.Holo.ActionButton.CloseMode PUBLIC
+style/Widget.Holo.ActionButton.Overflow PUBLIC
+style/Widget.Holo.ActionButton.TextButton PUBLIC
+style/Widget.Holo.ActionMode PUBLIC
+style/Widget.Holo.AutoCompleteTextView PUBLIC
+style/Widget.Holo.Button PUBLIC
+style/Widget.Holo.Button.Borderless PUBLIC
+style/Widget.Holo.Button.Borderless.Small PUBLIC
+style/Widget.Holo.Button.Inset PUBLIC
+style/Widget.Holo.Button.Small PUBLIC
+style/Widget.Holo.Button.Toggle PUBLIC
+style/Widget.Holo.CalendarView PUBLIC
+style/Widget.Holo.CheckedTextView PUBLIC
+style/Widget.Holo.CompoundButton.CheckBox PUBLIC
+style/Widget.Holo.CompoundButton.RadioButton PUBLIC
+style/Widget.Holo.CompoundButton.Star PUBLIC
+style/Widget.Holo.DatePicker PUBLIC
+style/Widget.Holo.DropDownItem PUBLIC
+style/Widget.Holo.DropDownItem.Spinner PUBLIC
+style/Widget.Holo.EditText PUBLIC
+style/Widget.Holo.ExpandableListView PUBLIC
+style/Widget.Holo.GridView PUBLIC
+style/Widget.Holo.HorizontalScrollView PUBLIC
+style/Widget.Holo.ImageButton PUBLIC
+style/Widget.Holo.Light PUBLIC
+style/Widget.Holo.Light.ActionBar PUBLIC
+style/Widget.Holo.Light.ActionBar.Solid PUBLIC
+style/Widget.Holo.Light.ActionBar.Solid.Inverse PUBLIC
+style/Widget.Holo.Light.ActionBar.TabBar PUBLIC
+style/Widget.Holo.Light.ActionBar.TabBar.Inverse PUBLIC
+style/Widget.Holo.Light.ActionBar.TabText PUBLIC
+style/Widget.Holo.Light.ActionBar.TabText.Inverse PUBLIC
+style/Widget.Holo.Light.ActionBar.TabView PUBLIC
+style/Widget.Holo.Light.ActionBar.TabView.Inverse PUBLIC
+style/Widget.Holo.Light.ActionButton PUBLIC
+style/Widget.Holo.Light.ActionButton.CloseMode PUBLIC
+style/Widget.Holo.Light.ActionButton.Overflow PUBLIC
+style/Widget.Holo.Light.ActionMode PUBLIC
+style/Widget.Holo.Light.ActionMode.Inverse PUBLIC
+style/Widget.Holo.Light.AutoCompleteTextView PUBLIC
+style/Widget.Holo.Light.Button PUBLIC
+style/Widget.Holo.Light.Button.Borderless.Small PUBLIC
+style/Widget.Holo.Light.Button.Inset PUBLIC
+style/Widget.Holo.Light.Button.Small PUBLIC
+style/Widget.Holo.Light.Button.Toggle PUBLIC
+style/Widget.Holo.Light.CalendarView PUBLIC
+style/Widget.Holo.Light.CheckedTextView PUBLIC
+style/Widget.Holo.Light.CompoundButton.CheckBox PUBLIC
+style/Widget.Holo.Light.CompoundButton.RadioButton PUBLIC
+style/Widget.Holo.Light.CompoundButton.Star PUBLIC
+style/Widget.Holo.Light.DropDownItem PUBLIC
+style/Widget.Holo.Light.DropDownItem.Spinner PUBLIC
+style/Widget.Holo.Light.EditText PUBLIC
+style/Widget.Holo.Light.ExpandableListView PUBLIC
+style/Widget.Holo.Light.GridView PUBLIC
+style/Widget.Holo.Light.HorizontalScrollView PUBLIC
+style/Widget.Holo.Light.ImageButton PUBLIC
+style/Widget.Holo.Light.ListPopupWindow PUBLIC
+style/Widget.Holo.Light.ListView PUBLIC
+style/Widget.Holo.Light.ListView.DropDown PUBLIC
+style/Widget.Holo.Light.MediaRouteButton PUBLIC
+style/Widget.Holo.Light.PopupMenu PUBLIC
+style/Widget.Holo.Light.PopupWindow PUBLIC
+style/Widget.Holo.Light.ProgressBar PUBLIC
+style/Widget.Holo.Light.ProgressBar.Horizontal PUBLIC
+style/Widget.Holo.Light.ProgressBar.Inverse PUBLIC
+style/Widget.Holo.Light.ProgressBar.Large PUBLIC
+style/Widget.Holo.Light.ProgressBar.Large.Inverse PUBLIC
+style/Widget.Holo.Light.ProgressBar.Small PUBLIC
+style/Widget.Holo.Light.ProgressBar.Small.Inverse PUBLIC
+style/Widget.Holo.Light.ProgressBar.Small.Title PUBLIC
+style/Widget.Holo.Light.RatingBar PUBLIC
+style/Widget.Holo.Light.RatingBar.Indicator PUBLIC
+style/Widget.Holo.Light.RatingBar.Small PUBLIC
+style/Widget.Holo.Light.ScrollView PUBLIC
+style/Widget.Holo.Light.SeekBar PUBLIC
+style/Widget.Holo.Light.Spinner PUBLIC
+style/Widget.Holo.Light.Tab PUBLIC
+style/Widget.Holo.Light.TabWidget PUBLIC
+style/Widget.Holo.Light.TextView PUBLIC
+style/Widget.Holo.Light.TextView.SpinnerItem PUBLIC
+style/Widget.Holo.Light.WebTextView PUBLIC
+style/Widget.Holo.Light.WebView PUBLIC
+style/Widget.Holo.ListPopupWindow PUBLIC
+style/Widget.Holo.ListView PUBLIC
+style/Widget.Holo.ListView.DropDown PUBLIC
+style/Widget.Holo.MediaRouteButton PUBLIC
+style/Widget.Holo.PopupMenu PUBLIC
+style/Widget.Holo.PopupWindow PUBLIC
+style/Widget.Holo.ProgressBar PUBLIC
+style/Widget.Holo.ProgressBar.Horizontal PUBLIC
+style/Widget.Holo.ProgressBar.Large PUBLIC
+style/Widget.Holo.ProgressBar.Small PUBLIC
+style/Widget.Holo.ProgressBar.Small.Title PUBLIC
+style/Widget.Holo.RatingBar PUBLIC
+style/Widget.Holo.RatingBar.Indicator PUBLIC
+style/Widget.Holo.RatingBar.Small PUBLIC
+style/Widget.Holo.ScrollView PUBLIC
+style/Widget.Holo.SeekBar PUBLIC
+style/Widget.Holo.Spinner PUBLIC
+style/Widget.Holo.Tab PUBLIC
+style/Widget.Holo.TabWidget PUBLIC
+style/Widget.Holo.TextView PUBLIC
+style/Widget.Holo.TextView.SpinnerItem PUBLIC
+style/Widget.Holo.WebTextView PUBLIC
+style/Widget.Holo.WebView PUBLIC
+style/Widget.ImageButton PUBLIC
+style/Widget.ImageWell PUBLIC
+style/Widget.KeyboardView PUBLIC
+style/Widget.ListPopupWindow PUBLIC
+style/Widget.ListView PUBLIC
+style/Widget.ListView.DropDown PUBLIC
+style/Widget.ListView.Menu PUBLIC
+style/Widget.ListView.White PUBLIC
+style/Widget.Material PUBLIC
+style/Widget.Material.ActionBar PUBLIC
+style/Widget.Material.ActionBar.Solid PUBLIC
+style/Widget.Material.ActionBar.TabBar PUBLIC
+style/Widget.Material.ActionBar.TabText PUBLIC
+style/Widget.Material.ActionBar.TabView PUBLIC
+style/Widget.Material.ActionButton PUBLIC
+style/Widget.Material.ActionButton.CloseMode PUBLIC
+style/Widget.Material.ActionButton.Overflow PUBLIC
+style/Widget.Material.ActionMode PUBLIC
+style/Widget.Material.AutoCompleteTextView PUBLIC
+style/Widget.Material.Button PUBLIC
+style/Widget.Material.Button.Borderless PUBLIC
+style/Widget.Material.Button.Borderless.Colored PUBLIC
+style/Widget.Material.Button.Borderless.Small PUBLIC
+style/Widget.Material.Button.Colored PUBLIC
+style/Widget.Material.Button.Inset PUBLIC
+style/Widget.Material.Button.Small PUBLIC
+style/Widget.Material.Button.Toggle PUBLIC
+style/Widget.Material.ButtonBar PUBLIC
+style/Widget.Material.ButtonBar.AlertDialog PUBLIC
+style/Widget.Material.CalendarView PUBLIC
+style/Widget.Material.CheckedTextView PUBLIC
+style/Widget.Material.CompoundButton.CheckBox PUBLIC
+style/Widget.Material.CompoundButton.RadioButton PUBLIC
+style/Widget.Material.CompoundButton.Star PUBLIC
+style/Widget.Material.CompoundButton.Switch PUBLIC
+style/Widget.Material.DatePicker PUBLIC
+style/Widget.Material.DropDownItem PUBLIC
+style/Widget.Material.DropDownItem.Spinner PUBLIC
+style/Widget.Material.EditText PUBLIC
+style/Widget.Material.ExpandableListView PUBLIC
+style/Widget.Material.FastScroll PUBLIC
+style/Widget.Material.GridView PUBLIC
+style/Widget.Material.HorizontalScrollView PUBLIC
+style/Widget.Material.ImageButton PUBLIC
+style/Widget.Material.Light PUBLIC
+style/Widget.Material.Light.ActionBar PUBLIC
+style/Widget.Material.Light.ActionBar.Solid PUBLIC
+style/Widget.Material.Light.ActionBar.TabBar PUBLIC
+style/Widget.Material.Light.ActionBar.TabText PUBLIC
+style/Widget.Material.Light.ActionBar.TabView PUBLIC
+style/Widget.Material.Light.ActionButton PUBLIC
+style/Widget.Material.Light.ActionButton.CloseMode PUBLIC
+style/Widget.Material.Light.ActionButton.Overflow PUBLIC
+style/Widget.Material.Light.ActionMode PUBLIC
+style/Widget.Material.Light.AutoCompleteTextView PUBLIC
+style/Widget.Material.Light.Button PUBLIC
+style/Widget.Material.Light.Button.Borderless PUBLIC
+style/Widget.Material.Light.Button.Borderless.Colored PUBLIC
+style/Widget.Material.Light.Button.Borderless.Small PUBLIC
+style/Widget.Material.Light.Button.Inset PUBLIC
+style/Widget.Material.Light.Button.Small PUBLIC
+style/Widget.Material.Light.Button.Toggle PUBLIC
+style/Widget.Material.Light.ButtonBar PUBLIC
+style/Widget.Material.Light.ButtonBar.AlertDialog PUBLIC
+style/Widget.Material.Light.CalendarView PUBLIC
+style/Widget.Material.Light.CheckedTextView PUBLIC
+style/Widget.Material.Light.CompoundButton.CheckBox PUBLIC
+style/Widget.Material.Light.CompoundButton.RadioButton PUBLIC
+style/Widget.Material.Light.CompoundButton.Star PUBLIC
+style/Widget.Material.Light.CompoundButton.Switch PUBLIC
+style/Widget.Material.Light.DatePicker PUBLIC
+style/Widget.Material.Light.DropDownItem PUBLIC
+style/Widget.Material.Light.DropDownItem.Spinner PUBLIC
+style/Widget.Material.Light.EditText PUBLIC
+style/Widget.Material.Light.ExpandableListView PUBLIC
+style/Widget.Material.Light.FastScroll PUBLIC
+style/Widget.Material.Light.GridView PUBLIC
+style/Widget.Material.Light.HorizontalScrollView PUBLIC
+style/Widget.Material.Light.ImageButton PUBLIC
+style/Widget.Material.Light.ListPopupWindow PUBLIC
+style/Widget.Material.Light.ListView PUBLIC
+style/Widget.Material.Light.ListView.DropDown PUBLIC
+style/Widget.Material.Light.MediaRouteButton PUBLIC
+style/Widget.Material.Light.NumberPicker PUBLIC
+style/Widget.Material.Light.PopupMenu PUBLIC
+style/Widget.Material.Light.PopupMenu.Overflow PUBLIC
+style/Widget.Material.Light.PopupWindow PUBLIC
+style/Widget.Material.Light.ProgressBar PUBLIC
+style/Widget.Material.Light.ProgressBar.Horizontal PUBLIC
+style/Widget.Material.Light.ProgressBar.Inverse PUBLIC
+style/Widget.Material.Light.ProgressBar.Large PUBLIC
+style/Widget.Material.Light.ProgressBar.Large.Inverse PUBLIC
+style/Widget.Material.Light.ProgressBar.Small PUBLIC
+style/Widget.Material.Light.ProgressBar.Small.Inverse PUBLIC
+style/Widget.Material.Light.ProgressBar.Small.Title PUBLIC
+style/Widget.Material.Light.RatingBar PUBLIC
+style/Widget.Material.Light.RatingBar.Indicator PUBLIC
+style/Widget.Material.Light.RatingBar.Small PUBLIC
+style/Widget.Material.Light.ScrollView PUBLIC
+style/Widget.Material.Light.SearchView PUBLIC
+style/Widget.Material.Light.SeekBar PUBLIC
+style/Widget.Material.Light.SegmentedButton PUBLIC
+style/Widget.Material.Light.Spinner PUBLIC
+style/Widget.Material.Light.Spinner.Underlined PUBLIC
+style/Widget.Material.Light.StackView PUBLIC
+style/Widget.Material.Light.Tab PUBLIC
+style/Widget.Material.Light.TabWidget PUBLIC
+style/Widget.Material.Light.TextView PUBLIC
+style/Widget.Material.Light.TextView.SpinnerItem PUBLIC
+style/Widget.Material.Light.TimePicker PUBLIC
+style/Widget.Material.Light.WebTextView PUBLIC
+style/Widget.Material.Light.WebView PUBLIC
+style/Widget.Material.ListPopupWindow PUBLIC
+style/Widget.Material.ListView PUBLIC
+style/Widget.Material.ListView.DropDown PUBLIC
+style/Widget.Material.MediaRouteButton PUBLIC
+style/Widget.Material.NumberPicker PUBLIC
+style/Widget.Material.PopupMenu PUBLIC
+style/Widget.Material.PopupMenu.Overflow PUBLIC
+style/Widget.Material.PopupWindow PUBLIC
+style/Widget.Material.ProgressBar PUBLIC
+style/Widget.Material.ProgressBar.Horizontal PUBLIC
+style/Widget.Material.ProgressBar.Large PUBLIC
+style/Widget.Material.ProgressBar.Small PUBLIC
+style/Widget.Material.ProgressBar.Small.Title PUBLIC
+style/Widget.Material.RatingBar PUBLIC
+style/Widget.Material.RatingBar.Indicator PUBLIC
+style/Widget.Material.RatingBar.Small PUBLIC
+style/Widget.Material.ScrollView PUBLIC
+style/Widget.Material.SearchView PUBLIC
+style/Widget.Material.SeekBar PUBLIC
+style/Widget.Material.SeekBar.Discrete PUBLIC
+style/Widget.Material.SegmentedButton PUBLIC
+style/Widget.Material.Spinner PUBLIC
+style/Widget.Material.Spinner.Underlined PUBLIC
+style/Widget.Material.StackView PUBLIC
+style/Widget.Material.Tab PUBLIC
+style/Widget.Material.TabWidget PUBLIC
+style/Widget.Material.TextView PUBLIC
+style/Widget.Material.TextView.SpinnerItem PUBLIC
+style/Widget.Material.TimePicker PUBLIC
+style/Widget.Material.Toolbar PUBLIC
+style/Widget.Material.Toolbar.Button.Navigation PUBLIC
+style/Widget.Material.WebTextView PUBLIC
+style/Widget.Material.WebView PUBLIC
+style/Widget.PopupMenu PUBLIC
+style/Widget.PopupWindow PUBLIC
+style/Widget.ProgressBar PUBLIC
+style/Widget.ProgressBar.Horizontal PUBLIC
+style/Widget.ProgressBar.Inverse PUBLIC
+style/Widget.ProgressBar.Large PUBLIC
+style/Widget.ProgressBar.Large.Inverse PUBLIC
+style/Widget.ProgressBar.Small PUBLIC
+style/Widget.ProgressBar.Small.Inverse PUBLIC
+style/Widget.RatingBar PUBLIC
+style/Widget.ScrollView PUBLIC
+style/Widget.SeekBar PUBLIC
+style/Widget.Spinner PUBLIC
+style/Widget.Spinner.DropDown PUBLIC
+style/Widget.StackView PUBLIC
+style/Widget.TabWidget PUBLIC
+style/Widget.TextView PUBLIC
+style/Widget.TextView.PopupMenu PUBLIC
+style/Widget.TextView.SpinnerItem PUBLIC
+style/Widget.Toolbar PUBLIC
+style/Widget.Toolbar.Button.Navigation PUBLIC
+style/Widget.WebView PUBLIC
+transition/explode PUBLIC
+transition/fade PUBLIC
+transition/move PUBLIC
+transition/no_transition PUBLIC
+transition/slide_bottom PUBLIC
+transition/slide_left PUBLIC
+transition/slide_right PUBLIC
+transition/slide_top PUBLIC

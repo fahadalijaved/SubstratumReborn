@@ -1,0 +1,459 @@
+name,configuration,value
+AlertDialog.AppCompat,default,(style) size=0 parent=style/Base.AlertDialog.AppCompat (0x7f110005)
+AlertDialog.AppCompat.Light,default,(style) size=0 parent=style/Base.AlertDialog.AppCompat.Light (0x7f110006)
+Animation.AppCompat.Dialog,default,(style) size=0 parent=style/Base.Animation.AppCompat.Dialog (0x7f110007)
+Animation.AppCompat.DropDownUp,default,(style) size=0 parent=style/Base.Animation.AppCompat.DropDownUp (0x7f110008)
+Animation.AppCompat.Tooltip,default,(style) size=0 parent=style/Base.Animation.AppCompat.Tooltip (0x7f110009)
+Base.AlertDialog.AppCompat,default,(style) size=6 parent=0x01030012
+Base.AlertDialog.AppCompat.Light,default,(style) size=0 parent=style/Base.AlertDialog.AppCompat (0x7f110005)
+Base.Animation.AppCompat.Dialog,default,(style) size=2 parent=0x01030000
+Base.Animation.AppCompat.DropDownUp,default,(style) size=2 parent=0x01030000
+Base.Animation.AppCompat.Tooltip,default,(style) size=2 parent=0x01030000
+Base.DialogWindowTitle.AppCompat,default,(style) size=3 parent=0x01030012
+Base.DialogWindowTitleBackground.AppCompat,default,(style) size=4 parent=0x01030012
+Base.TextAppearance.AppCompat,default,(style) size=0 parent=0x010301ed
+Base.TextAppearance.AppCompat.Body1,default,(style) size=0 parent=0x010301f0
+Base.TextAppearance.AppCompat.Body2,default,(style) size=0 parent=0x010301ef
+Base.TextAppearance.AppCompat.Button,default,(style) size=0 parent=0x010301ee
+Base.TextAppearance.AppCompat.Caption,default,(style) size=0 parent=0x010301f1
+Base.TextAppearance.AppCompat.Display1,default,(style) size=0 parent=0x010301f6
+Base.TextAppearance.AppCompat.Display2,default,(style) size=0 parent=0x010301f5
+Base.TextAppearance.AppCompat.Display3,default,(style) size=0 parent=0x010301f4
+Base.TextAppearance.AppCompat.Display4,default,(style) size=0 parent=0x010301f3
+Base.TextAppearance.AppCompat.Headline,default,(style) size=0 parent=0x010301f7
+Base.TextAppearance.AppCompat.Inverse,default,(style) size=0 parent=0x010301f8
+Base.TextAppearance.AppCompat.Large,default,(style) size=0 parent=0x010301f9
+Base.TextAppearance.AppCompat.Large.Inverse,default,(style) size=0 parent=0x010301fa
+Base.TextAppearance.AppCompat.Light.Widget.PopupMenu.Large,default,(style) size=0 parent=0x0103021b
+Base.TextAppearance.AppCompat.Light.Widget.PopupMenu.Small,default,(style) size=0 parent=0x0103021c
+Base.TextAppearance.AppCompat.Medium,default,(style) size=0 parent=0x010301fb
+Base.TextAppearance.AppCompat.Medium.Inverse,default,(style) size=0 parent=0x010301fc
+Base.TextAppearance.AppCompat.Menu,default,(style) size=0 parent=0x010301fd
+Base.TextAppearance.AppCompat.SearchResult,default,(style) size=3
+Base.TextAppearance.AppCompat.SearchResult.Subtitle,default,(style) size=0 parent=0x01030204
+Base.TextAppearance.AppCompat.SearchResult.Title,default,(style) size=0 parent=0x01030205
+Base.TextAppearance.AppCompat.Small,default,(style) size=0 parent=0x01030206
+Base.TextAppearance.AppCompat.Small.Inverse,default,(style) size=0 parent=0x01030207
+Base.TextAppearance.AppCompat.Subhead,default,(style) size=0 parent=0x01030208
+Base.TextAppearance.AppCompat.Subhead.Inverse,default,(style) size=4 parent=style/Base.TextAppearance.AppCompat.Subhead (0x7f110023)
+Base.TextAppearance.AppCompat.Title,default,(style) size=0 parent=0x01030209
+Base.TextAppearance.AppCompat.Title.Inverse,default,(style) size=4 parent=style/Base.TextAppearance.AppCompat.Title (0x7f110025)
+Base.TextAppearance.AppCompat.Tooltip,default,(style) size=1 parent=style/Base.TextAppearance.AppCompat (0x7f11000c)
+Base.TextAppearance.AppCompat.Widget.ActionBar.Menu,default,(style) size=0 parent=0x0103020c
+Base.TextAppearance.AppCompat.Widget.ActionBar.Subtitle,default,(style) size=0 parent=0x0103020d
+Base.TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse,default,(style) size=0 parent=0x0103020e
+Base.TextAppearance.AppCompat.Widget.ActionBar.Title,default,(style) size=0 parent=0x0103020f
+Base.TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse,default,(style) size=0 parent=0x01030210
+Base.TextAppearance.AppCompat.Widget.ActionMode.Subtitle,default,(style) size=0 parent=0x01030211
+Base.TextAppearance.AppCompat.Widget.ActionMode.Title,default,(style) size=0 parent=0x01030213
+Base.TextAppearance.AppCompat.Widget.Button,default,(style) size=0 parent=0x01030215
+Base.TextAppearance.AppCompat.Widget.Button.Borderless.Colored,default,(style) size=0 parent=0x010302df
+Base.TextAppearance.AppCompat.Widget.Button.Colored,default,(style) size=0 parent=0x010302de
+Base.TextAppearance.AppCompat.Widget.Button.Inverse,default,(style) size=0 parent=0x010302d4
+Base.TextAppearance.AppCompat.Widget.DropDownItem,default,(style) size=1 parent=0x01030046
+Base.TextAppearance.AppCompat.Widget.PopupMenu.Header,default,(style) size=3 parent=style/TextAppearance.AppCompat (0x7f11010a)
+Base.TextAppearance.AppCompat.Widget.PopupMenu.Large,default,(style) size=0 parent=0x0103021b
+Base.TextAppearance.AppCompat.Widget.PopupMenu.Small,default,(style) size=0 parent=0x0103021c
+Base.TextAppearance.AppCompat.Widget.Switch,default,(style) size=0 parent=0x010301ee
+Base.TextAppearance.AppCompat.Widget.TextView.SpinnerItem,default,(style) size=0 parent=0x01030220
+Base.TextAppearance.Widget.AppCompat.ExpandedMenu.Item,default,(style) size=1 parent=0x01030044
+Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle,default,(style) size=0 parent=0x0103020d
+Base.TextAppearance.Widget.AppCompat.Toolbar.Title,default,(style) size=0 parent=0x0103020f
+Base.Theme.AppCompat,default,(style) size=0 parent=style/Base.V28.Theme.AppCompat (0x7f11005d)
+Base.Theme.AppCompat.CompactMenu,default,(style) size=3
+Base.Theme.AppCompat.Dialog,default,(style) size=0 parent=style/Base.V21.Theme.AppCompat.Dialog (0x7f110052)
+Base.Theme.AppCompat.Dialog,watch,(style) size=2 parent=style/Base.V21.Theme.AppCompat.Dialog (0x7f110052)
+Base.Theme.AppCompat.Dialog.Alert,default,(style) size=2 parent=style/Base.Theme.AppCompat.Dialog (0x7f11003e)
+Base.Theme.AppCompat.Dialog.FixedSize,default,(style) size=4 parent=style/Base.Theme.AppCompat.Dialog (0x7f11003e)
+Base.Theme.AppCompat.Dialog.MinWidth,default,(style) size=2 parent=style/Base.Theme.AppCompat.Dialog (0x7f11003e)
+Base.Theme.AppCompat.DialogWhenLarge,default,(style) size=0 parent=style/Theme.AppCompat (0x7f110144)
+Base.Theme.AppCompat.Light,default,(style) size=0 parent=style/Base.V28.Theme.AppCompat.Light (0x7f11005e)
+Base.Theme.AppCompat.Light.DarkActionBar,default,(style) size=7 parent=style/Base.Theme.AppCompat.Light (0x7f110043)
+Base.Theme.AppCompat.Light.Dialog,default,(style) size=0 parent=style/Base.V21.Theme.AppCompat.Light.Dialog (0x7f110054)
+Base.Theme.AppCompat.Light.Dialog,watch,(style) size=2 parent=style/Base.V21.Theme.AppCompat.Light.Dialog (0x7f110054)
+Base.Theme.AppCompat.Light.Dialog.Alert,default,(style) size=2 parent=style/Base.Theme.AppCompat.Light.Dialog (0x7f110045)
+Base.Theme.AppCompat.Light.Dialog.FixedSize,default,(style) size=4 parent=style/Base.Theme.AppCompat.Light.Dialog (0x7f110045)
+Base.Theme.AppCompat.Light.Dialog.MinWidth,default,(style) size=2 parent=style/Base.Theme.AppCompat.Light.Dialog (0x7f110045)
+Base.Theme.AppCompat.Light.DialogWhenLarge,default,(style) size=0 parent=style/Theme.AppCompat.Light (0x7f110152)
+Base.ThemeOverlay.AppCompat,default,(style) size=0 parent=style/Platform.ThemeOverlay.AppCompat (0x7f1100c5)
+Base.ThemeOverlay.AppCompat.ActionBar,default,(style) size=2 parent=style/Base.ThemeOverlay.AppCompat (0x7f11004a)
+Base.ThemeOverlay.AppCompat.Dark,default,(style) size=21 parent=style/Platform.ThemeOverlay.AppCompat.Dark (0x7f1100c6)
+Base.ThemeOverlay.AppCompat.Dark.ActionBar,default,(style) size=2 parent=style/Base.ThemeOverlay.AppCompat.Dark (0x7f11004c)
+Base.ThemeOverlay.AppCompat.Dialog,default,(style) size=0 parent=style/Base.V21.ThemeOverlay.AppCompat.Dialog (0x7f110055)
+Base.ThemeOverlay.AppCompat.Dialog,watch,(style) size=2 parent=style/Base.V21.ThemeOverlay.AppCompat.Dialog (0x7f110055)
+Base.ThemeOverlay.AppCompat.Dialog.Alert,default,(style) size=2 parent=style/Base.ThemeOverlay.AppCompat.Dialog (0x7f11004e)
+Base.ThemeOverlay.AppCompat.Light,default,(style) size=22 parent=style/Platform.ThemeOverlay.AppCompat.Light (0x7f1100c7)
+Base.V21.Theme.AppCompat,default,(style) size=32 parent=style/Base.V7.Theme.AppCompat (0x7f11005f)
+Base.V21.Theme.AppCompat.Dialog,default,(style) size=1 parent=style/Base.V7.Theme.AppCompat.Dialog (0x7f110060)
+Base.V21.Theme.AppCompat.Light,default,(style) size=32 parent=style/Base.V7.Theme.AppCompat.Light (0x7f110061)
+Base.V21.Theme.AppCompat.Light.Dialog,default,(style) size=1 parent=style/Base.V7.Theme.AppCompat.Light.Dialog (0x7f110062)
+Base.V21.ThemeOverlay.AppCompat.Dialog,default,(style) size=1 parent=style/Base.V7.ThemeOverlay.AppCompat.Dialog (0x7f110063)
+Base.V22.Theme.AppCompat,default,(style) size=2 parent=style/Base.V21.Theme.AppCompat (0x7f110051)
+Base.V22.Theme.AppCompat.Light,default,(style) size=2 parent=style/Base.V21.Theme.AppCompat.Light (0x7f110053)
+Base.V23.Theme.AppCompat,default,(style) size=7 parent=style/Base.V22.Theme.AppCompat (0x7f110056)
+Base.V23.Theme.AppCompat.Light,default,(style) size=7 parent=style/Base.V22.Theme.AppCompat.Light (0x7f110057)
+Base.V26.Theme.AppCompat,default,(style) size=1 parent=style/Base.V23.Theme.AppCompat (0x7f110058)
+Base.V26.Theme.AppCompat.Light,default,(style) size=1 parent=style/Base.V23.Theme.AppCompat.Light (0x7f110059)
+Base.V26.Widget.AppCompat.Toolbar,default,(style) size=2 parent=style/Base.V7.Widget.AppCompat.Toolbar (0x7f110066)
+Base.V28.Theme.AppCompat,default,(style) size=1 parent=style/Base.V26.Theme.AppCompat (0x7f11005a)
+Base.V28.Theme.AppCompat.Light,default,(style) size=1 parent=style/Base.V26.Theme.AppCompat.Light (0x7f11005b)
+Base.V7.Theme.AppCompat,default,(style) size=123 parent=style/Platform.AppCompat (0x7f1100c3)
+Base.V7.Theme.AppCompat.Dialog,default,(style) size=19 parent=style/Base.Theme.AppCompat (0x7f11003c)
+Base.V7.Theme.AppCompat.Light,default,(style) size=122 parent=style/Platform.AppCompat.Light (0x7f1100c4)
+Base.V7.Theme.AppCompat.Light.Dialog,default,(style) size=19 parent=style/Base.Theme.AppCompat.Light (0x7f110043)
+Base.V7.ThemeOverlay.AppCompat.Dialog,default,(style) size=23 parent=style/Base.ThemeOverlay.AppCompat (0x7f11004a)
+Base.V7.Widget.AppCompat.AutoCompleteTextView,default,(style) size=6 parent=0x01030027
+Base.V7.Widget.AppCompat.EditText,default,(style) size=4 parent=0x01030023
+Base.V7.Widget.AppCompat.Toolbar,default,(style) size=14 parent=0x01030012
+Base.Widget.AppCompat.ActionBar,default,(style) size=16
+Base.Widget.AppCompat.ActionBar.Solid,default,(style) size=3 parent=style/Base.Widget.AppCompat.ActionBar (0x7f110067)
+Base.Widget.AppCompat.ActionBar.TabBar,default,(style) size=3
+Base.Widget.AppCompat.ActionBar.TabText,default,(style) size=0 parent=0x01030251
+Base.Widget.AppCompat.ActionBar.TabView,default,(style) size=0 parent=0x01030252
+Base.Widget.AppCompat.ActionButton,default,(style) size=0 parent=0x01030253
+Base.Widget.AppCompat.ActionButton.CloseMode,default,(style) size=1 parent=0x01030254
+Base.Widget.AppCompat.ActionButton.Overflow,default,(style) size=0 parent=0x01030255
+Base.Widget.AppCompat.ActionMode,default,(style) size=16
+Base.Widget.AppCompat.ActivityChooserView,default,(style) size=5
+Base.Widget.AppCompat.AutoCompleteTextView,default,(style) size=1 parent=0x01030257
+Base.Widget.AppCompat.Button,default,(style) size=0 parent=0x01030258
+Base.Widget.AppCompat.Button.Borderless,default,(style) size=0 parent=0x01030259
+Base.Widget.AppCompat.Button.Borderless.Colored,default,(style) size=0 parent=0x0103025a
+Base.Widget.AppCompat.Button.ButtonBar.AlertDialog,default,(style) size=2 parent=style/Widget.AppCompat.Button.Borderless.Colored (0x7f110173)
+Base.Widget.AppCompat.Button.Colored,default,(style) size=1 parent=0x010302d3
+Base.Widget.AppCompat.Button.Small,default,(style) size=0 parent=0x0103025d
+Base.Widget.AppCompat.ButtonBar,default,(style) size=0 parent=0x0103025f
+Base.Widget.AppCompat.ButtonBar.AlertDialog,default,(style) size=0 parent=style/Base.Widget.AppCompat.ButtonBar (0x7f110078)
+Base.Widget.AppCompat.CompoundButton.CheckBox,default,(style) size=0 parent=0x01030263
+Base.Widget.AppCompat.CompoundButton.RadioButton,default,(style) size=0 parent=0x01030264
+Base.Widget.AppCompat.CompoundButton.Switch,default,(style) size=8 parent=0x01030018
+Base.Widget.AppCompat.DrawerArrowToggle,default,(style) size=3 parent=style/Base.Widget.AppCompat.DrawerArrowToggle.Common (0x7f11007e)
+Base.Widget.AppCompat.DrawerArrowToggle,hdpi,(style) size=3 parent=style/Base.Widget.AppCompat.DrawerArrowToggle.Common (0x7f11007e)
+Base.Widget.AppCompat.DrawerArrowToggle.Common,default,(style) size=5
+Base.Widget.AppCompat.DropDownItem.Spinner,default,(style) size=0 parent=0x01030268
+Base.Widget.AppCompat.EditText,default,(style) size=2 parent=0x01030269
+Base.Widget.AppCompat.ImageButton,default,(style) size=0 parent=0x0103026e
+Base.Widget.AppCompat.Light.ActionBar,default,(style) size=2 parent=style/Base.Widget.AppCompat.ActionBar (0x7f110067)
+Base.Widget.AppCompat.Light.ActionBar.Solid,default,(style) size=3 parent=style/Base.Widget.AppCompat.Light.ActionBar (0x7f110082)
+Base.Widget.AppCompat.Light.ActionBar.TabBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar.TabBar (0x7f110069)
+Base.Widget.AppCompat.Light.ActionBar.TabText,default,(style) size=0 parent=0x01030292
+Base.Widget.AppCompat.Light.ActionBar.TabText.Inverse,default,(style) size=0 parent=0x01030292
+Base.Widget.AppCompat.Light.ActionBar.TabView,default,(style) size=0 parent=0x01030293
+Base.Widget.AppCompat.Light.PopupMenu,default,(style) size=0 parent=0x010302b4
+Base.Widget.AppCompat.Light.PopupMenu.Overflow,default,(style) size=2 parent=style/Base.Widget.AppCompat.Light.PopupMenu (0x7f110088)
+Base.Widget.AppCompat.ListMenuView,default,(style) size=1 parent=0x01030012
+Base.Widget.AppCompat.ListPopupWindow,default,(style) size=0 parent=0x0103026f
+Base.Widget.AppCompat.ListView,default,(style) size=0 parent=0x01030270
+Base.Widget.AppCompat.ListView.DropDown,default,(style) size=0 parent=0x01030271
+Base.Widget.AppCompat.ListView.Menu,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListView (0x7f11008c)
+Base.Widget.AppCompat.PopupMenu,default,(style) size=0 parent=0x01030273
+Base.Widget.AppCompat.PopupMenu.Overflow,default,(style) size=2 parent=style/Base.Widget.AppCompat.PopupMenu (0x7f11008f)
+Base.Widget.AppCompat.PopupWindow,default,(style) size=0 parent=0x01030036
+Base.Widget.AppCompat.ProgressBar,default,(style) size=0 parent=0x01030276
+Base.Widget.AppCompat.ProgressBar.Horizontal,default,(style) size=0 parent=0x01030277
+Base.Widget.AppCompat.RatingBar,default,(style) size=0 parent=0x0103027b
+Base.Widget.AppCompat.RatingBar.Indicator,default,(style) size=0 parent=0x0103027c
+Base.Widget.AppCompat.RatingBar.Small,default,(style) size=0 parent=0x0103027d
+Base.Widget.AppCompat.SearchView,default,(style) size=10 parent=0x01030012
+Base.Widget.AppCompat.SearchView.ActionBar,default,(style) size=4 parent=style/Base.Widget.AppCompat.SearchView (0x7f110097)
+Base.Widget.AppCompat.SeekBar,default,(style) size=0 parent=0x01030280
+Base.Widget.AppCompat.SeekBar.Discrete,default,(style) size=1 parent=style/Base.Widget.AppCompat.SeekBar (0x7f110099)
+Base.Widget.AppCompat.Spinner,default,(style) size=0 parent=0x01030283
+Base.Widget.AppCompat.Spinner.Underlined,default,(style) size=0 parent=0x01030284
+Base.Widget.AppCompat.TextView,default,(style) size=2 parent=0x01030287
+Base.Widget.AppCompat.TextView.SpinnerItem,default,(style) size=0 parent=0x01030288
+Base.Widget.AppCompat.Toolbar,default,(style) size=0 parent=style/Base.V26.Widget.AppCompat.Toolbar (0x7f11005c)
+Base.Widget.AppCompat.Toolbar.Button.Navigation,default,(style) size=0 parent=0x0103028b
+BasePreferenceThemeOverlay,default,(style) size=15
+CallDefaultDialog,default,(style) size=7 parent=0x01030237
+CallSettingsWithoutDividerTheme,default,(style) size=1 parent=style/DialerSettingsLight (0x7f1100a5)
+DialerAlertDialogTheme,default,(style) size=1 parent=0x01030239
+DialerSettingsLight,default,(style) size=10 parent=style/SettingsLight (0x7f110100)
+DialpadNoSpaceStyle,default,(style) size=3
+DialpadSpaceStyle,default,(style) size=3
+Dialpad_DarkTransparent,default,(style) size=9
+Dialpad_DarkTransparent.Emergency,default,(style) size=1 parent=style/Dialpad_DarkTransparent (0x7f1100a8)
+Dialpad_Light,default,(style) size=9
+Dialpad_LightTransparent,default,(style) size=9
+Dialpad_LightTransparent.Emergency,default,(style) size=1 parent=style/Dialpad_LightTransparent (0x7f1100ab)
+DialtactsActionBarOverflow,default,(style) size=1 parent=0x010300b0
+DialtactsActionBarStyle,default,(style) size=1 parent=style/TelephonyActionBarStyle (0x7f110108)
+DialtactsActionBarTitleText,default,(style) size=3 parent=0x0103020f
+DialtactsDigitsTextAppearance,default,(style) size=6
+EmergencyCallbackMode,default,(style) size=7 parent=style/Theme.AppCompat.DayNight (0x7f110146)
+EmergencyDialerAlertDialogTheme,default,(style) size=2 parent=0x01030225
+EmergencyDialerTheme,default,(style) size=9 parent=0x0103022e
+EmergencyDialerThemeDark,default,(style) size=5 parent=style/EmergencyDialerTheme (0x7f1100b3)
+EmergencyInfoHintTextAppearance,default,(style) size=2 parent=0x01030208
+EmergencyInfoNameTextAppearance,default,(style) size=2 parent=0x01030208
+EmergencyInfoTapHintTextAppearance,default,(style) size=2 parent=0x01030208
+Empty,default,(style) size=7 parent=0x01030237
+IccPanel,default,(style) size=2
+InCallButton,default,(style) size=4
+InCallCompoundButton,default,(style) size=2 parent=style/InCallButton (0x7f1100ba)
+InCallEndButton,default,(style) size=3
+InCallExtraRowButton,default,(style) size=3
+InCallExtraRowButtonLabel,default,(style) size=9
+PhoneInformationV2Theme,default,(style) size=1 parent=style/Theme.AppCompat.DayNight.NoActionBar (0x7f11014c)
+PhoneNumberTapHintAppearance,default,(style) size=2 parent=0x01030208
+PhoneNumberTextAppearance,default,(style) size=2 parent=0x01030208
+PhoneNumberTypeAppearance,default,(style) size=3
+Platform.AppCompat,default,(style) size=0 parent=style/Platform.V25.AppCompat (0x7f1100ca)
+Platform.AppCompat.Light,default,(style) size=0 parent=style/Platform.V25.AppCompat.Light (0x7f1100cb)
+Platform.ThemeOverlay.AppCompat,default,(style) size=7
+Platform.ThemeOverlay.AppCompat.Dark,default,(style) size=0 parent=style/Platform.ThemeOverlay.AppCompat (0x7f1100c5)
+Platform.ThemeOverlay.AppCompat.Light,default,(style) size=0 parent=style/Platform.ThemeOverlay.AppCompat (0x7f1100c5)
+Platform.V21.AppCompat,default,(style) size=6 parent=0x0103022e
+Platform.V21.AppCompat.Light,default,(style) size=6 parent=0x01030241
+Platform.V25.AppCompat,default,(style) size=0 parent=0x0103022e
+Platform.V25.AppCompat.Light,default,(style) size=0 parent=0x01030241
+Platform.Widget.AppCompat.Spinner,default,(style) size=0 parent=0x010300a5
+Preference,default,(style) size=1
+Preference.Category,default,(style) size=3 parent=style/Preference (0x7f1100cd)
+Preference.Category.Material,default,(style) size=4 parent=style/Preference.Category (0x7f1100ce)
+Preference.CheckBoxPreference,default,(style) size=1 parent=style/Preference (0x7f1100cd)
+Preference.CheckBoxPreference.Material,default,(style) size=4 parent=style/Preference.CheckBoxPreference (0x7f1100d0)
+Preference.DialogPreference,default,(style) size=2 parent=style/Preference (0x7f1100cd)
+Preference.DialogPreference.EditTextPreference,default,(style) size=1 parent=style/Preference.DialogPreference (0x7f1100d2)
+Preference.DialogPreference.EditTextPreference.Material,default,(style) size=5 parent=style/Preference.DialogPreference.EditTextPreference (0x7f1100d3)
+Preference.DialogPreference.Material,default,(style) size=4 parent=style/Preference.DialogPreference (0x7f1100d2)
+Preference.DropDown,default,(style) size=1 parent=style/Preference (0x7f1100cd)
+Preference.DropDown.Material,default,(style) size=4 parent=style/Preference.DropDown (0x7f1100d6)
+Preference.Information,default,(style) size=3 parent=style/Preference (0x7f1100cd)
+Preference.Information.Material,default,(style) size=3 parent=style/Preference.Information (0x7f1100d8)
+Preference.Material,default,(style) size=5 parent=style/Preference (0x7f1100cd)
+Preference.PreferenceScreen,default,(style) size=0 parent=style/Preference (0x7f1100cd)
+Preference.PreferenceScreen.Material,default,(style) size=4 parent=style/Preference.PreferenceScreen (0x7f1100db)
+Preference.SeekBarPreference,default,(style) size=4 parent=style/Preference (0x7f1100cd)
+Preference.SeekBarPreference.Material,default,(style) size=6 parent=style/Preference.SeekBarPreference (0x7f1100dd)
+Preference.SwitchPreference,default,(style) size=3 parent=style/Preference (0x7f1100cd)
+Preference.SwitchPreference.Material,default,(style) size=5 parent=style/Preference.SwitchPreference (0x7f1100df)
+Preference.SwitchPreferenceCompat,default,(style) size=3 parent=style/Preference (0x7f1100cd)
+Preference.SwitchPreferenceCompat.Material,default,(style) size=4 parent=style/Preference.SwitchPreferenceCompat (0x7f1100e1)
+PreferenceCategoryTitleTextStyle,default,(style) size=2
+PreferenceFragment,default,(style) size=5
+PreferenceFragment.Material,default,(style) size=2 parent=style/PreferenceFragment (0x7f1100e4)
+PreferenceFragmentList,default,(style) size=4
+PreferenceFragmentList.Material,default,(style) size=4 parent=style/PreferenceFragmentList (0x7f1100e6)
+PreferenceSummaryTextStyle,default,(style) size=1
+PreferenceThemeOverlay,default,(style) size=1 parent=style/BasePreferenceThemeOverlay (0x7f1100a1)
+PreferenceThemeOverlay.v14,default,(style) size=0 parent=style/PreferenceThemeOverlay (0x7f1100e9)
+PreferenceThemeOverlay.v14.Material,default,(style) size=0 parent=style/PreferenceThemeOverlay.v14 (0x7f1100ea)
+RadioInfoTheme,default,(style) size=1 parent=style/Theme.AppCompat.DayNight (0x7f110146)
+RadioInfo_entry_layout,default,(style) size=3
+RtlOverlay.DialogWindowTitle.AppCompat,default,(style) size=1 parent=style/Base.DialogWindowTitle.AppCompat (0x7f11000a)
+RtlOverlay.Widget.AppCompat.ActionBar.TitleItem,default,(style) size=2 parent=0x01030012
+RtlOverlay.Widget.AppCompat.DialogTitle.Icon,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem.InternalGroup,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem.Shortcut,default,(style) size=2 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem.SubmenuArrow,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem.Text,default,(style) size=2 parent=0x01030012
+RtlOverlay.Widget.AppCompat.PopupMenuItem.Title,default,(style) size=2 parent=0x01030012
+RtlOverlay.Widget.AppCompat.Search.DropDown,default,(style) size=2 parent=0x01030012
+RtlOverlay.Widget.AppCompat.Search.DropDown.Icon1,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.Search.DropDown.Icon2,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.Search.DropDown.Query,default,(style) size=1 parent=0x01030012
+RtlOverlay.Widget.AppCompat.Search.DropDown.Text,default,(style) size=2 parent=style/Base.Widget.AppCompat.DropDownItem.Spinner (0x7f11007f)
+RtlOverlay.Widget.AppCompat.SearchView.MagIcon,default,(style) size=1 parent=0x01030012
+RtlUnderlay.Widget.AppCompat.ActionButton,default,(style) size=2 parent=0x01030012
+RtlUnderlay.Widget.AppCompat.ActionButton.Overflow,default,(style) size=2 parent=style/Base.Widget.AppCompat.ActionButton (0x7f11006c)
+SettingsDialogPreference,default,(style) size=2 parent=0x01030371
+SettingsLight,default,(style) size=10 parent=0x01030237
+SettingsListPreference,default,(style) size=0 parent=style/SettingsPreference (0x7f110102)
+SettingsPreference,default,(style) size=2 parent=0x0103036e
+SettingsPreferenceCategory,default,(style) size=0 parent=0x0103036f
+SettingsPreferenceScreen,default,(style) size=2 parent=0x01030376
+SettingsSwitchPreference,default,(style) size=2 parent=0x01030379
+ShortcutViewHintTextAppearance,default,(style) size=1 parent=0x01030208
+SimImportTheme,default,(style) size=5 parent=0x01030237
+TelephonyActionBarStyle,default,(style) size=6 parent=0x0103024e
+TextAppearance,default,(style) size=0 parent=0x0103003e
+TextAppearance.AppCompat,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat (0x7f11000c)
+TextAppearance.AppCompat.Body1,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Body1 (0x7f11000d)
+TextAppearance.AppCompat.Body2,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Body2 (0x7f11000e)
+TextAppearance.AppCompat.Button,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Button (0x7f11000f)
+TextAppearance.AppCompat.Caption,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Caption (0x7f110010)
+TextAppearance.AppCompat.Display1,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Display1 (0x7f110011)
+TextAppearance.AppCompat.Display2,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Display2 (0x7f110012)
+TextAppearance.AppCompat.Display3,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Display3 (0x7f110013)
+TextAppearance.AppCompat.Display4,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Display4 (0x7f110014)
+TextAppearance.AppCompat.Headline,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Headline (0x7f110015)
+TextAppearance.AppCompat.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Inverse (0x7f110016)
+TextAppearance.AppCompat.Large,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Large (0x7f110017)
+TextAppearance.AppCompat.Large.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Large.Inverse (0x7f110018)
+TextAppearance.AppCompat.Light.SearchResult.Subtitle,default,(style) size=0 parent=style/TextAppearance.AppCompat.SearchResult.Subtitle (0x7f11011e)
+TextAppearance.AppCompat.Light.SearchResult.Title,default,(style) size=0 parent=style/TextAppearance.AppCompat.SearchResult.Title (0x7f11011f)
+TextAppearance.AppCompat.Light.Widget.PopupMenu.Large,default,(style) size=0 parent=style/TextAppearance.AppCompat.Widget.PopupMenu.Large (0x7f110136)
+TextAppearance.AppCompat.Light.Widget.PopupMenu.Small,default,(style) size=0 parent=style/TextAppearance.AppCompat.Widget.PopupMenu.Small (0x7f110137)
+TextAppearance.AppCompat.Medium,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Medium (0x7f11001b)
+TextAppearance.AppCompat.Medium.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Medium.Inverse (0x7f11001c)
+TextAppearance.AppCompat.Menu,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Menu (0x7f11001d)
+TextAppearance.AppCompat.SearchResult.Subtitle,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.SearchResult.Subtitle (0x7f11001f)
+TextAppearance.AppCompat.SearchResult.Title,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.SearchResult.Title (0x7f110020)
+TextAppearance.AppCompat.Small,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Small (0x7f110021)
+TextAppearance.AppCompat.Small.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Small.Inverse (0x7f110022)
+TextAppearance.AppCompat.Subhead,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Subhead (0x7f110023)
+TextAppearance.AppCompat.Subhead.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Subhead.Inverse (0x7f110024)
+TextAppearance.AppCompat.Title,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Title (0x7f110025)
+TextAppearance.AppCompat.Title.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Title.Inverse (0x7f110026)
+TextAppearance.AppCompat.Tooltip,default,(style) size=2 parent=style/TextAppearance.AppCompat (0x7f11010a)
+TextAppearance.AppCompat.Widget.ActionBar.Menu,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionBar.Menu (0x7f110028)
+TextAppearance.AppCompat.Widget.ActionBar.Subtitle,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionBar.Subtitle (0x7f110029)
+TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse (0x7f11002a)
+TextAppearance.AppCompat.Widget.ActionBar.Title,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionBar.Title (0x7f11002b)
+TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse (0x7f11002c)
+TextAppearance.AppCompat.Widget.ActionMode.Subtitle,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionMode.Subtitle (0x7f11002d)
+TextAppearance.AppCompat.Widget.ActionMode.Subtitle.Inverse,default,(style) size=0 parent=style/TextAppearance.AppCompat.Widget.ActionMode.Subtitle (0x7f11012c)
+TextAppearance.AppCompat.Widget.ActionMode.Title,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.ActionMode.Title (0x7f11002e)
+TextAppearance.AppCompat.Widget.ActionMode.Title.Inverse,default,(style) size=0 parent=style/TextAppearance.AppCompat.Widget.ActionMode.Title (0x7f11012e)
+TextAppearance.AppCompat.Widget.Button,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.Button (0x7f11002f)
+TextAppearance.AppCompat.Widget.Button.Borderless.Colored,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.Button.Borderless.Colored (0x7f110030)
+TextAppearance.AppCompat.Widget.Button.Colored,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.Button.Colored (0x7f110031)
+TextAppearance.AppCompat.Widget.Button.Inverse,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.Button.Inverse (0x7f110032)
+TextAppearance.AppCompat.Widget.DropDownItem,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.DropDownItem (0x7f110033)
+TextAppearance.AppCompat.Widget.PopupMenu.Header,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.PopupMenu.Header (0x7f110034)
+TextAppearance.AppCompat.Widget.PopupMenu.Large,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.PopupMenu.Large (0x7f110035)
+TextAppearance.AppCompat.Widget.PopupMenu.Small,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.PopupMenu.Small (0x7f110036)
+TextAppearance.AppCompat.Widget.Switch,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.Switch (0x7f110037)
+TextAppearance.AppCompat.Widget.TextView.SpinnerItem,default,(style) size=0 parent=style/Base.TextAppearance.AppCompat.Widget.TextView.SpinnerItem (0x7f110038)
+TextAppearance.Compat.Notification,default,(style) size=0 parent=0x010301fe
+TextAppearance.Compat.Notification.Info,default,(style) size=0 parent=0x01030200
+TextAppearance.Compat.Notification.Line2,default,(style) size=0 parent=style/TextAppearance.Compat.Notification.Info (0x7f11013b)
+TextAppearance.Compat.Notification.Time,default,(style) size=0 parent=0x01030202
+TextAppearance.Compat.Notification.Title,default,(style) size=0 parent=0x01030203
+TextAppearance.Widget.AppCompat.ExpandedMenu.Item,default,(style) size=0 parent=style/Base.TextAppearance.Widget.AppCompat.ExpandedMenu.Item (0x7f110039)
+TextAppearance.Widget.AppCompat.Toolbar.Subtitle,default,(style) size=0 parent=style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle (0x7f11003a)
+TextAppearance.Widget.AppCompat.Toolbar.Title,default,(style) size=0 parent=style/Base.TextAppearance.Widget.AppCompat.Toolbar.Title (0x7f11003b)
+TextAppearance.info_label,default,(style) size=2 parent=style/TextAppearance (0x7f110109)
+TextAppearance.info_value,default,(style) size=2 parent=style/TextAppearance (0x7f110109)
+Theme.AppCompat,default,(style) size=0 parent=style/Base.Theme.AppCompat (0x7f11003c)
+Theme.AppCompat.CompactMenu,default,(style) size=0 parent=style/Base.Theme.AppCompat.CompactMenu (0x7f11003d)
+Theme.AppCompat.DayNight,default,(style) size=0 parent=style/Theme.AppCompat.Light (0x7f110152)
+Theme.AppCompat.DayNight,night,(style) size=0 parent=style/Theme.AppCompat (0x7f110144)
+Theme.AppCompat.DayNight.DarkActionBar,default,(style) size=0 parent=style/Theme.AppCompat.Light.DarkActionBar (0x7f110153)
+Theme.AppCompat.DayNight.DarkActionBar,night,(style) size=0 parent=style/Theme.AppCompat (0x7f110144)
+Theme.AppCompat.DayNight.Dialog,default,(style) size=0 parent=style/Theme.AppCompat.Light.Dialog (0x7f110154)
+Theme.AppCompat.DayNight.Dialog,night,(style) size=0 parent=style/Theme.AppCompat.Dialog (0x7f11014d)
+Theme.AppCompat.DayNight.Dialog.Alert,default,(style) size=0 parent=style/Theme.AppCompat.Light.Dialog.Alert (0x7f110155)
+Theme.AppCompat.DayNight.Dialog.Alert,night,(style) size=0 parent=style/Theme.AppCompat.Dialog.Alert (0x7f11014e)
+Theme.AppCompat.DayNight.Dialog.MinWidth,default,(style) size=0 parent=style/Theme.AppCompat.Light.Dialog.MinWidth (0x7f110156)
+Theme.AppCompat.DayNight.Dialog.MinWidth,night,(style) size=0 parent=style/Theme.AppCompat.Dialog.MinWidth (0x7f11014f)
+Theme.AppCompat.DayNight.DialogWhenLarge,default,(style) size=0 parent=style/Theme.AppCompat.Light.DialogWhenLarge (0x7f110157)
+Theme.AppCompat.DayNight.DialogWhenLarge,night,(style) size=0 parent=style/Theme.AppCompat.DialogWhenLarge (0x7f110150)
+Theme.AppCompat.DayNight.NoActionBar,default,(style) size=0 parent=style/Theme.AppCompat.Light.NoActionBar (0x7f110158)
+Theme.AppCompat.DayNight.NoActionBar,night,(style) size=0 parent=style/Theme.AppCompat.NoActionBar (0x7f110159)
+Theme.AppCompat.Dialog,default,(style) size=0 parent=style/Base.Theme.AppCompat.Dialog (0x7f11003e)
+Theme.AppCompat.Dialog.Alert,default,(style) size=0 parent=style/Base.Theme.AppCompat.Dialog.Alert (0x7f11003f)
+Theme.AppCompat.Dialog.MinWidth,default,(style) size=0 parent=style/Base.Theme.AppCompat.Dialog.MinWidth (0x7f110041)
+Theme.AppCompat.DialogWhenLarge,default,(style) size=0 parent=style/Base.Theme.AppCompat.DialogWhenLarge (0x7f110042)
+Theme.AppCompat.Empty,default,(style) size=0
+Theme.AppCompat.Light,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light (0x7f110043)
+Theme.AppCompat.Light.DarkActionBar,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light.DarkActionBar (0x7f110044)
+Theme.AppCompat.Light.Dialog,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light.Dialog (0x7f110045)
+Theme.AppCompat.Light.Dialog.Alert,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light.Dialog.Alert (0x7f110046)
+Theme.AppCompat.Light.Dialog.MinWidth,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light.Dialog.MinWidth (0x7f110048)
+Theme.AppCompat.Light.DialogWhenLarge,default,(style) size=0 parent=style/Base.Theme.AppCompat.Light.DialogWhenLarge (0x7f110049)
+Theme.AppCompat.Light.NoActionBar,default,(style) size=2 parent=style/Theme.AppCompat.Light (0x7f110152)
+Theme.AppCompat.NoActionBar,default,(style) size=2 parent=style/Theme.AppCompat (0x7f110144)
+Theme.Telephony.Transparent,default,(style) size=8 parent=0x0103012b
+Theme.Transparent,default,(style) size=6 parent=0x01030005
+ThemeOverlay.AppCompat,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat (0x7f11004a)
+ThemeOverlay.AppCompat.ActionBar,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.ActionBar (0x7f11004b)
+ThemeOverlay.AppCompat.Dark,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.Dark (0x7f11004c)
+ThemeOverlay.AppCompat.Dark.ActionBar,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.Dark.ActionBar (0x7f11004d)
+ThemeOverlay.AppCompat.DayNight,default,(style) size=0 parent=style/ThemeOverlay.AppCompat.Light (0x7f110164)
+ThemeOverlay.AppCompat.DayNight,night,(style) size=0 parent=style/ThemeOverlay.AppCompat.Dark (0x7f11015e)
+ThemeOverlay.AppCompat.DayNight.ActionBar,default,(style) size=2 parent=style/ThemeOverlay.AppCompat.DayNight (0x7f110160)
+ThemeOverlay.AppCompat.Dialog,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.Dialog (0x7f11004e)
+ThemeOverlay.AppCompat.Dialog.Alert,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.Dialog.Alert (0x7f11004f)
+ThemeOverlay.AppCompat.Light,default,(style) size=0 parent=style/Base.ThemeOverlay.AppCompat.Light (0x7f110050)
+VerticalSeparator,default,(style) size=3
+Widget.AppCompat.ActionBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar (0x7f110067)
+Widget.AppCompat.ActionBar.Solid,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar.Solid (0x7f110068)
+Widget.AppCompat.ActionBar.TabBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar.TabBar (0x7f110069)
+Widget.AppCompat.ActionBar.TabText,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar.TabText (0x7f11006a)
+Widget.AppCompat.ActionBar.TabView,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionBar.TabView (0x7f11006b)
+Widget.AppCompat.ActionButton,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionButton (0x7f11006c)
+Widget.AppCompat.ActionButton.CloseMode,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionButton.CloseMode (0x7f11006d)
+Widget.AppCompat.ActionButton.Overflow,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionButton.Overflow (0x7f11006e)
+Widget.AppCompat.ActionMode,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActionMode (0x7f11006f)
+Widget.AppCompat.ActivityChooserView,default,(style) size=0 parent=style/Base.Widget.AppCompat.ActivityChooserView (0x7f110070)
+Widget.AppCompat.AutoCompleteTextView,default,(style) size=0 parent=style/Base.Widget.AppCompat.AutoCompleteTextView (0x7f110071)
+Widget.AppCompat.Button,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button (0x7f110072)
+Widget.AppCompat.Button.Borderless,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button.Borderless (0x7f110073)
+Widget.AppCompat.Button.Borderless.Colored,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button.Borderless.Colored (0x7f110074)
+Widget.AppCompat.Button.ButtonBar.AlertDialog,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button.ButtonBar.AlertDialog (0x7f110075)
+Widget.AppCompat.Button.Colored,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button.Colored (0x7f110076)
+Widget.AppCompat.Button.Small,default,(style) size=0 parent=style/Base.Widget.AppCompat.Button.Small (0x7f110077)
+Widget.AppCompat.ButtonBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.ButtonBar (0x7f110078)
+Widget.AppCompat.ButtonBar.AlertDialog,default,(style) size=0 parent=style/Base.Widget.AppCompat.ButtonBar.AlertDialog (0x7f110079)
+Widget.AppCompat.CompoundButton.CheckBox,default,(style) size=0 parent=style/Base.Widget.AppCompat.CompoundButton.CheckBox (0x7f11007a)
+Widget.AppCompat.CompoundButton.RadioButton,default,(style) size=0 parent=style/Base.Widget.AppCompat.CompoundButton.RadioButton (0x7f11007b)
+Widget.AppCompat.CompoundButton.Switch,default,(style) size=0 parent=style/Base.Widget.AppCompat.CompoundButton.Switch (0x7f11007c)
+Widget.AppCompat.DrawerArrowToggle,default,(style) size=1 parent=style/Base.Widget.AppCompat.DrawerArrowToggle (0x7f11007d)
+Widget.AppCompat.DropDownItem.Spinner,default,(style) size=0 parent=style/RtlOverlay.Widget.AppCompat.Search.DropDown.Text (0x7f1100fb)
+Widget.AppCompat.EditText,default,(style) size=0 parent=style/Base.Widget.AppCompat.EditText (0x7f110080)
+Widget.AppCompat.ImageButton,default,(style) size=0 parent=style/Base.Widget.AppCompat.ImageButton (0x7f110081)
+Widget.AppCompat.Light.ActionBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar (0x7f110082)
+Widget.AppCompat.Light.ActionBar.Solid,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar.Solid (0x7f110083)
+Widget.AppCompat.Light.ActionBar.Solid.Inverse,default,(style) size=0 parent=style/Widget.AppCompat.Light.ActionBar.Solid (0x7f110181)
+Widget.AppCompat.Light.ActionBar.TabBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar.TabBar (0x7f110084)
+Widget.AppCompat.Light.ActionBar.TabBar.Inverse,default,(style) size=0 parent=style/Widget.AppCompat.Light.ActionBar.TabBar (0x7f110183)
+Widget.AppCompat.Light.ActionBar.TabText,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar.TabText (0x7f110085)
+Widget.AppCompat.Light.ActionBar.TabText.Inverse,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar.TabText.Inverse (0x7f110086)
+Widget.AppCompat.Light.ActionBar.TabView,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.ActionBar.TabView (0x7f110087)
+Widget.AppCompat.Light.ActionBar.TabView.Inverse,default,(style) size=0 parent=style/Widget.AppCompat.Light.ActionBar.TabView (0x7f110187)
+Widget.AppCompat.Light.ActionButton,default,(style) size=0 parent=style/Widget.AppCompat.ActionButton (0x7f11016b)
+Widget.AppCompat.Light.ActionButton.CloseMode,default,(style) size=0 parent=style/Widget.AppCompat.ActionButton.CloseMode (0x7f11016c)
+Widget.AppCompat.Light.ActionButton.Overflow,default,(style) size=0 parent=style/Widget.AppCompat.ActionButton.Overflow (0x7f11016d)
+Widget.AppCompat.Light.ActionMode.Inverse,default,(style) size=0 parent=style/Widget.AppCompat.ActionMode (0x7f11016e)
+Widget.AppCompat.Light.ActivityChooserView,default,(style) size=0 parent=style/Widget.AppCompat.ActivityChooserView (0x7f11016f)
+Widget.AppCompat.Light.AutoCompleteTextView,default,(style) size=0 parent=style/Widget.AppCompat.AutoCompleteTextView (0x7f110170)
+Widget.AppCompat.Light.DropDownItem.Spinner,default,(style) size=0 parent=style/Widget.AppCompat.DropDownItem.Spinner (0x7f11017d)
+Widget.AppCompat.Light.ListPopupWindow,default,(style) size=0 parent=style/Widget.AppCompat.ListPopupWindow (0x7f110197)
+Widget.AppCompat.Light.ListView.DropDown,default,(style) size=0 parent=style/Widget.AppCompat.ListView.DropDown (0x7f110199)
+Widget.AppCompat.Light.PopupMenu,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.PopupMenu (0x7f110088)
+Widget.AppCompat.Light.PopupMenu.Overflow,default,(style) size=0 parent=style/Base.Widget.AppCompat.Light.PopupMenu.Overflow (0x7f110089)
+Widget.AppCompat.Light.SearchView,default,(style) size=0 parent=style/Widget.AppCompat.SearchView (0x7f1101a3)
+Widget.AppCompat.Light.Spinner.DropDown.ActionBar,default,(style) size=0 parent=style/Widget.AppCompat.Spinner.DropDown.ActionBar (0x7f1101a9)
+Widget.AppCompat.ListMenuView,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListMenuView (0x7f11008a)
+Widget.AppCompat.ListPopupWindow,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListPopupWindow (0x7f11008b)
+Widget.AppCompat.ListView,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListView (0x7f11008c)
+Widget.AppCompat.ListView.DropDown,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListView.DropDown (0x7f11008d)
+Widget.AppCompat.ListView.Menu,default,(style) size=0 parent=style/Base.Widget.AppCompat.ListView.Menu (0x7f11008e)
+Widget.AppCompat.PopupMenu,default,(style) size=0 parent=style/Base.Widget.AppCompat.PopupMenu (0x7f11008f)
+Widget.AppCompat.PopupMenu.Overflow,default,(style) size=0 parent=style/Base.Widget.AppCompat.PopupMenu.Overflow (0x7f110090)
+Widget.AppCompat.PopupWindow,default,(style) size=0 parent=style/Base.Widget.AppCompat.PopupWindow (0x7f110091)
+Widget.AppCompat.ProgressBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.ProgressBar (0x7f110092)
+Widget.AppCompat.ProgressBar.Horizontal,default,(style) size=0 parent=style/Base.Widget.AppCompat.ProgressBar.Horizontal (0x7f110093)
+Widget.AppCompat.RatingBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.RatingBar (0x7f110094)
+Widget.AppCompat.RatingBar.Indicator,default,(style) size=0 parent=style/Base.Widget.AppCompat.RatingBar.Indicator (0x7f110095)
+Widget.AppCompat.RatingBar.Small,default,(style) size=0 parent=style/Base.Widget.AppCompat.RatingBar.Small (0x7f110096)
+Widget.AppCompat.SearchView,default,(style) size=0 parent=style/Base.Widget.AppCompat.SearchView (0x7f110097)
+Widget.AppCompat.SearchView.ActionBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.SearchView.ActionBar (0x7f110098)
+Widget.AppCompat.SeekBar,default,(style) size=0 parent=style/Base.Widget.AppCompat.SeekBar (0x7f110099)
+Widget.AppCompat.SeekBar.Discrete,default,(style) size=0 parent=style/Base.Widget.AppCompat.SeekBar.Discrete (0x7f11009a)
+Widget.AppCompat.Spinner,default,(style) size=0 parent=style/Base.Widget.AppCompat.Spinner (0x7f11009b)
+Widget.AppCompat.Spinner.DropDown,default,(style) size=0 parent=style/Widget.AppCompat.Spinner (0x7f1101a7)
+Widget.AppCompat.Spinner.DropDown.ActionBar,default,(style) size=0 parent=style/Widget.AppCompat.Spinner.DropDown (0x7f1101a8)
+Widget.AppCompat.Spinner.Underlined,default,(style) size=0 parent=style/Base.Widget.AppCompat.Spinner.Underlined (0x7f11009c)
+Widget.AppCompat.TextView,default,(style) size=0 parent=style/Base.Widget.AppCompat.TextView (0x7f11009d)
+Widget.AppCompat.TextView.SpinnerItem,default,(style) size=0 parent=style/Base.Widget.AppCompat.TextView.SpinnerItem (0x7f11009e)
+Widget.AppCompat.Toolbar,default,(style) size=0 parent=style/Base.Widget.AppCompat.Toolbar (0x7f11009f)
+Widget.AppCompat.Toolbar.Button.Navigation,default,(style) size=0 parent=style/Base.Widget.AppCompat.Toolbar.Button.Navigation (0x7f1100a0)
+Widget.Compat.NotificationActionContainer,default,(style) size=1
+Widget.Compat.NotificationActionText,default,(style) size=3
+Widget.SlidingPaneLayout,default,(style) size=1
+WifiAlertDialog,default,(style) size=3 parent=style/CallDefaultDialog (0x7f1100a2)
+ccOtaButton,default,(style) size=4
+ccOtaButtonBar,default,(style) size=3
+ccOtaNextButton,default,(style) size=3 parent=style/ccOtaButton (0x7f1101b3)
+ccOtaSkipButton,default,(style) size=3 parent=style/ccOtaButton (0x7f1101b3)
+ccOtaTextPrimary,default,(style) size=2
+ccOtaWizardTitle,default,(style) size=2
+entry_layout,default,(style) size=3
+form_value,default,(style) size=2
+info_label,default,(style) size=4
+info_layout,default,(style) size=7
+info_value,default,(style) size=3

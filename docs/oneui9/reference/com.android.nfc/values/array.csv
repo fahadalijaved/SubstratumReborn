@@ -1,0 +1,8 @@
+name,configuration,value
+antenna_x,default,(array) size=0
+antenna_y,default,(array) size=0
+config_skuSupportsSecureNfc,default,(array) size=0
+nfc_allow_list,default,(array) size=0
+overwrite_routing_table_allow_list_pkgs,default,(array) size=0
+provisioning_mime_types,default,(array) size=1
+tag_intent_blocked_app_list,default,(array) size=2

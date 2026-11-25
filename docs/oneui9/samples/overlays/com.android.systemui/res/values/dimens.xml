@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  com.android.systemui, values: stock One UI 9 values, generated from the reference.
+  Change the values you want and delete the other lines.
+-->
+<resources>
+    <!-- Notification card corners -->
+    <dimen name="notification_corner_radius">36dp</dimen>
+    <!-- Space left and right of notifications -->
+    <dimen name="notification_side_paddings">10dp</dimen>
+    <!-- QS tile height without labels -->
+    <dimen name="sec_qs_tile_height_no_label">42dp</dimen>
+    <!-- QS tile label size -->
+    <dimen name="sec_qs_tile_label_text_size">11sp</dimen>
+    <!-- Brightness slider height -->
+    <dimen name="brightness_slider_height">49dp</dimen>
+    <!-- Brightness slider height, expanded -->
+    <dimen name="brightness_slider_expanded_height">56dp</dimen>
+    <!-- Status bar clock text size -->
+    <dimen name="status_bar_clock_size">15dp</dimen>
+    <!-- Status bar inset, left -->
+    <dimen name="status_bar_padding_start">4dp</dimen>
+    <!-- Status bar inset, right -->
+    <dimen name="status_bar_padding_end">4dp</dimen>
+    <!-- Mobile signal icon size -->
+    <dimen name="signal_icon_size">15dp</dimen>
+    <!-- Battery icon height -->
+    <dimen name="battery_height">14.5dp</dimen>
+    <!-- Battery icon width -->
+    <dimen name="battery_width">9.5dp</dimen>
+</resources>

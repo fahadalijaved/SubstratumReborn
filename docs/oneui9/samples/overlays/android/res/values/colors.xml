@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  android, values: stock One UI 9 values, generated from the reference.
+  Change the values you want and delete the other lines.
+-->
+<resources>
+    <!-- Default dark window background -->
+    <color name="background_device_default_dark">#ff1a1b20</color>
+    <!-- Dark dialogs and popups -->
+    <color name="background_floating_device_default_dark">#ff1a1b20</color>
+    <!-- Material 3 background, dark -->
+    <color name="system_background_dark">#ff1d1d20</color>
+    <!-- Material 3 surface, dark -->
+    <color name="system_surface_dark">#ff1d1d20</color>
+    <!-- Material 3 container, lowest -->
+    <color name="system_surface_container_lowest_dark">#ff17171a</color>
+    <!-- Material 3 container, low -->
+    <color name="system_surface_container_low_dark">#ff252528</color>
+    <!-- Material 3 container -->
+    <color name="system_surface_container_dark">#ff2a2a2d</color>
+    <!-- Material 3 container, high -->
+    <color name="system_surface_container_high_dark">#ff343437</color>
+    <!-- Material 3 container, highest -->
+    <color name="system_surface_container_highest_dark">#ff404044</color>
+    <!-- One UI screen background, dark -->
+    <color name="tw_screen_background_color_dark">#ff17171a</color>
+    <!-- One UI dialogs, dark -->
+    <color name="tw_dialog_window_background_color_material_dark">#ff252528</color>
+</resources>

@@ -1,0 +1,17 @@
+name,configuration,value
+OtaPlaySuccessFailureTone,default,0
+OtaShowActivateFailTimes,default,0
+OtaShowActivationScreen,default,1
+OtaShowListeningScreen,default,0
+abc_config_activityDefaultDur,default,220
+abc_config_activityShortDur,default,150
+cancel_button_image_alpha,default,127
+config_gba_release_time,default,0
+config_in_service_wait_timer_when_dialing_emergency_routing_ecc_in_apm,default,3000
+config_tooltipAnimTime,default,150
+dialpad_layout_weight_additional_buttons,default,15
+dialpad_layout_weight_dialpad,default,65
+dialpad_layout_weight_digits,default,20
+preferences_detail_pane_weight,default,1
+preferences_header_pane_weight,default,0
+status_bar_notification_info_maxnum,default,999

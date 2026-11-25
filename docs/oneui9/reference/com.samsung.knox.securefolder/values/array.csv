@@ -1,0 +1,12 @@
+name,configuration,value
+bank,default,(array) size=449
+guide_description_strings,default,(array) size=3
+guide_description_strings_on_private_mode,default,(array) size=5
+guide_image_drawables,default,(array) size=3
+guide_image_drawables_on_private_mode,default,(array) size=5
+guide_title_strings,default,(array) size=4
+guide_title_strings_on_private_mode,default,(array) size=5
+secure_folder_default_apps,default,(array) size=8
+settings_timeout_values,default,(array) size=6
+settings_timeout_values_for_b_os,default,(array) size=7
+settings_timeout_values_for_c_os,default,(array) size=9

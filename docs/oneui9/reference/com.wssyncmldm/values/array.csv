@@ -1,0 +1,6 @@
+name,configuration,value
+auth_type,default,(array) size=3
+featureArray,default,(array) size=11
+forceinstall,default,(array) size=3
+priority,default,(array) size=3
+wifionly_by_device,default,(array) size=3

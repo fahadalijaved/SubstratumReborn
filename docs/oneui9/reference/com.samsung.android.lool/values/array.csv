@@ -1,0 +1,26 @@
+name,configuration,value
+assume_strong_biometrics_models,default,(array) size=2
+battery_graph_spinner_items,default,(array) size=2
+battery_spinner_sort,default,(array) size=2
+battery_spinner_sort_runestone,default,(array) size=3
+ccid_default_off,default,(array) size=20
+ccid_not_support,default,(array) size=13
+exclude_from_ram,default,(array) size=50
+hide_fingerprint_instantly_prefixes,default,(array) size=17
+memory_spinner_sort,default,(array) size=2
+not_auto_sleepings,default,(array) size=380
+not_auto_sleepings_china_policy,default,(array) size=186
+not_suspend_app,default,(array) size=3
+sc_status_day_labels,default,(array) size=7
+sc_status_time_labels,default,(array) size=6
+sesl_appwidget_preview_shape_capsule,default,(array) size=4
+sesl_appwidget_preview_shape_default,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_bud_1,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_bud_2,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_sprout_1,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_sprout_2,default,(array) size=4
+widget_opacity,default,(array) size=4
+widget_opacity_low_mem_device,default,(array) size=4
+widget_quick_tile_restriction_exception_apps,default,(array) size=1
+widget_setting_colors_phone,default,(array) size=3
+widget_setting_colors_tablet,default,(array) size=3

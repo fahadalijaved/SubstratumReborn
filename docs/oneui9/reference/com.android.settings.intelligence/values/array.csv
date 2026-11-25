@@ -1,0 +1,10 @@
+name,configuration,value
+sesl_appwidget_preview_shape_capsule,default,(array) size=4
+sesl_appwidget_preview_shape_default,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_bud_1,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_bud_2,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_sprout_1,default,(array) size=4
+sesl_appwidget_preview_shape_leaf_sprout_2,default,(array) size=4
+supportCellSizeArray,default,(array) size=6
+widgetBGColor,default,(array) size=3
+widgetBGColorKey,default,(array) size=3

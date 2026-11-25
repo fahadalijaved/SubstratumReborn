@@ -1,0 +1,8 @@
+name,configuration,value
+contained_button_max_width_ratio,default,0.800000%
+contained_button_max_width_ratio,sw600dp,0.600000%
+widget_flexible_space_middle_screen_content_width_ratio,default,1.000000%
+widget_flexible_space_middle_screen_content_width_ratio,sw600dp-land,0.815000%
+winset_about_layout_margin_ratio,default,0.050000%
+winset_about_page_button_default_width_ratio,default,0.600000%
+winset_about_page_button_max_width_ratio,default,0.750000%

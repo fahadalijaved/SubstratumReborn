@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One UI 9 design tokens, stock values (generated from the device reference).
+
+  Copy into assets/overlays/<package>/res/values/colors.xml of any app that uses
+  the tokens (SystemUI, Settings and most Samsung apps; see the reference README),
+  keep the lines you want to change and delete the rest.
+
+  *_light tokens are used in light mode, *_dark in dark mode. Changing a palette
+  tone changes every role that points to it.
+-->
+<resources>
+
+    <!-- System roles: backgrounds, surfaces, containers, primary, text -->
+    <color name="basic_token_sys_background_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_background_light">#fff3f3f5</color>  <!-- stock: @color/basic_token_gray_05 -->
+    <color name="basic_token_sys_background_variant_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_background_variant_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_color_inverse_on_surface_container_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_color_inverse_on_surface_container_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_green_bright_dark">#ff5ae0a0</color>  <!-- stock: @color/basic_token_green_20 -->
+    <color name="basic_token_sys_green_bright_light">#ff11a85f</color>  <!-- stock: @color/basic_token_green_50 -->
+    <color name="basic_token_sys_green_dark">#ff11a85f</color>  <!-- stock: @color/basic_token_green_50 -->
+    <color name="basic_token_sys_green_light">#ff11a85f</color>  <!-- stock: @color/basic_token_green_50 -->
+    <color name="basic_token_sys_on_surface_container_dark">#ffccccce</color>  <!-- stock: @color/basic_token_gray_20 -->
+    <color name="basic_token_sys_on_surface_container_fixed_dark">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_on_surface_container_fixed_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_on_surface_container_fixed_variant_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_on_surface_container_fixed_variant_light">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_on_surface_container_high_dark">#ffe9e9ec</color>  <!-- stock: @color/basic_token_gray_10 -->
+    <color name="basic_token_sys_on_surface_container_high_light">#ff252528</color>  <!-- stock: @color/basic_token_gray_90 -->
+    <color name="basic_token_sys_on_surface_container_highest_dark">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_on_surface_container_highest_light">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_on_surface_container_light">#ff4d4d52</color>  <!-- stock: @color/basic_token_gray_70 -->
+    <color name="basic_token_sys_on_surface_container_low_dark">#ffb7b7bb</color>  <!-- stock: @color/basic_token_gray_30 -->
+    <color name="basic_token_sys_on_surface_container_low_light">#ff636368</color>  <!-- stock: @color/basic_token_gray_60 -->
+    <color name="basic_token_sys_on_surface_container_lowest_dark">#ffa3a3a7</color>  <!-- stock: @color/basic_token_gray_40 -->
+    <color name="basic_token_sys_on_surface_container_lowest_light">#ff848487</color>  <!-- stock: @color/basic_token_gray_50 -->
+    <color name="basic_token_sys_orange_bright_dark">#fff58249</color>  <!-- stock: @color/basic_token_orange_30 -->
+    <color name="basic_token_sys_orange_bright_light">#ffe65b17</color>  <!-- stock: @color/basic_token_orange_50 -->
+    <color name="basic_token_sys_orange_dark">#ffe65b17</color>  <!-- stock: @color/basic_token_orange_50 -->
+    <color name="basic_token_sys_orange_light">#ffe65b17</color>  <!-- stock: @color/basic_token_orange_50 -->
+    <color name="basic_token_sys_outline_dark">#ff636368</color>  <!-- stock: @color/basic_token_gray_60 -->
+    <color name="basic_token_sys_outline_high_dark">#ffa3a3a7</color>  <!-- stock: @color/basic_token_gray_40 -->
+    <color name="basic_token_sys_outline_high_light">#ff848487</color>  <!-- stock: @color/basic_token_gray_50 -->
+    <color name="basic_token_sys_outline_highest_dark">#ffe9e9ec</color>  <!-- stock: @color/basic_token_gray_10 -->
+    <color name="basic_token_sys_outline_highest_light">#ff252528</color>  <!-- stock: @color/basic_token_gray_90 -->
+    <color name="basic_token_sys_outline_light">#ffccccce</color>  <!-- stock: @color/basic_token_gray_20 -->
+    <color name="basic_token_sys_outline_low_dark">#ff3a3a3d</color>  <!-- stock: @color/basic_token_gray_80 -->
+    <color name="basic_token_sys_outline_low_light">#ffe4e4e7</color>  <!-- stock: @color/basic_token_gray_15 -->
+    <color name="basic_token_sys_primary_bright_dark">#ff598fff</color>  <!-- stock: @color/basic_token_primary_40 -->
+    <color name="basic_token_sys_primary_bright_light">#ff387aff</color>  <!-- stock: @color/basic_token_primary_50 -->
+    <color name="basic_token_sys_primary_dark">#ff387aff</color>  <!-- stock: @color/basic_token_primary_50 -->
+    <color name="basic_token_sys_primary_high_dark">#ff598fff</color>  <!-- stock: @color/basic_token_primary_40 -->
+    <color name="basic_token_sys_primary_high_light">#ff2e65d4</color>  <!-- stock: @color/basic_token_primary_60 -->
+    <color name="basic_token_sys_primary_light">#ff387aff</color>  <!-- stock: @color/basic_token_primary_50 -->
+    <color name="basic_token_sys_red_bright_dark">#fff56962</color>  <!-- stock: @color/basic_token_red_30 -->
+    <color name="basic_token_sys_red_bright_light">#ffd93e36</color>  <!-- stock: @color/basic_token_red_50 -->
+    <color name="basic_token_sys_red_dark">#ffd93e36</color>  <!-- stock: @color/basic_token_red_50 -->
+    <color name="basic_token_sys_red_light">#ffd93e36</color>  <!-- stock: @color/basic_token_red_50 -->
+    <color name="basic_token_sys_surface_bright_dark">#ff252528</color>  <!-- stock: @color/basic_token_gray_90 -->
+    <color name="basic_token_sys_surface_bright_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_brightest_dark">#ff3a3a3d</color>  <!-- stock: @color/basic_token_gray_80 -->
+    <color name="basic_token_sys_surface_brightest_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_container_dark">#ff3a3a3d</color>  <!-- stock: @color/basic_token_gray_80 -->
+    <color name="basic_token_sys_surface_container_fixed_dark">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_container_fixed_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_container_fixed_variant_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_surface_container_fixed_variant_light">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_surface_container_high_dark">#ff4d4d52</color>  <!-- stock: @color/basic_token_gray_70 -->
+    <color name="basic_token_sys_surface_container_high_light">#ffccccce</color>  <!-- stock: @color/basic_token_gray_20 -->
+    <color name="basic_token_sys_surface_container_higher_dark">#ff636368</color>  <!-- stock: @color/basic_token_gray_60 -->
+    <color name="basic_token_sys_surface_container_higher_light">#ffa3a3a7</color>  <!-- stock: @color/basic_token_gray_40 -->
+    <color name="basic_token_sys_surface_container_highest_dark">#ff848487</color>  <!-- stock: @color/basic_token_gray_50 -->
+    <color name="basic_token_sys_surface_container_highest_light">#ff848487</color>  <!-- stock: @color/basic_token_gray_50 -->
+    <color name="basic_token_sys_surface_container_light">#ffe4e4e7</color>  <!-- stock: @color/basic_token_gray_15 -->
+    <color name="basic_token_sys_surface_container_low_dark">#ff252528</color>  <!-- stock: @color/basic_token_gray_90 -->
+    <color name="basic_token_sys_surface_container_low_light">#fff3f3f5</color>  <!-- stock: @color/basic_token_gray_05 -->
+    <color name="basic_token_sys_surface_container_lowest_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_surface_container_lowest_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_dark">#ff17171a</color>  <!-- stock: @color/basic_token_gray_95 -->
+    <color name="basic_token_sys_surface_fixed_dark">#ff4d4d52</color>  <!-- stock: @color/basic_token_gray_70 -->
+    <color name="basic_token_sys_surface_fixed_light">#ff4d4d52</color>  <!-- stock: @color/basic_token_gray_70 -->
+    <color name="basic_token_sys_surface_fixed_variant_dark">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_surface_fixed_variant_light">#ff010102</color>  <!-- stock: @color/basic_token_gray_100 -->
+    <color name="basic_token_sys_surface_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_sys_surface_variant_dark">#ff17171a</color>  <!-- stock: @color/basic_token_gray_95 -->
+    <color name="basic_token_sys_surface_variant_light">#ffe9e9ec</color>  <!-- stock: @color/basic_token_gray_10 -->
+    <color name="basic_token_sys_tone_on_tone_dark">#1afcfcff</color>
+    <color name="basic_token_sys_tone_on_tone_high_dark">#26fcfcff</color>
+    <color name="basic_token_sys_tone_on_tone_high_light">#1a17171a</color>
+    <color name="basic_token_sys_tone_on_tone_light">#0d17171a</color>
+
+    <!-- Component roles: dialogs, navigation bar, switches, sliders, cards -->
+    <color name="basic_token_component_dialog_outline_dark">#14ffffff</color>
+    <color name="basic_token_component_dialog_outline_light">#4dffffff</color>
+    <color name="basic_token_component_dialog_surface_container_dark">#ff636368</color>  <!-- stock: @color/basic_token_gray_60 -->
+    <color name="basic_token_component_dialog_surface_container_light">#fffcfcff</color>  <!-- stock: @color/basic_token_gray_01 -->
+    <color name="basic_token_component_dialog_surface_container_low_dark">#5c636368</color>
+    <color name="basic_token_component_dialog_surface_container_low_light">#b2fcfcff</color>
+    <color name="basic_token_component_navibar_surface_gesture_icon_dark">#c2ffffff</color>
+    <color name="basic_token_component_navibar_surface_gesture_icon_light">#4f000000</color>
+    <color name="basic_token_component_navibar_surface_icon_dark">#ffffffff</color>  <!-- stock: @color/basic_token_gray_white -->
+    <color name="basic_token_component_navibar_surface_icon_light">#99000000</color>
+    <color name="basic_token_component_navibar_surface_icon_outline_dark">#1a000000</color>
+    <color name="basic_token_component_navibar_surface_icon_outline_light">#59ffffff</color>
+    <color name="basic_token_component_navibar_translucent_background_dark">#b23a3a3d</color>
+    <color name="basic_token_component_navibar_translucent_background_light">#b2fcfcff</color>
+    <color name="basic_token_component_navibar_transparent_icon_fill_dark">#ffffffff</color>
+    <color name="basic_token_component_navibar_transparent_icon_fill_light">#99000000</color>
+    <color name="basic_token_component_navibar_transparent_icon_outline_dark">#1a000000</color>
+    <color name="basic_token_component_navibar_transparent_icon_outline_light">#ffffffff</color>
+
+    <!-- State layers: pressed and selected overlays -->
+    <color name="basic_token_state_pressed_on_color_dark">#29ffffff</color>
+    <color name="basic_token_state_pressed_on_color_light">#1a000000</color>
+    <color name="basic_token_state_pressed_on_surface_dark">#33ffffff</color>
+    <color name="basic_token_state_pressed_on_surface_light">#1a000000</color>
+    <color name="basic_token_state_pressed_on_surface_variant_dark">#29ffffff</color>
+    <color name="basic_token_state_pressed_on_surface_variant_light">#29000000</color>
+    <color name="basic_token_state_scrim_default_dark">#b2000000</color>
+    <color name="basic_token_state_scrim_default_light">#2e000000</color>
+    <color name="basic_token_state_scrim_help_overlay_dark">#bf252528</color>
+    <color name="basic_token_state_scrim_help_overlay_light">#bf252528</color>
+    <color name="basic_token_state_scrim_on_blur_small_screen_dark">#26000000</color>
+    <color name="basic_token_state_scrim_on_blur_small_screen_light">#26000000</color>
+    <color name="basic_token_state_scrim_on_blur_small_screen_variant_dark">#cc000000</color>
+    <color name="basic_token_state_scrim_on_blur_small_screen_variant_light">#cc000000</color>
+    <color name="basic_token_state_selected_on_background_dark">#33ffffff</color>
+    <color name="basic_token_state_selected_on_background_light">#0d000000</color>
+    <color name="basic_token_state_selected_on_surface_dark">#1affffff</color>
+    <color name="basic_token_state_selected_on_surface_light">#1a000000</color>
+    <color name="basic_token_state_selected_on_surface_variant_dark">#1affffff</color>
+    <color name="basic_token_state_selected_on_surface_variant_light">#0d000000</color>
+
+    <!-- Effects: blur surfaces and shadows -->
+    <color name="basic_token_effect_blur_chip_dark">#80000000</color>
+    <color name="basic_token_effect_blur_chip_light">#b2f3f3f5</color>
+    <color name="basic_token_effect_blur_surface_dark">#cc3a3a3d</color>
+    <color name="basic_token_effect_blur_surface_light">#ccfcfcff</color>
+    <color name="basic_token_effect_shadow_default_dark">#59000000</color>
+    <color name="basic_token_effect_shadow_default_light">#1a000000</color>
+    <color name="basic_token_effect_shadow_variant_dark">#1a000000</color>
+    <color name="basic_token_effect_shadow_variant_light">#0a000000</color>
+
+    <!-- Support: headers, canvases, library templates -->
+    <color name="basic_token_support_header_background_dark">#ff414650</color>
+    <color name="basic_token_support_header_background_light">#ffedf3ff</color>
+    <color name="basic_token_support_header_button_surface_dark">#ff576278</color>
+    <color name="basic_token_support_header_button_surface_light">#ffd6e3ff</color>
+    <color name="basic_token_support_library_canvas_background_dark">#ff000000</color>  <!-- stock: @color/basic_token_gray_black -->
+    <color name="basic_token_support_library_canvas_background_light">#ffffffff</color>  <!-- stock: @color/basic_token_gray_white -->
+    <color name="basic_token_support_smallscreen_cover_dark">#ffffffff</color>  <!-- stock: @color/basic_token_gray_white -->
+    <color name="basic_token_support_smallscreen_cover_fixed_dark">#ff252528</color>  <!-- stock: @color/basic_token_gray_90 -->
+    <color name="basic_token_support_smallscreen_cover_fixed_light">#ff000000</color>  <!-- stock: @color/basic_token_gray_black -->
+    <color name="basic_token_support_smallscreen_cover_light">#ff000000</color>  <!-- stock: @color/basic_token_gray_black -->
+    <color name="basic_token_support_template_canvas_background_dark">#ff3a3a3d</color>  <!-- stock: @color/basic_token_gray_80 -->
+    <color name="basic_token_support_template_canvas_background_light">#ffd2d5dd</color>
+
+    <!-- Palette: raw tones the roles point to -->
+    <color name="basic_token_gray_01">#fffcfcff</color>
+    <color name="basic_token_gray_05">#fff3f3f5</color>
+    <color name="basic_token_gray_10">#ffe9e9ec</color>
+    <color name="basic_token_gray_100">#ff010102</color>
+    <color name="basic_token_gray_15">#ffe4e4e7</color>
+    <color name="basic_token_gray_20">#ffccccce</color>
+    <color name="basic_token_gray_30">#ffb7b7bb</color>
+    <color name="basic_token_gray_40">#ffa3a3a7</color>
+    <color name="basic_token_gray_50">#ff848487</color>
+    <color name="basic_token_gray_60">#ff636368</color>
+    <color name="basic_token_gray_70">#ff4d4d52</color>
+    <color name="basic_token_gray_80">#ff3a3a3d</color>
+    <color name="basic_token_gray_90">#ff252528</color>
+    <color name="basic_token_gray_95">#ff17171a</color>
+    <color name="basic_token_gray_black">#ff000000</color>
+    <color name="basic_token_gray_white">#ffffffff</color>
+    <color name="basic_token_green_01">#fff5fffa</color>
+    <color name="basic_token_green_05">#ffd6ffeb</color>
+    <color name="basic_token_green_10">#ffb0ffd9</color>
+    <color name="basic_token_green_100">#ff042917</color>
+    <color name="basic_token_green_15">#ff7af5ba</color>
+    <color name="basic_token_green_20">#ff5ae0a0</color>
+    <color name="basic_token_green_30">#ff3dcc87</color>
+    <color name="basic_token_green_40">#ff25b871</color>
+    <color name="basic_token_green_50">#ff11a85f</color>
+    <color name="basic_token_green_60">#ff0e8f51</color>
+    <color name="basic_token_green_70">#ff0c7542</color>
+    <color name="basic_token_green_80">#ff095c34</color>
+    <color name="basic_token_green_90">#ff074225</color>
+    <color name="basic_token_green_95">#ff05331d</color>
+    <color name="basic_token_orange_01">#fffff8f5</color>
+    <color name="basic_token_orange_05">#ffffe6da</color>
+    <color name="basic_token_orange_10">#ffffd3bd</color>
+    <color name="basic_token_orange_100">#ff291004</color>
+    <color name="basic_token_orange_15">#ffffaa80</color>
+    <color name="basic_token_orange_20">#fffa9564</color>
+    <color name="basic_token_orange_30">#fff58249</color>
+    <color name="basic_token_orange_40">#ffed6e2f</color>
+    <color name="basic_token_orange_50">#ffe65b17</color>
+    <color name="basic_token_orange_60">#ffbf4c13</color>
+    <color name="basic_token_orange_70">#ff993d0f</color>
+    <color name="basic_token_orange_80">#ff732d0b</color>
+    <color name="basic_token_orange_90">#ff4d1e08</color>
+    <color name="basic_token_orange_95">#ff381606</color>
+    <color name="basic_token_primary_01">#fff5f8ff</color>
+    <color name="basic_token_primary_05">#ffedf3ff</color>
+    <color name="basic_token_primary_10">#ffd6e3ff</color>
+    <color name="basic_token_primary_100">#ff091429</color>
+    <color name="basic_token_primary_15">#ffb2ccff</color>
+    <color name="basic_token_primary_20">#ff94b8ff</color>
+    <color name="basic_token_primary_30">#ff75a3ff</color>
+    <color name="basic_token_primary_40">#ff598fff</color>
+    <color name="basic_token_primary_50">#ff387aff</color>
+    <color name="basic_token_primary_60">#ff2e65d4</color>
+    <color name="basic_token_primary_70">#ff244ea3</color>
+    <color name="basic_token_primary_80">#ff1b3b7a</color>
+    <color name="basic_token_primary_90">#ff122752</color>
+    <color name="basic_token_primary_95">#ff0d1c3b</color>
+    <color name="basic_token_red_01">#fffef6f6</color>
+    <color name="basic_token_red_05">#fffeedec</color>
+    <color name="basic_token_red_10">#ffffd5d2</color>
+    <color name="basic_token_red_100">#ff290c0a</color>
+    <color name="basic_token_red_15">#ffffaaa6</color>
+    <color name="basic_token_red_20">#fffc8681</color>
+    <color name="basic_token_red_30">#fff56962</color>
+    <color name="basic_token_red_40">#ffe54d45</color>
+    <color name="basic_token_red_50">#ffd93e36</color>
+    <color name="basic_token_red_60">#ffad322b</color>
+    <color name="basic_token_red_70">#ff8c2823</color>
+    <color name="basic_token_red_80">#ff6b1f1b</color>
+    <color name="basic_token_red_90">#ff4a1512</color>
+    <color name="basic_token_red_95">#ff39100e</color>
+</resources>

@@ -1,0 +1,12 @@
+name,configuration,value
+config_materialPreferenceIconSpaceReserved,default,false
+config_materialPreferenceIconSpaceReserved,sw360dp,true
+enableExtensionAppFunctionService,default,false
+enablePlatformAppFunctionService,default,true
+light_navigation_bar_mode,default,true
+light_navigation_bar_mode,night,false
+light_status_bar_mode,default,true
+light_status_bar_mode,night,false
+sesl_action_bar_text_item_mode,default,false
+sesl_config_closeDialogWhenTouchOutside,default,true
+sesl_seekbar_sliding_animation,default,true

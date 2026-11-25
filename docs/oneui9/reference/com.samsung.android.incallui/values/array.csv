@@ -1,0 +1,4 @@
+name,configuration,value
+fake_speech_generator_en,default,(array) size=4
+fake_speech_generator_ko,default,(array) size=4
+hosts_allowlist_sample,default,(array) size=6

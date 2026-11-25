@@ -1,0 +1,23 @@
+name,configuration,value
+assistant_menu_size_entries,default,(array) size=4
+assistant_menu_size_values,default,(array) size=4
+cursor_color_entries,default,(array) size=6
+cursor_color_values,default,(array) size=6
+cursor_inner_color_values,default,(array) size=6
+fmpad_size_entries,default,(array) size=3
+fmpad_size_values,default,(array) size=3
+fmpointer_size_entries,default,(array) size=2
+fmpointer_size_values,default,(array) size=2
+fmpointer_speed_entries,default,(array) size=3
+fmpointer_speed_values,default,(array) size=3
+home_appliance_backup_network_option_entries,default,(array) size=2
+home_appliance_backup_network_option_values,default,(array) size=2
+listScanDirection,default,(array) size=4
+listScanDirectionVals,default,(array) size=4
+listScanType,default,(array) size=3
+pref_speech_volume_entries,default,(array) size=4
+pref_speech_volume_values,default,(array) size=4
+scan_method_list,default,(array) size=2
+scan_method_preview_list,default,(array) size=2
+scan_method_val_list,default,(array) size=2
+sec_entryvalues_8_step_font_size,default,(array) size=8

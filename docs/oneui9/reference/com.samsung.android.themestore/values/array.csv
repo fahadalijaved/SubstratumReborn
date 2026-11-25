@@ -1,0 +1,4 @@
+name,configuration,value
+DIALOG_ITEM_LIST_AOD_APPLY,default,(array) size=2
+DIALOG_ITEM_LIST_SORTING_FOLLOWING_SELLER,default,(array) size=2
+DIALOG_ITEM_LIST_SORTING_POPULAR_SELLER,default,(array) size=2

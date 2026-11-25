@@ -1,0 +1,4 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/substratum_battery"/>
+    <item android:drawable="@drawable/substratum_battery_plus" android:gravity="center" android:width="10dp" android:height="10dp"/>
+</layer-list>

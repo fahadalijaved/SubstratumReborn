@@ -1,0 +1,8 @@
+name,configuration,value
+about_page_button_max_width,default,0.800000%
+ai_watermark_card_left_bottom_margin,default,0.020000%
+ai_watermark_opacity,default,0.400000%
+ai_watermark_opacity_for_chn,default,0.000000%
+ai_watermark_picture_bottom_margin,default,0.040000%
+letter_to_tile_ratio,default,0.500000%
+trash_empty_description_button_max_width,default,0.750000%

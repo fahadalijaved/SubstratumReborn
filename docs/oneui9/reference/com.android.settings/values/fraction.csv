@@ -1,0 +1,17 @@
+name,configuration,value
+battery_button_height_fraction,default,0.105000%
+battery_subpixel_smoothing_left,default,0.000000%
+battery_subpixel_smoothing_right,default,0.000000%
+bt_battery_button_height_fraction,default,0.078000%
+bt_battery_ratio_fraction,default,0.350000%
+display_density_max_scale,default,1.500000%
+display_density_min_scale,default,0.850000%
+display_density_min_scale_interval,default,0.090000%
+external_display_density_max_scale,default,1.500000%
+external_display_density_min_scale,default,0.700000%
+fingerprint_sensor_location_fraction_x,default,0.500000%
+fingerprint_sensor_location_fraction_y,default,0.300000%
+sec_preferences_left_pane_minimum_width_ratio,default,0.300000%
+sec_preferences_right_pane_minimum_width_ratio,default,0.300000%
+sec_widget_round_button_max_width,default,0.800000%
+sec_widget_round_button_max_width,sw600dp,0.600000%

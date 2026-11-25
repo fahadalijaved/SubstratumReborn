@@ -1,0 +1,5 @@
+name,configuration,value
+digital_face,default,(array) size=4
+flower_garden,default,(array) size=4
+theme_app_icon_drawable,default,(array) size=115
+theme_app_icon_package,default,(array) size=115

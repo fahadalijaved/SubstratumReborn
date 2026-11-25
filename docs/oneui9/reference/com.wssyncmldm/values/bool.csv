@@ -1,0 +1,8 @@
+name,configuration,value
+config_materialPreferenceIconSpaceReserved,default,false
+config_materialPreferenceIconSpaceReserved,sw360dp,true
+sesl_action_bar_text_item_mode,default,false
+sesl_config_closeDialogWhenTouchOutside,default,true
+sesl_seekbar_sliding_animation,default,true
+status_bar_window_light,default,true
+status_bar_window_light,night,false

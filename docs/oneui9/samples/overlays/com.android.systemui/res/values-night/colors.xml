@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  com.android.systemui, values-night: stock One UI 9 values, generated from the reference.
+  Change the values you want and delete the other lines.
+  Every name here also needs a line in values/ (already there with
+  the stock light value), or the target crashes in light mode.
+-->
+<resources>
+    <!-- Notification shade / QS panel background -->
+    <color name="panel_bg_color">#cc101010</color>
+    <!-- Tint over the panel blur -->
+    <color name="panel_background_blur_color">#40000000</color>
+    <!-- QS tile, on -->
+    <color name="qs_tile_round_background_on">#ffd5d5d5</color>
+    <!-- QS tile, off -->
+    <color name="qs_tile_round_background_off">#40ffffff</color>
+    <!-- QS tile, unavailable -->
+    <color name="qs_tile_round_background_dim">#66d5d5d5</color>
+    <!-- QS tile label text -->
+    <color name="qs_tile_label">#bffffaff</color>
+    <!-- Notification card -->
+    <color name="notification_material_background_color">#4d000000</color>
+    <!-- Notification card, dimmed -->
+    <color name="notification_material_background_dimmed_color">#ff3b3b3b</color>
+    <!-- Notification card on the lock screen -->
+    <color name="notification_material_background_on_lockscreen">#cc010102</color>
+    <!-- Notification title text; stock value is a framework reference, set your own -->
+    <color name="notification_primary_text_color">TODO</color>
+    <!-- Shelf buttons under the notifications -->
+    <color name="notification_shelf_button_background_fill_color">#52000000</color>
+    <!-- QS popup menus (with blur) -->
+    <color name="qs_detail_layout_popup_menu_background_color">#cc3a3a3a</color>
+    <!-- QS popup menus (no blur) -->
+    <color name="qs_detail_layout_popup_menu_background_color_no_blur">#ff3a3a3a</color>
+    <!-- Brightness slider while dragging -->
+    <color name="sec_brightness_mirror_background_color">#cc000000</color>
+    <!-- Notification settings (long press), body -->
+    <color name="sec_notification_guts_content_bg_color">#ff333333</color>
+    <!-- Notification settings (long press), header -->
+    <color name="sec_notification_guts_header_bg_color">#ff3a3a3d</color>
+</resources>

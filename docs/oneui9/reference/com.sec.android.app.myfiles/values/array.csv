@@ -1,0 +1,4 @@
+name,configuration,value
+description,default,(array) size=92
+exo_controls_playback_speeds,default,(array) size=7
+path,default,(array) size=92

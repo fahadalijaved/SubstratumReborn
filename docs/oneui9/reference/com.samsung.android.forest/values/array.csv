@@ -1,0 +1,19 @@
+name,configuration,value
+app_timer_dialog_extend_time_descriptions,default,(array) size=4
+app_timer_dialog_extend_timer_names,default,(array) size=4
+app_timer_icon_color_descriptions,default,(array) size=7
+insight_weekly_timer_suggestion_description_day,default,(array) size=7
+notification_test_spinner_array,default,(array) size=3
+promovence_weekly_report_noti_goal_set_body,default,(array) size=8
+promovence_weekly_report_noti_goal_set_header,default,(array) size=8
+settings_security_question,default,(array) size=6
+weekly_report_noti_normal_set_body,default,(array) size=3
+weekly_report_noti_normal_set_body_tablet,default,(array) size=3
+weekly_report_noti_normal_set_header,default,(array) size=3
+weekly_report_peak_time_category_description,default,(array) size=3
+widget_background_color_entries,default,(array) size=3
+widget_background_color_values,default,(array) size=3
+widget_opacity,default,(array) size=3
+widget_opacity_low_ram,default,(array) size=3
+widget_refresh_bg_opacity,default,(array) size=3
+widget_refresh_bg_opacity,night,(array) size=3
