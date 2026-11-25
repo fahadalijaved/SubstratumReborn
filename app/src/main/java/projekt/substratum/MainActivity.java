@@ -447,6 +447,9 @@ public class MainActivity extends AppCompatActivity implements
         } else if (switchId2 == R.id.showcase) {
             launchInternalActivity(this, ShowcaseActivity.class);
             return true;
+        } else if (switchId2 == R.id.system_amoled) {
+            projekt.substratum.util.helpers.SystemAmoledDialog.show(this);
+            return true;
         } else if (switchId2 == R.id.rescue) {
             Restore.invoke(this);
             return true;

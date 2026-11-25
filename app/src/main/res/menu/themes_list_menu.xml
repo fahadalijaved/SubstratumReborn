@@ -38,6 +38,9 @@
         android:title="@string/menu_per_app"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/system_amoled"
+        android:title="@string/system_amoled_title" />
+    <item
         android:id="@+id/reboot_device"
         android:title="@string/menu_reboot_device" />
     <item

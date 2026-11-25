@@ -63,12 +63,22 @@ public final class FabricatedValues {
         collectValueFolders(workArea, 0, folders);
         folders.sort((a, b) -> Boolean.compare(isVariant(a), isVariant(b)));
         for (File folder : folders) readValues(folder, items);
+        return registerItems(context, target, name, new ArrayList<>(items.values()));
+    }
+
+    /**
+     * Register prepared items {target, type (decimal), value, config} as a fabricated overlay.
+     *
+     * @return Number of values registered, 0 if there were none or it failed
+     */
+    public static int registerItems(Context context, String target, String name,
+                                    List<String[]> items) {
         if (items.isEmpty()) return 0;
 
         File definition = new File(context.getCacheDir(), name + ".xml");
         try (FileWriter writer = new FileWriter(definition)) {
             writer.write("<overlay>\n");
-            for (String[] item : items.values()) {
+            for (String[] item : items) {
                 writer.write(String.format(Locale.US,
                         "  <item target=\"%s\" type=\"0x%02x\" value=\"%s\"%s />\n",
                         item[0], Integer.parseInt(item[1]), item[2],

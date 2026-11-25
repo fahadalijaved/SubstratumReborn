@@ -614,6 +614,16 @@
     <string name="settings_system_status_rooted">Rooted mode</string>
     <string name="settings_system_status_xposed">LSPosed mode</string>
     <string name="install_starter_theme">Install Reborn AMOLED</string>
+    <string name="system_amoled_title">AMOLED for every app</string>
+    <string name="system_amoled_message">Turns the dark mode of every Samsung, Google and system app into true black: pages, cards, lists, popups, the keyboard, the notification shade and quick settings. Light mode is not changed, and it applies live without restarting anything.</string>
+    <string name="system_amoled_apply">Apply</string>
+    <string name="system_amoled_remove">Remove</string>
+    <string name="system_amoled_working">Reading every app\'s dark mode colors…</string>
+    <string name="system_amoled_removing">Removing…</string>
+    <string name="system_amoled_progress">%1$d of %2$d: %3$s</string>
+    <string name="system_amoled_done">AMOLED applied to %1$d apps (%2$d colors)</string>
+    <string name="system_amoled_removed">AMOLED removed from every app</string>
+    <string name="system_amoled_needs_root">AMOLED for every app needs root</string>
     <string name="install_starter_theme_running">Installing Reborn AMOLED…</string>
     <string name="install_starter_theme_failed">Could not install Reborn AMOLED</string>
     <string name="settings_system_status_rootless">Interfacer mode</string>

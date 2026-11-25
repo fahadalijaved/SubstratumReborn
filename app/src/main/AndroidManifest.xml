@@ -154,6 +154,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.launch.SystemAmoledActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Translucent" />
+        <activity
             android:name=".activities.shortcuts.RescueActivity"
             android:theme="@style/Theme.AppCompat.Translucent">
             <intent-filter>
