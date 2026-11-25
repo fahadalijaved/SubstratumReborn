@@ -9,8 +9,8 @@ For every APK given, the resource table is read with the Android SDK's aapt2
 and written out as:
 
   <out>/<package>/values/<type>.csv  name, configuration, default value
-                                     (color, dimen, bool, integer, string,
-                                     fraction, array, plurals, style)
+                                     (color, dimen, bool, integer, fraction,
+                                     array, style; strings are left out)
   <out>/<package>/files.csv          type, name, configuration, path
                                      (layouts, drawables, xml, anim, ...)
   <out>/<package>/overlayable.txt    public/overlayable resources, if declared
@@ -30,8 +30,12 @@ import subprocess
 import sys
 from collections import defaultdict
 
-VALUE_TYPES = {"color", "dimen", "bool", "integer", "string", "fraction", "array",
-               "plurals", "style"}
+# Strings and plurals are left out: themers do not need them, and vendor apps keep API keys
+# among their strings, which must not end up in a published reference
+VALUE_TYPES = {"color", "dimen", "bool", "integer", "fraction", "array", "style"}
+# Anything shaped like a credential is redacted from the values that are kept
+SECRET_RE = re.compile(r"AIza[0-9A-Za-z_-]{35}|AKIA[0-9A-Z]{16}|gh[pousr]_[0-9A-Za-z]{36}|"
+                       r"xox[bpas]-[0-9A-Za-z-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----")
 AAPT2 = os.path.join(os.environ.get("ANDROID_HOME", "/opt/android-sdk"),
                      "build-tools", "37.0.0", "aapt2")
 
@@ -92,7 +96,7 @@ def parse(lines):
             if fm:
                 files.append((rtype, name, config, fm.group(1)))
             elif rtype in VALUE_TYPES:
-                values[rtype].append((name, config, value))
+                values[rtype].append((name, config, SECRET_RE.sub("<redacted>", value)))
     return package, values, files, flags
 
 
