@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SubstratumReborn"
 include(":app")
+include(":themes:amoled")
