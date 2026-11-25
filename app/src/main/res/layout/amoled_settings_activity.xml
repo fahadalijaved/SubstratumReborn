@@ -206,6 +206,16 @@
                         android:layout_marginTop="8dp"
                         android:enabled="false"
                         android:text="@string/amoled_qs_apply" />
+
+                    <TextView
+                        android:id="@+id/amoled_qs_off_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/amoled_qs_needs_amoled"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

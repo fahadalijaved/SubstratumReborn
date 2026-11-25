@@ -59,6 +59,10 @@ public class XposedBackend {
      */
     public static final String AMOLED_IDS = ".amoled.ids";
     /**
+     * First line of an AMOLED id list, followed by the {@link #versionKey}
+     */
+    public static final String KEY_HEADER = "# key=";
+    /**
      * Present while "AMOLED for every app" is applied: turns on the module's SystemUI code hooks
      */
     public static final String AMOLED_FLAG = "amoled-hooks.on";
@@ -94,6 +98,17 @@ public class XposedBackend {
      */
     public static String versionKey(String sourceDir, long versionCode) {
         return sourceDir + "|" + versionCode;
+    }
+
+    /**
+     * The version key in the first line of an AMOLED id list, or null if it has none.
+     */
+    public static String readKey(String firstLine) {
+        if (firstLine == null) return null;
+        String line = firstLine.trim();
+        if (!line.startsWith(KEY_HEADER)) return null;
+        String key = line.substring(KEY_HEADER.length()).trim();
+        return key.isEmpty() ? null : key;
     }
 
     /**
@@ -292,8 +307,12 @@ public class XposedBackend {
         for (String target : targets) {
             if ("com.android.systemui".equals(target)) {
                 systemUi = true;
+            } else if (SystemAmoled.safeToRestart(context, target)) {
+                command.append(forgetStartsCommand(target)).append("; am force-stop ")
+                        .append(target).append("; ");
             } else if (!"android".equals(target)) {
-                command.append("am force-stop ").append(target).append("; ");
+                // telephony, the keyboard, the launcher...: from their next start
+                Log.i(TAG, "skip restart " + target);
             }
         }
         if (command.length() != 0) Root.runCommand(command.toString());

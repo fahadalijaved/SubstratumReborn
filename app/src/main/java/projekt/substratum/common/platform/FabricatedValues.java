@@ -46,6 +46,8 @@ public final class FabricatedValues {
     private static final int TYPE_INT_DEC = 0x10;
     private static final int TYPE_INT_BOOLEAN = 0x12;
     private static final int TYPE_INT_COLOR_ARGB8 = 0x1c;
+    private static final String LABEL = "u:object_r:system_data_file:s0";
+    private static volatile boolean dirReady;
 
     private FabricatedValues() {
     }
@@ -90,20 +92,33 @@ public final class FabricatedValues {
             return 0;
         }
         // system_server reads the definition itself, so it has to live in a system data folder
+        prepareDir();
         String dest = DIR + '/' + name + ".xml";
-        String out = Root.runCommand("mkdir -p " + DIR +
-                " && cp -f '" + definition.getAbsolutePath() + "' '" + dest + "'" +
-                " && chown -R system:system " + DIR + " && chmod 644 '" + dest + "'" +
-                " && chcon -R u:object_r:system_data_file:s0 " + DIR +
+        String out = Root.runCommand("cp -f '" + definition.getAbsolutePath() + "' '" + dest + "'" +
+                " && chown system:system '" + dest + "' && chmod 644 '" + dest + "'" +
+                " && chcon " + LABEL + " '" + dest + "'" +
                 " && cmd overlay fabricate --target " + target + " --name " + name +
                 " --file '" + dest + "' 2>&1; echo rc=$?");
         //noinspection ResultOfMethodCallIgnored
         definition.delete();
         if (out == null || !out.trim().endsWith("rc=0") || out.contains("Error")) {
             Log.e(TAG, "fabricate failed for " + name + ": " + out);
+            // The folder may have gone: set it up again next time
+            dirReady = false;
             return 0;
         }
         return items.size();
+    }
+
+    /**
+     * Create the definitions folder, owned by system and labelled as system data, once per
+     * process (only the folder itself: each definition gets its owner and label as it is copied).
+     */
+    private static synchronized void prepareDir() {
+        if (dirReady) return;
+        String out = Root.runCommand("mkdir -p " + DIR + " && chown system:system " + DIR +
+                " && chcon " + LABEL + " " + DIR + "; echo rc=$?");
+        dirReady = out != null && out.trim().endsWith("rc=0");
     }
 
     public static void enable(Iterable<String> names) {

@@ -5,48 +5,75 @@
 
 package projekt.substratum.common.platform;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import projekt.substratum.common.platform.AmoledState.Route;
+import projekt.substratum.util.helpers.Root;
 
 /**
  * "AMOLED for every app": turns the dark mode of every Samsung, Google and system app on the
  * device into true black, without a theme APK.
  * <p>
  * For each app it loads the app's own resources in dark mode, resolves what every color really
- * shows (following One UI's reference chains), applies the AMOLED rules and registers the result
- * as a night-only fabricated overlay (see {@link FabricatedValues}). Light mode is never touched,
- * and the overlay manager applies it live.
+ * shows (following One UI's reference chains), applies the AMOLED rules ({@link AmoledPalette})
+ * and registers the result as a night-only fabricated overlay (see {@link FabricatedValues}), or
+ * hands it to the LSPosed module by resource id when the app refuses overlays. Light mode is never
+ * touched, and the overlay manager applies overlays live. What is applied is kept in
+ * {@link AmoledState}; the steps run as {@link AmoledJobs}.
  */
 public final class SystemAmoled {
 
     public static final String SUFFIX = ".RebornSystemAmoled";
     private static final String TAG = "SubstratumAmoled";
-    private static final Pattern STATE = Pattern.compile(
-            "ripple|press|focus|select|hover|drag|highlight|state|checked|activated");
-    private static final Pattern TEXT = Pattern.compile(
-            "text|title|label|hint|icon|summary|glyph|tint|foreground|_fg|(^|_)on_|inverse");
-    // Light-theme variants keep their values: dark mode uses the _dark ones
-    private static final Pattern LIGHT_VARIANT = Pattern.compile("_(light|day)$");
-    private static final Pattern BG_STRICT = Pattern.compile(
-            "bg|background|surface|container|fill|scrim|blur");
-    private static final Pattern BG = Pattern.compile(
-            "bg|background|surface|container|fill|panel|scrim|blur|window|keyboard|card|link");
-    private static final Pattern LINE = Pattern.compile(
-            "divider|outline|stroke|separator|_line|border|frame");
-    private static final Pattern FLOAT = Pattern.compile(
-            "float|popup|menu|dialog|search_?(bar|field|textfield|view)|navi|bottom_bar|toolbar|" +
-                    "chip|fab|handle|toast|snackbar");
-    private static final Pattern AREA = Pattern.compile("list|area|layout|screen|page|window");
-    private static final Pattern SLIDER = Pattern.compile("slider|seekbar|seek_bar|progress");
+    private static final String SNAPSHOTS = FabricatedValues.DIR + "/snapshots";
+    /**
+     * Never force-stopped: the phone, calls, Bluetooth, NFC, the keyboard, the launcher, Play
+     * services, System UI and Substratum itself
+     */
+    private static final Set<String> NEVER_RESTART = new HashSet<>(Arrays.asList(
+            "android",
+            "com.android.systemui",
+            "com.android.phone",
+            "com.android.bluetooth",
+            "com.android.server.telecom",
+            "com.samsung.android.incallui",
+            "com.samsung.android.app.telephonyui",
+            "com.android.nfc",
+            "com.samsung.android.honeyboard",
+            "com.samsung.android.dialer",
+            "com.google.android.gms",
+            "com.sec.android.app.launcher",
+            "projekt.substratum"));
 
     private SystemAmoled() {
     }
@@ -54,6 +81,8 @@ public final class SystemAmoled {
     public interface Progress {
         void onPackage(String packageName, int done, int total);
     }
+
+    // Applying
 
     /**
      * Apply to every Samsung, Google and system app. Runs for a while: call off the main thread.
@@ -65,46 +94,181 @@ public final class SystemAmoled {
     }
 
     /**
-     * @param only Packages to process, or null for every covered app
+     * Read and register the colors of apps. Apps switched off are skipped (checked as each app's
+     * turn comes, so a switch flipped during an apply sticks). Does not touch the AMOLED flag:
+     * see {@link #markApplied}.
+     *
+     * @param only Packages to process, or null for every covered app (and every app applied
+     *             before that the rules no longer cover, which is cleaned up)
+     * @return {apps themed, colors changed}
      */
     public static int[] applyAll(Context context, AmoledRules rules, Progress progress,
                                  List<String> only) {
         List<String> targets = only != null ? only : targets(context, rules);
+        Map<String, Character> overlays = overlayStates();
         int apps = 0, colors = 0;
         for (int i = 0; i < targets.size(); i++) {
             String pkg = targets.get(i);
             if (progress != null) progress.onPackage(pkg, i, targets.size());
+            if (!AmoledState.read(context).isUserEnabled(pkg)) continue;
             try {
-                // Read the stock colors: an active AMOLED overlay would hide them
-                FabricatedValues.disable(java.util.Collections.singletonList(pkg + SUFFIX));
-                awaitStock(context, pkg);
-                List<String[]> items = compute(context, pkg, rules);
-                removeById(pkg);
-                if (items.isEmpty()) continue;
-                int count;
-                if (ambiguous(items)) {
-                    // Obfuscated resource names (Play Store and other Google apps): an overlay
-                    // names its targets, so only the LSPosed module, which works by id, can help
-                    count = registerById(context, pkg, items);
-                } else {
-                    count = register(context, pkg, items);
-                    // The app refuses overlays for these colors: the module by id instead
-                    if (count == 0) count = registerById(context, pkg, items);
-                }
+                int count = process(context, pkg, rules, overlays);
                 if (count > 0) {
                     apps++;
                     colors += count;
                 }
             } catch (Throwable t) {
                 Log.w(TAG, "Skipping " + pkg + ": " + t);
+                AmoledState.update(context, s -> s.app(pkg).error = String.valueOf(t));
             }
         }
-        // SystemUI code hooks of the LSPosed module (opaque shade, dark bar tracks)
-        projekt.substratum.util.helpers.Root.runCommand("mkdir -p " + XposedBackend.DIR +
-                " && chmod 755 " + XposedBackend.DIR + " && touch " + XposedBackend.DIR + "/" +
-                XposedBackend.AMOLED_FLAG + " && chmod 644 " + XposedBackend.DIR + "/" +
-                XposedBackend.AMOLED_FLAG + " && restorecon -R " + XposedBackend.DIR);
         return new int[]{apps, colors};
+    }
+
+    /**
+     * AMOLED is applied: turn on the module's System UI code hooks (opaque shade, dark bar
+     * tracks) and remember the apply.
+     */
+    public static void markApplied(Context context, String themePackage) {
+        Root.runCommand("mkdir -p " + XposedBackend.DIR + " && chmod 755 " + XposedBackend.DIR +
+                " && touch " + XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG +
+                " && chmod 644 " + XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG +
+                " && restorecon -R " + XposedBackend.DIR + " 2>/dev/null");
+        int boot = AmoledState.currentBootCount(context);
+        AmoledState.update(context, s -> {
+            s.enabled = true;
+            s.rulesTheme = themePackage;
+            s.appliedAt = System.currentTimeMillis();
+            s.bootCount = boot;
+            s.appliedBootCount = boot;
+        });
+    }
+
+    /**
+     * One app, with clean transitions: an app left without colors (none to change, excluded by
+     * the rules, uninstalled) loses its overlay definition and module colors; an app that moves
+     * to the module loses its definition; an app whose colors cannot be read keeps what it had.
+     *
+     * @return Number of colors applied
+     */
+    private static int process(Context context, String pkg, AmoledRules rules,
+                               Map<String, Character> overlays) {
+        String name = pkg + SUFFIX;
+        boolean overlayWasOn = Character.valueOf('x').equals(overlays.get(pkg));
+        boolean hadModule = new File(XposedBackend.DIR, pkg + XposedBackend.AMOLED_IDS).exists();
+        if (!installed(context, pkg)) {
+            clean(pkg);
+            AmoledState.update(context, s -> {
+                AmoledState.App app = s.perApp.get(pkg);
+                if (app != null && app.userEnabled) s.perApp.remove(pkg);
+                else if (app != null) none(app);
+            });
+            return 0;
+        }
+        if (!rules.covers(pkg)) {
+            clean(pkg);
+            boolean restartNeeded = hadModule && !restartIfSafe(context, pkg);
+            AmoledState.update(context, s -> {
+                AmoledState.App app = none(s.app(pkg));
+                app.restartNeeded = restartNeeded;
+            });
+            return 0;
+        }
+        // Read the stock colors: an active AMOLED overlay would hide them
+        FabricatedValues.disable(Collections.singletonList(name));
+        awaitStock(context, pkg);
+        String key = versionKey(context, pkg);
+        List<String[]> items;
+        try {
+            items = compute(context, pkg, rules);
+        } catch (Throwable t) {
+            // Keep what the app had
+            Log.w(TAG, "Skipping " + pkg + ", keeping its previous colors: " + t);
+            if (overlayWasOn) FabricatedValues.enable(Collections.singletonList(name));
+            AmoledState.update(context, s -> s.app(pkg).error = String.valueOf(t));
+            return 0;
+        }
+        removeById(pkg);
+        Route route;
+        int count = 0;
+        if (items.isEmpty()) {
+            route = Route.NONE;
+        } else if (ambiguous(items)) {
+            // Obfuscated resource names (Play Store and other Google apps): an overlay names its
+            // targets, so only the LSPosed module, which works by id, can help
+            count = registerById(context, pkg, items, key);
+            route = count > 0 ? Route.MODULE : Route.UNSUPPORTED;
+        } else {
+            count = register(context, pkg, items);
+            if (count > 0) {
+                route = Route.OVERLAY;
+            } else {
+                // The app refuses overlays for these colors: the module by id instead
+                FabricatedValues.disable(Collections.singletonList(name));
+                count = registerById(context, pkg, items, key);
+                route = count > 0 ? Route.MODULE : Route.UNSUPPORTED;
+            }
+        }
+        if (route != Route.OVERLAY) deleteDefinition(pkg);
+        // Module colors load (and unload) when the app starts; overlays apply live, so an app
+        // that ends on the overlay route is never restarted
+        boolean restartNeeded = (route == Route.MODULE || route != Route.OVERLAY && hadModule) &&
+                !restartIfSafe(context, pkg);
+        int applied = count;
+        AmoledState.update(context, s -> {
+            AmoledState.App app = s.app(pkg);
+            app.route = route;
+            app.colors = applied;
+            app.versionKey = key;
+            app.error = null;
+            app.restartNeeded = restartNeeded;
+        });
+        return count;
+    }
+
+    private static AmoledState.App none(AmoledState.App app) {
+        app.route = Route.NONE;
+        app.colors = 0;
+        app.error = null;
+        return app;
+    }
+
+    /**
+     * Disable an app's overlay and delete its definition and module colors (root).
+     */
+    private static void clean(String pkg) {
+        String name = pkg + SUFFIX;
+        Root.runCommand("cmd overlay disable --user 0 'com.android.shell:" + name +
+                "' >/dev/null 2>&1; rm -f '" + definition(pkg) + "' '" + XposedBackend.DIR + '/' +
+                pkg + XposedBackend.AMOLED_IDS + "'");
+    }
+
+    private static void deleteDefinition(String pkg) {
+        Root.runCommand("rm -f '" + definition(pkg) + "'");
+    }
+
+    private static String definition(String pkg) {
+        return FabricatedValues.DIR + '/' + pkg + SUFFIX + ".xml";
+    }
+
+    private static boolean installed(Context context, String pkg) {
+        try {
+            context.getPackageManager().getApplicationInfo(pkg, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    private static String versionKey(Context context, String pkg) {
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(pkg, 0);
+            return XposedBackend.versionKey(info.applicationInfo.sourceDir,
+                    androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(info));
+        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+            Log.w(TAG, pkg + ": no version to key the colors with: " + e);
+            return null;
+        }
     }
 
     /**
@@ -112,10 +276,10 @@ public final class SystemAmoled {
      * configuration change). Wait until a value of the previous definition reads stock again.
      */
     private static void awaitStock(Context context, String pkg) {
-        String line = projekt.substratum.util.helpers.Root.runCommand(
-                "grep -m1 'config=\"night\"' /data/system/substratum/" + pkg + SUFFIX + ".xml");
+        String line = Root.runCommand(
+                "grep -m1 'config=\"night\"' '" + definition(pkg) + "' 2>/dev/null");
         if (line == null) return;
-        java.util.regex.Matcher m = Pattern.compile(
+        Matcher m = Pattern.compile(
                 "target=\"color/([^\"]+)\".*value=\"0x([0-9a-fA-F]{8})\"").matcher(line);
         if (!m.find()) return;
         String name = m.group(1);
@@ -159,10 +323,10 @@ public final class SystemAmoled {
         for (int attempt = 0; attempt < 3 && !items.isEmpty(); attempt++) {
             if (FabricatedValues.registerItems(context, pkg, name, items) == 0) return 0;
             FabricatedValues.enable(names);
-            String state = projekt.substratum.util.helpers.Root.runCommand(
+            String state = Root.runCommand(
                     "cmd overlay dump com.android.shell:" + name + " | grep mState");
             if (state == null || !state.contains("NO_IDMAP")) return items.size() / 2;
-            java.util.Set<String> rejected = rejectedByIdmap(name);
+            Set<String> rejected = rejectedByIdmap(name);
             if (rejected.isEmpty()) return 0;
             List<String[]> kept = new ArrayList<>();
             for (String[] item : items) if (!rejected.contains(item[0])) kept.add(item);
@@ -173,13 +337,13 @@ public final class SystemAmoled {
         return 0;
     }
 
-    private static java.util.Set<String> rejectedByIdmap(String overlayName) {
-        java.util.Set<String> rejected = new java.util.HashSet<>();
-        String log = projekt.substratum.util.helpers.Root.runCommand(
+    private static Set<String> rejectedByIdmap(String overlayName) {
+        Set<String> rejected = new HashSet<>();
+        String log = Root.runCommand(
                 "logcat -d -s idmap2d:* | grep 'shell-" + overlayName + "-' | " +
                         "grep -oE \"overlay resource '[^']+'\" | sort -u");
         if (log == null) return rejected;
-        java.util.regex.Matcher m = Pattern.compile("overlay resource '([^']+)'").matcher(log);
+        Matcher m = Pattern.compile("overlay resource '([^']+)'").matcher(log);
         while (m.find()) rejected.add(m.group(1));
         return rejected;
     }
@@ -188,7 +352,7 @@ public final class SystemAmoled {
      * True when several resources share a name, which happens when names are obfuscated.
      */
     private static boolean ambiguous(List<String[]> items) {
-        java.util.Map<String, String> seen = new java.util.HashMap<>();
+        Map<String, String> seen = new HashMap<>();
         for (String[] item : items) {
             String previous = seen.put(item[0], item[4]);
             if (previous != null && !previous.equals(item[4])) return true;
@@ -203,20 +367,15 @@ public final class SystemAmoled {
      * Then one line per color: id, light value, night value and, for plain colors, the stock dark
      * value (the module maps code-drawn surfaces with it), or {@code csl} for color state lists
      * the rules name a color for.
+     * <p>
+     * The colors load when the app starts: the caller restarts it if that is safe.
      *
      * @return Number of colors handed over
      */
-    private static int registerById(Context context, String pkg, List<String[]> items) {
-        String key;
-        try {
-            PackageInfo info = context.getPackageManager().getPackageInfo(pkg, 0);
-            key = XposedBackend.versionKey(info.applicationInfo.sourceDir,
-                    androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(info));
-        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
-            Log.w(TAG, pkg + ": no version to key the module's colors with: " + e);
-            return 0;
-        }
-        java.util.Map<String, String[]> byId = new java.util.LinkedHashMap<>();
+    private static int registerById(Context context, String pkg, List<String[]> items,
+                                    String key) {
+        if (key == null) return 0;
+        Map<String, String[]> byId = new LinkedHashMap<>();
         for (String[] item : items) {
             String[] line = byId.get(item[4]);
             if (line == null) byId.put(item[4], line = new String[]{item[4], item[2], item[2], ""});
@@ -230,64 +389,151 @@ public final class SystemAmoled {
                 line[1] = item[2];
             }
         }
-        StringBuilder content = new StringBuilder("# key=").append(key).append('\n');
+        StringBuilder content = new StringBuilder(XposedBackend.KEY_HEADER).append(key)
+                .append('\n');
         for (String[] line : byId.values()) {
             content.append(line[0]).append(' ').append(line[1]).append(' ').append(line[2]);
             if (!line[3].isEmpty()) content.append(' ').append(line[3]);
             content.append('\n');
         }
-        java.io.File local = new java.io.File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
-        try (java.io.FileWriter writer = new java.io.FileWriter(local)) {
+        File local = new File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
+        try (FileWriter writer = new FileWriter(local)) {
             writer.write(content.toString());
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             return 0;
         }
-        String file = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
-        String out = projekt.substratum.util.helpers.Root.runCommand(
-                "mkdir -p " + XposedBackend.DIR + " && chmod 755 " + XposedBackend.DIR +
-                        " && cp -f '" + local.getAbsolutePath() + "' '" + file + "'" +
-                        " && chmod 644 '" + file + "' && restorecon '" + file + "'; echo rc=$?");
+        boolean copied = installIds(local, pkg);
         //noinspection ResultOfMethodCallIgnored
         local.delete();
-        if (out == null || !out.trim().endsWith("rc=0")) return 0;
-        // The colors load when the app starts (a stop on purpose is no crash loop)
-        projekt.substratum.util.helpers.Root.runCommand(
-                XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg);
+        if (!copied) return 0;
         Log.i(TAG, pkg + ": " + byId.size() + " colors handed to the LSPosed module by id");
         return byId.size();
     }
 
+    /**
+     * Copy a color list into the module's directory as the app's live list (root).
+     */
+    private static boolean installIds(File source, String pkg) {
+        String file = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
+        String out = Root.runCommand(
+                "mkdir -p " + XposedBackend.DIR + " && chmod 755 " + XposedBackend.DIR +
+                        " && cp -f '" + source.getAbsolutePath() + "' '" + file + "'" +
+                        " && chmod 644 '" + file + "' && restorecon '" + file +
+                        "' 2>/dev/null; echo rc=$?");
+        return out != null && out.trim().endsWith("rc=0");
+    }
+
     private static void removeById(String pkg) {
         String file = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
-        if (new java.io.File(file).exists()) {
-            projekt.substratum.util.helpers.Root.runCommand("rm -f '" + file + "'");
+        if (new File(file).exists()) Root.runCommand("rm -f '" + file + "'");
+    }
+
+    // Restarting apps
+
+    /**
+     * Whether an app may be force-stopped so it reloads module colors. Never persistent apps,
+     * telephony, Bluetooth, NFC, the keyboard in use, the home app, Play services, System UI or
+     * Substratum.
+     */
+    public static boolean safeToRestart(Context context, String pkg) {
+        if (pkg == null || NEVER_RESTART.contains(pkg)) return false;
+        PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo info = pm.getApplicationInfo(pkg, 0);
+            if ((info.flags & ApplicationInfo.FLAG_PERSISTENT) != 0) return false;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
         }
+        try {
+            String ime = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.DEFAULT_INPUT_METHOD);
+            ComponentName component = ime != null ? ComponentName.unflattenFromString(ime) : null;
+            if (component != null && pkg.equals(component.getPackageName())) return false;
+        } catch (RuntimeException ignored) {
+            // no keyboard setting to read
+        }
+        try {
+            ResolveInfo home = pm.resolveActivity(new Intent(Intent.ACTION_MAIN)
+                    .addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY);
+            if (home != null && home.activityInfo != null &&
+                    pkg.equals(home.activityInfo.packageName)) {
+                return false;
+            }
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Fabricated overlays do not survive a reboot on One UI: register again everything that was
-     * applied, from the definitions kept in /data/system/substratum. AMOLED for every app comes
-     * back while its flag is set (except apps switched off); Substratum overlays with fabricated
-     * values come back while they are enabled.
+     * Force-stop an app so it reloads its module colors, if that is safe (root).
+     *
+     * @return True if it was restarted; false means a restart is still needed
+     */
+    static boolean restartIfSafe(Context context, String pkg) {
+        if (!safeToRestart(context, pkg)) {
+            Log.i(TAG, "skip restart " + pkg);
+            return false;
+        }
+        // A stop on purpose is no crash loop
+        Root.runCommand(XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg);
+        return true;
+    }
+
+    /**
+     * Restart an app marked "restart needed", if that is safe now (root).
+     *
+     * @return True if it was restarted
+     */
+    public static boolean restartApp(Context context, String pkg) {
+        if (!restartIfSafe(context, pkg)) return false;
+        AmoledState.update(context, s -> {
+            AmoledState.App app = s.perApp.get(pkg);
+            if (app != null) app.restartNeeded = false;
+        });
+        return true;
+    }
+
+    // Restoring after a reboot
+
+    /**
+     * Fabricated overlays do not survive a reboot on One UI: register again what was applied,
+     * from the definitions kept in /data/system/substratum (top level only, never the snapshots).
+     * AMOLED for every app comes back for the overlay apps that are switched on, while AMOLED is
+     * applied; Substratum overlays with fabricated values come back while they are enabled.
+     * Call with root.
      *
      * @return Number of overlays registered
      */
-    public static int restoreAll() {
+    public static int restoreAll(Context context) {
         String dir = FabricatedValues.DIR;
         String cache = XposedBackend.DIR;
+        boolean known = AmoledState.exists(context);
+        AmoledState state = AmoledState.read(context);
         StringBuilder script = new StringBuilder("n=0; ");
-        if (new java.io.File(cache, XposedBackend.AMOLED_FLAG).exists()) {
-            String listing = projekt.substratum.util.helpers.Root.runCommand(
-                    "ls " + dir + " | grep '" + SUFFIX + ".xml$'");
-            java.util.Set<String> disabled = disabledApps();
-            if (listing != null) {
-                for (String file : listing.split("\\s+")) {
-                    if (!file.endsWith(SUFFIX + ".xml")) continue;
-                    String name = file.substring(0, file.length() - 4);
-                    String target = name.substring(0, name.length() - SUFFIX.length());
-                    if (disabled.contains(target)) continue;
-                    script.append(fabricateAndEnable(target, name, dir + '/' + file));
+        if (!known || state.appliedAt == 0) {
+            // Applied by an older version: every definition, except apps switched off
+            if (new File(cache, XposedBackend.AMOLED_FLAG).exists()) {
+                String listing = Root.runCommand(
+                        "ls " + dir + " 2>/dev/null | grep '" + SUFFIX + ".xml$'");
+                if (listing != null) {
+                    for (String file : listing.split("\\s+")) {
+                        if (!file.endsWith(SUFFIX + ".xml")) continue;
+                        String name = file.substring(0, file.length() - 4);
+                        String target = name.substring(0, name.length() - SUFFIX.length());
+                        if (!state.isUserEnabled(target)) continue;
+                        script.append(fabricateAndEnable(target, name, dir + '/' + file));
+                    }
                 }
+            }
+        } else if (state.enabled) {
+            for (Map.Entry<String, AmoledState.App> entry : state.perApp.entrySet()) {
+                AmoledState.App app = entry.getValue();
+                if (app.route != Route.OVERLAY || !app.userEnabled) continue;
+                String target = entry.getKey();
+                String file = definition(target);
+                script.append("[ -f '").append(file).append("' ] && { ")
+                        .append(fabricateAndEnable(target, target + SUFFIX, file)).append("}; ");
             }
         }
         // Enabled Substratum overlays with fabricated values: target from the index
@@ -300,11 +546,18 @@ public final class SystemAmoled {
                 .append("cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" ")
                 .append(">/dev/null 2>&1 && cmd overlay enable --user 0 com.android.shell:\"$o\" ")
                 .append(">/dev/null 2>&1 && n=$((n+1)); done; echo restored=$n");
-        String out = projekt.substratum.util.helpers.Root.runCommand(script.toString());
+        String out = Root.runCommand(script.toString());
         int restored = 0;
         if (out != null) {
-            java.util.regex.Matcher m = Pattern.compile("restored=(\\d+)").matcher(out);
+            Matcher m = Pattern.compile("restored=(\\d+)").matcher(out);
             if (m.find()) restored = Integer.parseInt(m.group(1));
+            int boot = AmoledState.currentBootCount(context);
+            AmoledState.update(context, s -> {
+                s.restoredAt = System.currentTimeMillis();
+                s.bootCount = boot;
+                // Every app started afresh
+                for (AmoledState.App app : s.perApp.values()) app.restartNeeded = false;
+            });
         }
         Log.i(TAG, "restored " + restored + " fabricated overlays after boot");
         return restored;
@@ -316,131 +569,280 @@ public final class SystemAmoled {
                 name + "' >/dev/null 2>&1 && n=$((n+1)); ";
     }
 
-    /**
-     * Apps the user switched off in Substratum: left out when applying and restoring.
-     */
-    public static java.util.Set<String> disabledApps() {
-        return new java.util.HashSet<>(projekt.substratum.Substratum.getPreferences()
-                .getStringSet(AmoledRules.PREF_DISABLED_APPS, new java.util.HashSet<>()));
-    }
+    // Listing and switching apps
 
     /**
-     * How an app gets its AMOLED colors
+     * One app of "AMOLED for every app", as listed on the settings screen
      */
-    public enum Kind {OVERLAY, MODULE, UNSUPPORTED}
-
     public static final class AppState {
         public final String packageName;
-        public final Kind kind;
+        public final Route route;
+        /**
+         * The user's switch
+         */
         public final boolean enabled;
+        /**
+         * Colors applied right now: its overlay is enabled, or its module colors are in place
+         */
+        public final boolean active;
+        public final boolean restartNeeded;
+        public final int colors;
+        public final String error;
 
-        AppState(String packageName, Kind kind, boolean enabled) {
+        AppState(String packageName, Route route, boolean enabled, boolean active,
+                 boolean restartNeeded, int colors, String error) {
             this.packageName = packageName;
-            this.kind = kind;
+            this.route = route;
             this.enabled = enabled;
+            this.active = active;
+            this.restartNeeded = restartNeeded;
+            this.colors = colors;
+            this.error = error;
         }
     }
 
     /**
-     * Every app AMOLED for every app has colors for (registered overlays and module lists),
-     * including apps switched off.
+     * Every app AMOLED has colors for, apps switched off and apps waiting for a restart: from
+     * the state, checked against one {@code cmd overlay list} (root). Overlays and module lists
+     * the state does not know (applied by an older version) are added to it.
      */
-    public static List<AppState> listApps() {
-        java.util.Map<String, AppState> apps = new java.util.TreeMap<>();
-        java.util.Set<String> disabled = disabledApps();
-        String overlays = projekt.substratum.util.helpers.Root.runCommand(
-                "cmd overlay list | grep '" + SUFFIX + "'");
-        java.util.Set<String> byModule = new java.util.HashSet<>();
-        String[] files = new java.io.File(XposedBackend.DIR).list();
+    public static List<AppState> listApps(Context context) {
+        Map<String, Character> overlays = overlayStates();
+        Set<String> moduleLists = new HashSet<>();
+        String[] files = new File(XposedBackend.DIR).list();
         if (files != null) {
             for (String file : files) {
                 if (file.endsWith(XposedBackend.AMOLED_IDS)) {
-                    byModule.add(file.substring(0, file.length() - XposedBackend.AMOLED_IDS.length()));
-                } else if (file.endsWith(XposedBackend.AMOLED_IDS + OFF)) {
-                    byModule.add(file.substring(0, file.length() -
-                            (XposedBackend.AMOLED_IDS + OFF).length()));
+                    moduleLists.add(file.substring(0,
+                            file.length() - XposedBackend.AMOLED_IDS.length()));
                 }
             }
         }
-        if (overlays != null) {
-            java.util.regex.Matcher m = Pattern.compile(
-                    "\\[(.)\\] com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX) + "|" +
-                            "--- com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX))
-                    .matcher(overlays);
-            while (m.find()) {
-                if (m.group(2) != null) {
-                    String pkg = m.group(2);
-                    if (byModule.contains(pkg)) continue;
-                    apps.put(pkg, new AppState(pkg, Kind.OVERLAY, "x".equals(m.group(1))));
-                } else {
-                    String pkg = m.group(3);
-                    if (!byModule.contains(pkg)) {
-                        apps.put(pkg, new AppState(pkg, Kind.UNSUPPORTED, false));
+        AmoledState state = AmoledState.read(context);
+        Map<String, AppState> apps = new TreeMap<>();
+        for (Map.Entry<String, AmoledState.App> entry : state.perApp.entrySet()) {
+            String pkg = entry.getKey();
+            AmoledState.App app = entry.getValue();
+            if (app.route == Route.NONE && app.userEnabled && !app.restartNeeded) continue;
+            Character overlay = overlays.get(pkg);
+            Route route = app.route;
+            if (route == Route.OVERLAY && overlay != null && overlay == '-') {
+                route = Route.UNSUPPORTED; // registered, but refused
+            }
+            boolean active = route == Route.OVERLAY ? overlay != null && overlay == 'x' :
+                    route == Route.MODULE && moduleLists.contains(pkg);
+            apps.put(pkg, new AppState(pkg, route, app.userEnabled, active, app.restartNeeded,
+                    app.colors, app.error));
+        }
+        Map<String, AmoledState.App> found = new HashMap<>();
+        for (String pkg : moduleLists) {
+            if (state.perApp.containsKey(pkg)) continue;
+            AmoledState.App app = new AmoledState.App();
+            app.route = Route.MODULE;
+            found.put(pkg, app);
+        }
+        for (Map.Entry<String, Character> overlay : overlays.entrySet()) {
+            String pkg = overlay.getKey();
+            char status = overlay.getValue();
+            if (state.perApp.containsKey(pkg) || found.containsKey(pkg)) continue;
+            if (status != 'x' && status != '-') continue; // disabled: removed or switched off
+            AmoledState.App app = new AmoledState.App();
+            app.route = status == 'x' ? Route.OVERLAY : Route.UNSUPPORTED;
+            found.put(pkg, app);
+        }
+        for (Map.Entry<String, AmoledState.App> entry : found.entrySet()) {
+            AmoledState.App app = entry.getValue();
+            apps.put(entry.getKey(), new AppState(entry.getKey(), app.route, true,
+                    app.route != Route.UNSUPPORTED, false, 0, null));
+        }
+        if (!found.isEmpty()) {
+            AmoledState.update(context, s -> {
+                for (Map.Entry<String, AmoledState.App> entry : found.entrySet()) {
+                    if (!s.perApp.containsKey(entry.getKey())) {
+                        s.perApp.put(entry.getKey(), entry.getValue());
                     }
                 }
-            }
-        }
-        for (String pkg : byModule) {
-            apps.put(pkg, new AppState(pkg, Kind.MODULE, !disabled.contains(pkg)));
-        }
-        for (String pkg : disabled) {
-            if (!apps.containsKey(pkg)) apps.put(pkg, new AppState(pkg, Kind.OVERLAY, false));
+            });
         }
         return new ArrayList<>(apps.values());
     }
 
-    private static final String OFF = ".off";
-
     /**
-     * Switch one app's AMOLED colors on or off, remembered for applying and restoring.
+     * Status of every AMOLED overlay: 'x' enabled, ' ' disabled, '-' refused by the system
      */
-    public static void setAppEnabled(String pkg, boolean enabled) {
-        java.util.Set<String> disabled = disabledApps();
-        if (enabled) disabled.remove(pkg);
-        else disabled.add(pkg);
-        projekt.substratum.Substratum.getPreferences().edit()
-                .putStringSet(AmoledRules.PREF_DISABLED_APPS, disabled).apply();
-        String ids = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
-        String name = pkg + SUFFIX;
-        String definition = FabricatedValues.DIR + '/' + name + ".xml";
-        if (enabled) {
-            projekt.substratum.util.helpers.Root.runCommand(
-                    "[ -f '" + ids + OFF + "' ] && mv -f '" + ids + OFF + "' '" + ids + "'; " +
-                            "n=0; [ -f '" + definition + "' ] && { " +
-                            fabricateAndEnable(pkg, name, definition) + "}; true");
-        } else {
-            projekt.substratum.util.helpers.Root.runCommand(
-                    "[ -f '" + ids + "' ] && mv -f '" + ids + "' '" + ids + OFF + "'; " +
-                            "cmd overlay disable --user 0 'com.android.shell:" + name +
-                            "' >/dev/null 2>&1; true");
+    private static Map<String, Character> overlayStates() {
+        Map<String, Character> states = new HashMap<>();
+        String out = Root.runCommand("cmd overlay list 2>/dev/null | grep '" + SUFFIX + "'");
+        if (out == null) return states;
+        Matcher m = Pattern.compile(
+                "\\[(.)\\] com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX) + "|" +
+                        "--- com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX))
+                .matcher(out);
+        while (m.find()) {
+            if (m.group(2) != null) states.put(m.group(2), m.group(1).charAt(0));
+            else states.put(m.group(3), '-');
         }
-        // Apps with module colors load them when they start (a stop on purpose is no crash loop)
-        projekt.substratum.util.helpers.Root.runCommand(
-                XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg);
+        return states;
     }
 
-    public static void removeAll(Context context) {
-        projekt.substratum.util.helpers.Root.runCommand(
-                "rm -f " + XposedBackend.DIR + "/*" + XposedBackend.AMOLED_IDS + " " +
-                        XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG);
-        List<String> names = new ArrayList<>();
-        for (PackageInfo info : context.getPackageManager().getInstalledPackages(0)) {
-            names.add(info.packageName + SUFFIX);
+    /**
+     * What switching an app did
+     */
+    public enum Switched {
+        /**
+         * AMOLED is not applied: only the switch was saved
+         */
+        SAVED,
+        ON,
+        OFF,
+        /**
+         * Done, but the app was not safe to restart: it changes from its next start
+         */
+        RESTART_NEEDED,
+        /**
+         * The app's colors have to be read again: an APPLY_ONE job was queued
+         */
+        REAPPLY
+    }
+
+    /**
+     * Switch one app's AMOLED colors on or off, remembered for applying and restoring (root).
+     * Overlays switch live; module colors are taken away (a copy is kept in
+     * {@link AmoledState#idsCopy}) or put back, and the app is restarted if that is safe.
+     */
+    public static Switched setAppEnabled(Context context, String pkg, boolean enabled) {
+        AmoledState state = AmoledState.read(context);
+        if (state.isUserEnabled(pkg) != enabled) {
+            state = AmoledState.update(context, s -> s.app(pkg).userEnabled = enabled);
         }
-        FabricatedValues.disable(names);
+        if (!state.enabled) return Switched.SAVED;
+        AmoledState.App entry = state.perApp.get(pkg);
+        Route route = entry != null ? entry.route : Route.NONE;
+        String name = pkg + SUFFIX;
+        File live = new File(XposedBackend.DIR, pkg + XposedBackend.AMOLED_IDS);
+        File copy = AmoledState.idsCopy(context, pkg);
+        if (!enabled) {
+            FabricatedValues.disable(Collections.singletonList(name));
+            if (route != Route.MODULE && !live.exists()) return Switched.OFF;
+            if (live.exists()) {
+                try {
+                    //noinspection ResultOfMethodCallIgnored
+                    copy.getParentFile().mkdirs();
+                    Files.write(copy.toPath(), Files.readAllBytes(live.toPath()));
+                } catch (IOException | RuntimeException e) {
+                    Log.w(TAG, pkg + ": could not keep its module colors: " + e);
+                }
+                removeById(pkg);
+            }
+            return restarted(context, pkg) ? Switched.OFF : Switched.RESTART_NEEDED;
+        }
+        switch (route) {
+            case OVERLAY: {
+                String file = definition(pkg);
+                String out = Root.runCommand("n=0; [ -f '" + file + "' ] && { " +
+                        fabricateAndEnable(pkg, name, file) + "}; echo n=$n");
+                if (out != null && out.trim().endsWith("n=1")) return Switched.ON;
+                break;
+            }
+            case MODULE: {
+                String key = versionKey(context, pkg);
+                if (key != null && copy.exists() && key.equals(readKey(copy)) &&
+                        installIds(copy, pkg)) {
+                    //noinspection ResultOfMethodCallIgnored
+                    copy.delete();
+                    return restarted(context, pkg) ? Switched.ON : Switched.RESTART_NEEDED;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        // No colors to put back, or they belong to another version of the app
+        AmoledJobs.applyOne(context, pkg);
+        return Switched.REAPPLY;
+    }
+
+    /**
+     * Restart after module colors changed, or mark the app "restart needed"
+     *
+     * @return True if restarted
+     */
+    private static boolean restarted(Context context, String pkg) {
+        boolean restarted = restartIfSafe(context, pkg);
+        AmoledState.update(context, s -> s.app(pkg).restartNeeded = !restarted);
+        return restarted;
+    }
+
+    private static String readKey(File ids) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(ids))) {
+            return XposedBackend.readKey(reader.readLine());
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    // Removing
+
+    /**
+     * Take AMOLED away from every app (root): the definitions and module color lists move to
+     * {@code /data/system/substratum/snapshots/<epoch>/} (the newest three are kept, to put back
+     * by hand), every AMOLED overlay is disabled, the module flag goes, and apps with module
+     * colors are restarted if that is safe. System UI is restarted by the caller.
+     */
+    public static void removeAll(Context context) {
+        String cache = XposedBackend.DIR;
+        String ids = cache + "/*" + XposedBackend.AMOLED_IDS;
+        String parked = ids + AmoledState.OFF;
+        Root.runCommand("s=" + SNAPSHOTS + "/$(date +%s); mkdir -p \"$s\"; " +
+                "for f in " + FabricatedValues.DIR + "/*" + SUFFIX + ".xml " + ids + " " + parked +
+                "; do [ -f \"$f\" ] && mv -f \"$f\" \"$s/\"; done; rmdir \"$s\" 2>/dev/null; " +
+                "(cd " + SNAPSHOTS + " && ls -1t | tail -n +4 | xargs rm -rf) >/dev/null 2>&1; " +
+                "for o in $(cmd overlay list 2>/dev/null | grep -oE 'com\\.android\\.shell:[^ ]+" +
+                SUFFIX.replace(".", "\\.") + "' | sort -u); do " +
+                "cmd overlay disable --user 0 \"$o\" >/dev/null 2>&1; done; " +
+                "rm -f " + ids + " " + parked + " " + cache + "/" + XposedBackend.AMOLED_FLAG);
+        // Apps with module colors keep them until they restart
+        AmoledState state = AmoledState.read(context);
+        Map<String, Boolean> restarted = new HashMap<>();
+        for (Map.Entry<String, AmoledState.App> entry : state.perApp.entrySet()) {
+            AmoledState.App app = entry.getValue();
+            if (app.route == Route.MODULE && app.userEnabled) {
+                restarted.put(entry.getKey(), restartIfSafe(context, entry.getKey()));
+            }
+        }
+        File[] copies = AmoledState.idsDir(context).listFiles();
+        if (copies != null) {
+            //noinspection ResultOfMethodCallIgnored
+            for (File copy : copies) copy.delete();
+        }
+        AmoledState.update(context, s -> {
+            s.enabled = false;
+            for (Map.Entry<String, AmoledState.App> entry : s.perApp.entrySet()) {
+                AmoledState.App app = entry.getValue();
+                Boolean done = restarted.get(entry.getKey());
+                if (done != null) app.restartNeeded = !done;
+                none(app);
+            }
+        });
     }
 
     private static List<String> targets(Context context, AmoledRules rules) {
         List<String> list = new ArrayList<>();
-        java.util.Set<String> disabled = disabledApps();
         for (PackageInfo info : context.getPackageManager().getInstalledPackages(0)) {
             String pkg = info.packageName;
-            if (!rules.covers(pkg) || disabled.contains(pkg)) continue;
+            if (!rules.covers(pkg)) continue;
             if (isOverlay(info)) continue; // overlays themselves
             list.add(pkg);
         }
+        // Apps applied before that the rules no longer cover, or that are gone: cleaned up
+        for (Map.Entry<String, AmoledState.App> entry :
+                AmoledState.read(context).perApp.entrySet()) {
+            if (entry.getValue().route != Route.NONE && !list.contains(entry.getKey())) {
+                list.add(entry.getKey());
+            }
+        }
         // What people look at most goes first
-        List<String> first = java.util.Arrays.asList("android", "com.android.systemui",
+        List<String> first = Arrays.asList("android", "com.android.systemui",
                 "com.android.settings", "com.samsung.android.honeyboard", "com.android.vending");
         list.sort((a, b) -> {
             int ia = first.indexOf(a), ib = first.indexOf(b);
@@ -458,8 +860,12 @@ public final class SystemAmoled {
         }
     }
 
+    // Reading an app's colors
+
     /**
-     * @return fabricated items {target, type, value, config} for the app's dark mode
+     * @return fabricated items {target, type, value, config, id} for light mode and
+     * {target, type, value, "night", id, stock dark value or "" for a state list, rule} for the
+     * app's dark mode
      */
     static List<String[]> compute(Context context, String pkg, AmoledRules rules)
             throws PackageManager.NameNotFoundException {
@@ -480,22 +886,30 @@ public final class SystemAmoled {
         Log.d(TAG, pkg + ": " + ids.size() + " color resources");
         for (int id : ids) {
             String name;
+            int light;
+            Integer mapped;
+            String rule;
+            boolean plain;
             try {
                 name = res.getResourceEntryName(id);
                 res.getValue(id, tv, true);
-            } catch (Resources.NotFoundException e) {
-                continue;
+                plain = tv.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
+                        tv.type <= TypedValue.TYPE_LAST_COLOR_INT;
+                AmoledPalette.Decision decision = rules.explicitDecision(pkg, name);
+                // Color state lists keep their states, unless the rules name a color for them
+                if (decision == null) {
+                    if (!plain) continue;
+                    decision = AmoledPalette.decide(tv.data, name, rules);
+                }
+                mapped = decision.color;
+                rule = decision.rule;
+                if (mapped == null || plain && mapped == tv.data) continue;
+                // A night-only entry can fail to map (idmap2 confuses it with similarly named
+                // resources), so every night value is paired with the stock light value
+                light = plain ? tv.data : res.getColorStateList(id, null).getDefaultColor();
+            } catch (RuntimeException e) {
+                continue; // Resources.NotFoundException, or a state list that does not inflate
             }
-            Integer mapped = rules.explicit(pkg, name);
-            boolean plain = tv.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
-                    tv.type <= TypedValue.TYPE_LAST_COLOR_INT;
-            // Color state lists keep their states, unless the rules name a color for them
-            if (!plain && mapped == null) continue;
-            if (mapped == null) mapped = amoled(tv.data, name, rules);
-            if (mapped == null || plain && mapped == tv.data) continue;
-            // A night-only entry can fail to map (idmap2 confuses it with similarly named
-            // resources), so every night value is paired with the stock light value
-            int light = plain ? tv.data : res.getColorStateList(id, null).getDefaultColor();
             try {
                 dayRes.getValue(id, dayValue, true);
                 if (dayValue.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
@@ -514,7 +928,7 @@ public final class SystemAmoled {
                     String.format("0x%08x", light), "", hexId});
             items.add(new String[]{"color/" + name, "28",
                     String.format("0x%08x", mapped), "night", hexId,
-                    plain ? String.format("0x%08x", tv.data) : ""});
+                    plain ? String.format("0x%08x", tv.data) : "", rule});
         }
         return items;
     }
@@ -576,38 +990,10 @@ public final class SystemAmoled {
     }
 
     /**
-     * AMOLED replacement for a dark-mode color, or null to keep it. Same rules as
-     * tools/oneui-reference/gen_amoled.py.
+     * AMOLED replacement for a dark-mode color, or null to keep it (see
+     * {@link AmoledPalette#decide}).
      */
     static Integer amoled(int color, String name, AmoledRules rules) {
-        int a = color >>> 24, r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
-        int hi = Math.max(r, Math.max(g, b)), lo = Math.min(r, Math.min(g, b));
-        boolean state = STATE.matcher(name).find();
-        boolean text = TEXT.matcher(name).find() && !BG_STRICT.matcher(name).find();
-        boolean bg = BG.matcher(name).find();
-        boolean floating = FLOAT.matcher(name).find() && !AREA.matcher(name).find();
-        if (text || state || LIGHT_VARIANT.matcher(name).find()) return null;
-        boolean line = LINE.matcher(name).find();
-        // Outlines of floating things (popups, menus, dialogs, bars) stay as a thin dark border so
-        // black popups still separate from a black page
-        if (line && floating) return rules.outline;
-        if (a < 0xff) {
-            // see-through white or tinted surfaces would show as grey or tint on black
-            // (over blur that would leave the bare, untinted blur: the AMOLED blur instead)
-            if (a <= 0x66 && hi > 0x60 && (bg || line))
-                return name.contains("blur") ? rules.blur : 0;
-            if (a <= 0x40 && lo >= 0xc0) return 0;
-            // see-through dark tints over blur: an AMOLED blur
-            if (hi <= 0x60 && a >= 0x20 && (bg || floating)) return rules.blur;
-            return null;
-        }
-        if (name.contains("thumb")) return hi <= 0x80 ? rules.thumb : null;
-        if (name.contains("track") || SLIDER.matcher(name).find() && bg)
-            return hi <= 0x80 ? rules.slider : null;
-        int surface = floating ? rules.floating : rules.background;
-        if (hi <= 0x30) return surface;
-        // dark greys (cards, containers, lines); mid greys are secondary text and stay
-        if (hi - lo <= 0x18 && hi <= 0x52) return surface;
-        return null;
+        return AmoledPalette.decide(color, name, rules).color;
     }
 }

@@ -5,10 +5,8 @@
 
 package projekt.substratum.activities.launch;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -24,15 +22,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.Locale;
@@ -41,15 +40,17 @@ import java.util.concurrent.Executors;
 
 import projekt.substratum.R;
 import projekt.substratum.Substratum;
+import projekt.substratum.common.platform.AmoledJobs;
 import projekt.substratum.common.platform.AmoledRules;
+import projekt.substratum.common.platform.AmoledState;
 import projekt.substratum.common.platform.QsOptions;
 import projekt.substratum.common.platform.SystemAmoled;
-import projekt.substratum.services.system.SystemAmoledService;
 import projekt.substratum.util.helpers.Root;
 
 /**
  * AMOLED for every app: apply or remove it, the One UI 9 quick settings options carried out by
- * the LSPosed module, and every themed app with a switch.
+ * the LSPosed module, and every themed app with a switch. Everything that changes the device runs
+ * as an {@link AmoledJobs} job; this screen follows the queue.
  */
 public class AmoledSettingsActivity extends AppCompatActivity {
 
@@ -65,8 +66,47 @@ public class AmoledSettingsActivity extends AppCompatActivity {
     private MaterialButton apply;
     private MaterialButton remove;
     private MaterialButton qsApply;
-    private BroadcastReceiver receiver;
+    private TextView qsOffNote;
     private boolean qsLoading;
+    private boolean qsDirty;
+    private boolean amoledOn;
+
+    private final AmoledJobs.Listener jobs = new AmoledJobs.Listener() {
+        @Override
+        public void onJobStarted(AmoledJobs.Job job) {
+            if (job.kind == AmoledJobs.Kind.SET_ENABLED) return;
+            showRunning(getString(job.kind == AmoledJobs.Kind.REMOVE ?
+                    R.string.system_amoled_removing : job.kind == AmoledJobs.Kind.RESTORE ?
+                    R.string.system_amoled_restoring : R.string.system_amoled_working));
+        }
+
+        @Override
+        public void onProgress(AmoledJobs.Job job, String pkg, int done, int total) {
+            showRunning(getString(R.string.system_amoled_progress, done, total, label(pkg)));
+            progress.setIndeterminate(false);
+            progress.setMax(Math.max(total, 1));
+            progress.setProgressCompat(done, true);
+        }
+
+        @Override
+        public void onJobFinished(AmoledJobs.Job job, boolean ok, String message) {
+            if (message == null) return;
+            if (job.kind == AmoledJobs.Kind.SET_ENABLED) {
+                Snackbar.make(findViewById(android.R.id.content), message,
+                        Snackbar.LENGTH_SHORT).show();
+            } else {
+                status.setText(message);
+            }
+        }
+
+        @Override
+        public void onQueueIdle() {
+            progress.setVisibility(View.GONE);
+            apply.setEnabled(true);
+            remove.setEnabled(true);
+            loadApps();
+        }
+    };
 
     public static void launch(Context context, String themePackage, CharSequence themeName) {
         context.startActivity(new Intent(context, AmoledSettingsActivity.class)
@@ -92,44 +132,45 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         status = findViewById(R.id.amoled_status);
         apply = findViewById(R.id.amoled_apply);
         remove = findViewById(R.id.amoled_remove);
-        apply.setOnClickListener(v -> run(true));
-        remove.setOnClickListener(v -> run(false));
-        if (SystemAmoledService.isRunning()) showRunning(getString(R.string.system_amoled_working));
+        apply.setOnClickListener(v -> {
+            if (needsRoot()) return;
+            AmoledJobs.applyAll(this, theme);
+            showRunning(getString(R.string.system_amoled_working));
+        });
+        remove.setOnClickListener(v -> new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.system_amoled_remove_title)
+                .setMessage(R.string.system_amoled_remove_message)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.system_amoled_remove, (d, w) -> {
+                    if (needsRoot()) return;
+                    AmoledJobs.remove(this);
+                    showRunning(getString(R.string.system_amoled_removing));
+                })
+                .show());
 
         setUpQuickSettings();
-        loadApps();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getBooleanExtra(SystemAmoledService.EXTRA_FINISHED, false)) {
-                    progress.setVisibility(View.GONE);
-                    apply.setEnabled(true);
-                    remove.setEnabled(true);
-                    status.setText(intent.getStringExtra(SystemAmoledService.EXTRA_RESULT));
-                    loadApps();
-                    return;
-                }
-                int done = intent.getIntExtra(SystemAmoledService.EXTRA_DONE, 0);
-                int total = intent.getIntExtra(SystemAmoledService.EXTRA_TOTAL, 0);
-                showRunning(context.getString(R.string.system_amoled_progress, done, total,
-                        intent.getStringExtra(SystemAmoledService.EXTRA_PACKAGE)));
-                progress.setIndeterminate(false);
-                progress.setMax(Math.max(total, 1));
-                progress.setProgressCompat(done, true);
-            }
-        };
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
-                new IntentFilter(SystemAmoledService.PROGRESS));
+        AmoledJobs.addListener(jobs);
+        AmoledJobs.Snapshot snapshot = AmoledJobs.snapshot();
+        if (snapshot.isIdle()) {
+            progress.setVisibility(View.GONE);
+            apply.setEnabled(true);
+            remove.setEnabled(true);
+        } else {
+            showRunning(getString(snapshot.current != null &&
+                    snapshot.current.kind == AmoledJobs.Kind.REMOVE ?
+                    R.string.system_amoled_removing : R.string.system_amoled_working));
+        }
+        loadApps();
     }
 
     @Override
     protected void onStop() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        AmoledJobs.removeListener(jobs);
         super.onStop();
     }
 
@@ -139,14 +180,10 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void run(boolean applyAll) {
-        if (!Root.checkRootAccess()) {
-            Toast.makeText(this, R.string.system_amoled_needs_root, Toast.LENGTH_LONG).show();
-            return;
-        }
-        SystemAmoledService.start(this, applyAll, applyAll ? theme : null);
-        showRunning(getString(applyAll ? R.string.system_amoled_working :
-                R.string.system_amoled_removing));
+    private boolean needsRoot() {
+        if (Root.checkRootAccess()) return false;
+        Toast.makeText(this, R.string.system_amoled_needs_root, Toast.LENGTH_LONG).show();
+        return true;
     }
 
     private void showRunning(String text) {
@@ -154,6 +191,15 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         apply.setEnabled(false);
         remove.setEnabled(false);
         status.setText(text);
+    }
+
+    private String label(String pkg) {
+        try {
+            return getPackageManager().getApplicationLabel(
+                    getPackageManager().getApplicationInfo(pkg, 0)).toString();
+        } catch (Exception e) {
+            return pkg;
+        }
     }
 
     // Quick settings
@@ -165,6 +211,7 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         MaterialSwitch shade = findViewById(R.id.amoled_qs_shade);
         MaterialSwitch track = findViewById(R.id.amoled_qs_track);
         qsApply = findViewById(R.id.amoled_qs_apply);
+        qsOffNote = findViewById(R.id.amoled_qs_off_note);
 
         qsLoading = true;
         QsOptions options = QsOptions.read();
@@ -190,10 +237,8 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         track.setOnCheckedChangeListener((b, c) -> qsChanged());
 
         qsApply.setOnClickListener(v -> {
-            if (!Root.checkRootAccess()) {
-                Toast.makeText(this, R.string.system_amoled_needs_root, Toast.LENGTH_LONG).show();
-                return;
-            }
+            if (needsRoot()) return;
+            if (!amoledOn) return; // the button is off then; a late tap does nothing
             QsOptions chosen = new QsOptions();
             float rows = slider.getValue() / 100f;
             chosen.aspect = rows >= QsOptions.STOCK_ASPECT - 0.005f ? 0 : rows;
@@ -207,11 +252,13 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                     AmoledRules.TILE_WHITE);
             prefs.edit().putString(AmoledRules.PREF_ACTIVE_TILE, tileChoice)
                     .putBoolean(AmoledRules.PREF_QS_CHOSEN, true).apply();
+            qsDirty = false;
             qsApply.setEnabled(false);
             boolean colorsChanged = !tileChoice.equals(previousTile);
             worker.execute(() -> {
                 boolean written = chosen.write(this);
                 main.post(() -> {
+                    if (isFinishing()) return;
                     if (!written) {
                         Toast.makeText(this, R.string.system_amoled_failed,
                                 Toast.LENGTH_LONG).show();
@@ -219,7 +266,8 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                     }
                     if (colorsChanged) {
                         // New tile color: register System UI's colors again, then restart it
-                        SystemAmoledService.applySystemUi(this, theme);
+                        // (the job only does that while AMOLED is applied)
+                        AmoledJobs.applySystemUi(this, theme);
                         showRunning(getString(R.string.system_amoled_working));
                     } else {
                         worker.execute(QsOptions::restartSystemUi);
@@ -228,10 +276,21 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 });
             });
         });
+        // Enabled (or explained) once loadApps has read whether AMOLED is applied
     }
 
     private void qsChanged() {
-        if (!qsLoading) qsApply.setEnabled(true);
+        if (qsLoading) return;
+        qsDirty = true;
+        updateQsApply();
+    }
+
+    /**
+     * The quick settings colors and switches act on top of AMOLED: no apply while it is off.
+     */
+    private void updateQsApply() {
+        qsApply.setEnabled(amoledOn && qsDirty);
+        qsOffNote.setVisibility(amoledOn ? View.GONE : View.VISIBLE);
     }
 
     private String rowLabel(float percent) {
@@ -248,7 +307,8 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         loading.setVisibility(View.VISIBLE);
         worker.execute(() -> {
             List<SystemAmoled.AppState> apps = Root.checkRootAccess() ?
-                    SystemAmoled.listApps() : java.util.Collections.emptyList();
+                    SystemAmoled.listApps(this) : java.util.Collections.emptyList();
+            boolean on = AmoledState.read(this).enabled;
             PackageManager pm = getPackageManager();
             Object[][] rows = new Object[apps.size()][];
             int themed = 0;
@@ -263,14 +323,18 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 } catch (PackageManager.NameNotFoundException ignored) {
                     // uninstalled since
                 }
-                if (app.enabled) themed++;
-                rows[i] = new Object[]{app, label, icon};
+                if (app.enabled && app.active) themed++;
+                boolean restartable = app.restartNeeded &&
+                        SystemAmoled.safeToRestart(this, app.packageName);
+                rows[i] = new Object[]{app, label, icon, restartable};
             }
             java.util.Arrays.sort(rows, (a, b) -> a[1].toString()
                     .compareToIgnoreCase(b[1].toString()));
             int count = themed;
             main.post(() -> {
-                if (isFinishing()) return;
+                if (isFinishing() || isDestroyed()) return;
+                amoledOn = on;
+                updateQsApply();
                 loading.setVisibility(View.GONE);
                 title.setText(getString(R.string.amoled_apps_title_count, count, rows.length));
                 list.removeAllViews();
@@ -289,7 +353,8 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         }
         TextView summary = view.findViewById(R.id.amoled_app_summary);
         MaterialSwitch toggle = view.findViewById(R.id.amoled_app_switch);
-        switch (app.kind) {
+        MaterialButton restart = view.findViewById(R.id.amoled_app_restart);
+        switch (app.route) {
             case MODULE:
                 summary.setText(R.string.amoled_app_module);
                 break;
@@ -297,13 +362,38 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 summary.setText(R.string.amoled_app_unsupported);
                 toggle.setEnabled(false);
                 break;
+            case NONE:
+                summary.setText(R.string.amoled_app_not_themed);
+                break;
             default:
                 summary.setText(app.packageName);
                 break;
         }
+        if (app.restartNeeded) {
+            summary.setText(R.string.amoled_app_restart_needed);
+            if ((Boolean) row[3]) {
+                restart.setVisibility(View.VISIBLE);
+                restart.setOnClickListener(v -> {
+                    restart.setEnabled(false);
+                    String label = row[1].toString();
+                    worker.execute(() -> {
+                        boolean done = SystemAmoled.restartApp(this, app.packageName);
+                        main.post(() -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            if (done) {
+                                Snackbar.make(findViewById(android.R.id.content),
+                                        getString(R.string.amoled_app_restarted, label),
+                                        Snackbar.LENGTH_SHORT).show();
+                            }
+                            loadApps();
+                        });
+                    });
+                });
+            }
+        }
         toggle.setChecked(app.enabled);
         toggle.setOnCheckedChangeListener((b, checked) ->
-                worker.execute(() -> SystemAmoled.setAppEnabled(app.packageName, checked)));
+                AmoledJobs.setEnabled(this, app.packageName, checked));
         view.setOnClickListener(v -> {
             if (toggle.isEnabled()) toggle.toggle();
         });

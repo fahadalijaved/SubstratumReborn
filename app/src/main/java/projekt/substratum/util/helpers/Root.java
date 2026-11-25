@@ -29,6 +29,17 @@ public class Root {
     }
 
     /**
+     * Whether a root shell works right now. Unlike {@link #checkRootAccess()}, never answered
+     * from the cached result: a temporary root can be gone after a reboot.
+     *
+     * @return True, if a command ran as uid 0
+     */
+    public static boolean isAlive() {
+        String out = runCommand("id -u");
+        return out != null && out.trim().equals("0");
+    }
+
+    /**
      * Request root access
      *
      * @return True, if su is granted

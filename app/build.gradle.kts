@@ -64,8 +64,8 @@ android {
         applicationId = "projekt.substratum"
         minSdk = 26
         targetSdk = 28
-        versionCode = 1101
-        versionName = "reborn 1101"
+        versionCode = 1102
+        versionName = "reborn 1102"
         buildConfigField("java.util.Date", "buildTime", "new java.util.Date(${System.currentTimeMillis()}L)")
         buildConfigField("String", "GIT_HASH", "\"${gitHash()}\"")
     }
@@ -91,6 +91,10 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+    testOptions {
+        // Engine logic is plain Java: android.* calls it touches in JVM tests return defaults
+        unitTests.isReturnDefaultValues = true
     }
     lint {
         abortOnError = false
@@ -128,4 +132,14 @@ dependencies {
     implementation("com.github.thesurix:gesture-recycler:1.8.0")
     implementation("com.github.cachapa:ExpandableLayout:2.9.2")
     implementation("org.zeroturnaround:zt-zip:1.17")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
+}
+
+// ./gradlew :app:testDebugUnitTest -Dgolden.update=true rewrites the AMOLED golden snapshots
+tasks.withType<Test>().configureEach {
+    systemProperty("golden.update", System.getProperty("golden.update") ?: "false")
+    // The golden test reads the One UI reference
+    inputs.dir(rootProject.file("docs/oneui9/reference"))
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }

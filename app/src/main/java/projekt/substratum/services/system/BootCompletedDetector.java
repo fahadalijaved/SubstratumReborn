@@ -58,10 +58,9 @@ public class BootCompletedDetector extends BroadcastReceiver {
         if (BOOT_COMPLETED.equals(intent.getAction())) {
             this.context = context;
             // Fabricated overlays (AMOLED for every app, fabricated values) do not survive a
-            // reboot: register them again
+            // reboot: register them again (a notification asks to try again without root)
             try {
-                context.startForegroundService(new Intent(context, SystemAmoledService.class)
-                        .putExtra(SystemAmoledService.EXTRA_RESTORE, true));
+                projekt.substratum.common.platform.AmoledJobs.restore(context);
             } catch (Exception e) {
                 Substratum.log(TAG, "Could not restore fabricated overlays: " + e);
             }

@@ -6,7 +6,6 @@
 package projekt.substratum.common.platform;
 
 import android.content.Context;
-import android.graphics.Color;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -136,12 +135,12 @@ public final class AmoledRules {
     static AmoledRules fromJson(String json) throws Exception {
         AmoledRules r = defaults();
         JSONObject o = new JSONObject(json);
-        if (o.has("background")) r.background = Color.parseColor(o.getString("background"));
-        if (o.has("floating")) r.floating = Color.parseColor(o.getString("floating"));
-        if (o.has("outline")) r.outline = Color.parseColor(o.getString("outline"));
-        if (o.has("blur")) r.blur = Color.parseColor(o.getString("blur"));
-        if (o.has("slider")) r.slider = Color.parseColor(o.getString("slider"));
-        if (o.has("thumb")) r.thumb = Color.parseColor(o.getString("thumb"));
+        if (o.has("background")) r.background = AmoledPalette.parseColor(o.getString("background"));
+        if (o.has("floating")) r.floating = AmoledPalette.parseColor(o.getString("floating"));
+        if (o.has("outline")) r.outline = AmoledPalette.parseColor(o.getString("outline"));
+        if (o.has("blur")) r.blur = AmoledPalette.parseColor(o.getString("blur"));
+        if (o.has("slider")) r.slider = AmoledPalette.parseColor(o.getString("slider"));
+        if (o.has("thumb")) r.thumb = AmoledPalette.parseColor(o.getString("thumb"));
         if (o.has("include")) {
             r.include.clear();
             JSONArray a = o.getJSONArray("include");
@@ -158,7 +157,7 @@ public final class AmoledRules {
                 JSONObject entries = colors.getJSONObject(pkg);
                 for (Iterator<String> names = entries.keys(); names.hasNext(); ) {
                     String name = names.next();
-                    int color = Color.parseColor(entries.getString(name));
+                    int color = AmoledPalette.parseColor(entries.getString(name));
                     if (name.startsWith("^")) {
                         r.patterns.computeIfAbsent(pkg, k -> new ArrayList<>())
                                 .add(0, new Object[]{Pattern.compile(name), color});
@@ -209,12 +208,27 @@ public final class AmoledRules {
      * Hand-picked color for a resource, or null to let the rules decide.
      */
     Integer explicit(String packageName, String name) {
+        AmoledPalette.Decision decision = explicitDecision(packageName, name);
+        return decision == null ? null : decision.color;
+    }
+
+    /**
+     * Hand-picked color for a resource with the rule that named it ({@code explicit}, or
+     * {@code pattern:<regex>}), or null to let the generic rules decide.
+     */
+    AmoledPalette.Decision explicitDecision(String packageName, String name) {
         Map<String, Integer> e = exact.get(packageName);
-        if (e != null && e.containsKey(name)) return e.get(name);
+        if (e != null && e.containsKey(name)) {
+            return new AmoledPalette.Decision(e.get(name), AmoledPalette.EXPLICIT);
+        }
         List<Object[]> p = patterns.get(packageName);
         if (p != null) {
             for (Object[] entry : p) {
-                if (((Pattern) entry[0]).matcher(name).find()) return (Integer) entry[1];
+                Pattern pattern = (Pattern) entry[0];
+                if (pattern.matcher(name).find()) {
+                    return new AmoledPalette.Decision((Integer) entry[1],
+                            AmoledPalette.PATTERN_PREFIX + pattern.pattern());
+                }
             }
         }
         return null;
