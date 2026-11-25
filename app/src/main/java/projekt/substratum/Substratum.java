@@ -15,6 +15,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import androidx.annotation.NonNull;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -206,6 +207,47 @@ public class Substratum extends Application {
         substratum = this;
         // Material 3 Expressive: take the palette from the wallpaper (Material You)
         com.google.android.material.color.DynamicColors.applyToActivitiesIfAvailable(this);
+        // Registered after the dynamic colors, so in dark mode this wins: AMOLED surfaces
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityPreCreated(@NonNull android.app.Activity activity,
+                                             android.os.Bundle savedInstanceState) {
+                int night = activity.getResources().getConfiguration().uiMode &
+                        android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+                if (night == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+                    activity.getTheme().applyStyle(R.style.ThemeOverlay_Substratum_Amoled, true);
+                }
+            }
+
+            @Override
+            public void onActivityCreated(@NonNull android.app.Activity a, android.os.Bundle b) {
+            }
+
+            @Override
+            public void onActivityStarted(@NonNull android.app.Activity a) {
+            }
+
+            @Override
+            public void onActivityResumed(@NonNull android.app.Activity a) {
+            }
+
+            @Override
+            public void onActivityPaused(@NonNull android.app.Activity a) {
+            }
+
+            @Override
+            public void onActivityStopped(@NonNull android.app.Activity a) {
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(@NonNull android.app.Activity a,
+                                                    @NonNull android.os.Bundle b) {
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull android.app.Activity a) {
+            }
+        });
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String selectedTheme = preferences.getString(APP_THEME, DEFAULT_THEME);

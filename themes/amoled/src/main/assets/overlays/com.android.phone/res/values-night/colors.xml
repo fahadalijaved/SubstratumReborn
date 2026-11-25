@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Reborn AMOLED, com.android.phone, dark mode. Generated from the One UI 9 reference. -->
 <resources>
-    <color name="actionbar_icon_color">#ff262626</color>
-    <color name="background_floating_material_dark">#ff121212</color>
-    <color name="background_material_dark">#ff121212</color>
-    <color name="button_material_dark">#ff121212</color>
+    <color name="background_floating_material_dark">#ff0a0a0a</color>
+    <color name="background_material_dark">#ff000000</color>
+    <color name="button_material_dark">#ff000000</color>
+    <color name="common_color_white_a20">#00000000</color>
+    <color name="common_color_white_a25">#00000000</color>
     <color name="dialer_primary_text_color">#ff000000</color>
-    <color name="dialer_secondary_text_color">#ff262626</color>
-    <color name="dialpad_digits_text_color">#ff121212</color>
-    <color name="dialpad_secondary_text_color">#ff262626</color>
-    <color name="dim_foreground_material_light">#ff121212</color>
-    <color name="emergency_call_icon_color">#ff121212</color>
+    <color name="emergency_callback_button_bg">#00000000</color>
     <color name="emergency_callback_mode_button_text_color">#ff000000</color>
+    <color name="emergency_info_btn_bolder">#00000000</color>
     <color name="front_cover_background_color">#ff000000</color>
-    <color name="material_blue_grey_800">#ff121212</color>
-    <color name="material_blue_grey_900">#ff121212</color>
+    <color name="incall_call_banner_background">#cc000000</color>
+    <color name="material_blue_grey_800">#ff000000</color>
+    <color name="material_blue_grey_900">#ff000000</color>
     <color name="material_blue_grey_950">#ff000000</color>
-    <color name="material_grey_600">#ff262626</color>
-    <color name="material_grey_800">#ff121212</color>
-    <color name="material_grey_850">#ff121212</color>
+    <color name="material_grey_600">#ff000000</color>
+    <color name="material_grey_800">#ff000000</color>
+    <color name="material_grey_850">#ff000000</color>
     <color name="material_grey_900">#ff000000</color>
-    <color name="phone_settings_actionbar_text_color">#ff262626</color>
-    <color name="primary_dark_material_light">#ff262626</color>
     <color name="primary_material_dark">#ff000000</color>
-    <color name="setting_primary_color">#ff121212</color>
-    <color name="setting_secondary_color">#ff262626</color>
-    <color name="switch_thumb_disabled_material_dark">#ff262626</color>
-    <color name="switch_track_off">#ff262626</color>
+    <color name="setting_primary_color">#ff000000</color>
+    <color name="setting_secondary_color">#ff000000</color>
+    <color name="switch_thumb_disabled_material_dark">#ff2a2a2a</color>
+    <color name="switch_thumb_off">#ff2a2a2a</color>
+    <color name="switch_thumb_on">#ff2a2a2a</color>
+    <color name="switch_track_off">#ff000000</color>
 </resources>

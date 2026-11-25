@@ -11,10 +11,12 @@
     <color name="default_dark_tick_color">#ff71787e</color>
     <color name="design_dark_default_color_background">#ff121212</color>
     <color name="design_dark_default_color_surface">#ff121212</color>
+    <color name="design_fab_shadow_start_color">#44000000</color>
+    <color name="design_fab_stroke_top_inner_color">#1affffff</color>
+    <color name="design_fab_stroke_top_outer_color">#2effffff</color>
     <color name="design_snackbar_background_color">#ff323232</color>
-    <color name="dim_foreground_material_light">#ff323232</color>
+    <color name="exo_bottom_bar_background">#b0000000</color>
     <color name="fragment_pick_inactive_button_color">#ffe3e2e7</color>
-    <color name="fragment_pick_inactive_text_color">#ff909095</color>
     <color name="hairline">#ffe0e0e0</color>
     <color name="m3_ref_palette_blue_variant10">#ff001f2d</color>
     <color name="m3_ref_palette_cyan10">#ff001f26</color>
@@ -116,10 +118,16 @@
     <color name="material_grey_800">#ff424242</color>
     <color name="material_grey_850">#ff303030</color>
     <color name="material_grey_900">#ff212121</color>
+    <color name="mtrl_btn_transparent_bg_color">#00ffffff</color>
+    <color name="mtrl_scrim_color">#52000000</color>
     <color name="notification_material_background_media_default_color">#ff424242</color>
     <color name="on_success">#ffffffff</color>
-    <color name="primary_dark_material_light">#ff757575</color>
+    <color name="peek_topbar_scrim">#52000000</color>
     <color name="primary_material_dark">#ff212121</color>
     <color name="profile_tab_default_color">#fffefbff</color>
+    <color name="saving_overlay_background_color">#52000000</color>
+    <color name="search_bar_background_dark">#1affffff</color>
+    <color name="search_chip_text_selected_color">#ffffffff</color>
+    <color name="search_chip_text_selected_color_m3">#ffffffff</color>
     <color name="switch_thumb_disabled_material_dark">#ff616161</color>
 </resources>

@@ -92,6 +92,36 @@ Weather, Software update and DressRoom.
 
 Every value in the samples is the stock One UI 9 value.
 
+## Making an AMOLED theme
+
+`themes/amoled` (Reborn AMOLED) is generated from the reference by
+`tools/oneui-reference/gen_amoled.py`, and is the easiest way to see what an AMOLED One UI theme
+has to touch. [`samples/amoled_attributes.csv`](samples/amoled_attributes.csv) lists every
+attribute it changes: package, resource name, the stock dark value and the AMOLED value. Copy the
+lines you want into your own theme's `res/values-night/colors.xml`, together with the stock
+light value in `res/values/colors.xml` (rule 1 above).
+
+The generator decides by the **dark-mode value each color actually resolves to**, following One
+UI's reference chains, and by the resource name:
+
+| Dark-mode value | Becomes | Examples |
+|---|---|---|
+| Any dark color (brightest channel up to `0x30`), any hue | `#000000` | page, cards, list rows, the blue suggestion card |
+| Dark neutral grey up to `0x80`, background-like name | `#000000` | cards `#17171a`, keyboard keys `#3a3a3d` |
+| Same, line-like name (`divider`, `outline`, `stroke`, `border`) | `#000000` | dividers, card outlines |
+| Same, floating element (`popup`, `menu`, `dialog`, `search` field, `navi`, `toolbar`, `chip`, `fab`) | `#0a0a0a` | popups, sheets, nav pill, search field |
+| Scrollbar thumb / track | `#2a2a2a` / `#000000` | the scroll position stays visible |
+| See-through white up to 25% (`#1affffff`...) | transparent | `basic_token_sys_tone_on_tone`, button backgrounds, outlines |
+| See-through dark tint over blur | at least 80% black | panel and sheet blur |
+| Text, icons, press/selection states, accents | unchanged | |
+
+A few names are set by hand on top of the rules: QS tiles on `#387aff` / off `#141414`, the QS
+tile container transparent, Settings' coloured icon plates `#262626` (the glyphs stay white), and
+the framework's Material 3 surfaces. Light mode is never changed.
+
+Google Play services is left out: its code modules share resource ids with it, and the LSPosed
+part broke them.
+
 ## Battery
 
 One UI 9 draws the status bar battery in code. A SystemUI overlay can replace it with:
@@ -116,7 +146,7 @@ tools/oneui-reference/pull_and_build.sh -s <device> OUT android com.android.syst
 tools/oneui-reference/pull_and_build.sh -s <device> OUT --from-theme <installed theme package>
 tools/oneui-reference/gen_token_sample.py OUT/reference/com.android.systemui/values/color.csv docs/oneui9/samples/design_tokens.xml
 tools/oneui-reference/gen_samples.py OUT/reference docs/oneui9/samples/overlays
-tools/oneui-reference/gen_amoled.py OUT/reference OUT/apks/android.apk themes/amoled/src/main/assets/overlays
+tools/oneui-reference/gen_amoled.py OUT/reference OUT/apks/android.apk themes/amoled/src/main/assets/overlays docs/oneui9/samples/amoled_attributes.csv
 ```
 
 The reference records names and values only; it does not contain Samsung's files.

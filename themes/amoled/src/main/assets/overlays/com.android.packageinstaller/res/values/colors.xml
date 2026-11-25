@@ -75,8 +75,8 @@
     <color name="material_grey_800">#ff424242</color>
     <color name="material_grey_850">#ff303030</color>
     <color name="material_grey_900">#ff212121</color>
+    <color name="mtrl_scrim_color">#52000000</color>
     <color name="outlineVariantColor">#ffccccce</color>
-    <color name="primary_dark_material_light">#ff757575</color>
     <color name="primary_material_dark">#ff212121</color>
     <color name="surfaceContainerHighColor">#ffe9e9ec</color>
     <color name="switch_thumb_disabled_material_dark">#ff616161</color>

@@ -19,6 +19,20 @@
         <item name="alertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
     </style>
 
+    <!-- Applied over the dynamic colors in dark mode: true black surfaces, accents unchanged -->
+    <style name="ThemeOverlay.Substratum.Amoled" parent="">
+        <item name="android:colorBackground">#ff000000</item>
+        <item name="colorSurface">#ff000000</item>
+        <item name="colorSurfaceDim">#ff000000</item>
+        <item name="colorSurfaceBright">#ff1a1a1a</item>
+        <item name="colorSurfaceContainerLowest">#ff000000</item>
+        <item name="colorSurfaceContainerLow">#ff000000</item>
+        <item name="colorSurfaceContainer">#ff0a0a0a</item>
+        <item name="colorSurfaceContainerHigh">#ff121212</item>
+        <item name="colorSurfaceContainerHighest">#ff1a1a1a</item>
+        <item name="colorSurfaceVariant">#ff121212</item>
+    </style>
+
     <!-- Tonal filled cards with the large Expressive corner -->
     <style name="AppTheme.Card" parent="Widget.Material3.CardView.Filled">
         <item name="cardBackgroundColor">@color/main_screen_card_background</item>
