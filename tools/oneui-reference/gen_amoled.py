@@ -44,6 +44,38 @@ def literal(v, t, depth=0):
         if n in t: return literal(t[n].get('default'),t,depth+1)
         if n in fwnames: return literal(fwnames[n],{},depth+1)
     return None
+def literal_night(v, t, depth=0):
+    """Like literal(), but follows the night value of each link in the chain."""
+    if depth>12 or v is None: return None
+    if re.fullmatch(r'#[0-9a-fA-F]{6,8}',v): return v.lower()
+    m=re.fullmatch(r'@0x(01[0-9a-f]{6})',v)
+    if m: return literal(fw.get('0x'+m.group(1)),{},depth+1)
+    m=re.fullmatch(r'@color/(\S+)',v)
+    if m:
+        n=m.group(1)
+        if n in t: return literal_night(t[n].get('night',t[n].get('default')),t,depth+1)
+        if n in fwnames: return literal(fwnames[n],{},depth+1)
+    return None
+
+# One UI's stock dark greys and their AMOLED replacements. Every color whose dark-mode value
+# resolves to one of these gets the replacement in values-night, whatever chain of references
+# leads there: the hook only sees direct lookups, and Android resolves references natively.
+PALETTE={
+ '#ff010102':'#ff000000',  # page background (gray_100)
+ '#ff000000':'#ff000000',
+ '#ff17171a':'#ff0f0f0f',  # cards and lists (gray_95)
+ '#ff1d1d20':'#ff0f0f0f',  # Material 3 surface
+ '#ff1f1f1f':'#ff0f0f0f',
+ '#ff252528':'#ff161616',  # raised surfaces (gray_90)
+ '#ff2a2a2d':'#ff161616',
+ '#ff2d2d30':'#ff1a1a1a',
+ '#ff333333':'#ff1a1a1a',
+ '#ff343437':'#ff1a1a1a',
+ '#ff3a3a3d':'#ff1f1f1f',  # search bar, chips, popups (gray_80)
+ '#ff3a3a3c':'#ff1f1f1f',
+ '#ff3b3b3b':'#ff1f1f1f',
+}
+
 SURF={  # One UI design tokens, dark
  'basic_token_sys_background_dark':'#ff000000','basic_token_sys_background_variant_dark':'#ff000000',
  'basic_token_sys_surface_dark':'#ff000000','basic_token_sys_surface_variant_dark':'#ff000000',
@@ -85,6 +117,13 @@ for pkg in TOKEN_PKGS:
     for pattern,v in NIGHT_PATTERNS.get(pkg,[]):
         for n in t:
             if re.match(pattern,n): night_items.setdefault(n,v)
+    # Palette mapping, for every color that ends on a stock dark grey in dark mode
+    direct=set(SURF)|set(DEFAULT_ONLY.get(pkg,{}))  # already set for every mode in values/
+    for n,configs in t.items():
+        if n in night_items or n in direct: continue
+        dark=literal_night(configs.get('night',configs.get('default')),t)
+        if dark in PALETTE and dark!=PALETTE[dark]:
+            night_items[n]=PALETTE[dark]
     for n,v in night_items.items():
         if n not in t: skipped.append(n+' (absent)'); continue
         # values-night only works if light mode keeps a value, so copy the stock light value
