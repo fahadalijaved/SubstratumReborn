@@ -18,10 +18,10 @@
       "basic_token_effect_blur_surface_dark": "#f2000000",
       "basic_token_effect_blur_chip": "#f2000000",
       "basic_token_effect_blur_chip_dark": "#f2000000",
-      "qs_tile_layout_container_bg": "#0d0d0d",
-      "qs_tile_container_bg": "#0d0d0d",
-      "qs_tile_round_background_off": "#242424",
-      "qs_tile_round_background_dim": "#242424",
+      "qs_tile_layout_container_bg": "#000000",
+      "qs_tile_container_bg": "#000000",
+      "qs_tile_round_background_off": "#000000",
+      "qs_tile_round_background_dim": "#000000",
       "qs_tile_round_background_on": "#387aff",
       "qs_switch_off_background_color": "#242424",
       "qs_detail_layout_popup_menu_background_color": "#fa000000",
@@ -33,7 +33,11 @@
       "sec_brightness_mirror_background_color": "#000000",
       "seekbar_background_color": "#1f1f1f",
       "seekbar_background_color_expand": "#1f1f1f",
-      "seekbar_color_expand": "#fcfcfc"
+      "seekbar_color_expand": "#fcfcfc",
+      "qs_tile_container_bg_border_color": "#262626",
+      "qs_tile_icon_off_tint_color": "#fcfcff",
+      "sec_qs_switch_off_background_color": "#242424",
+      "sec_qs_media_player_background_color": "#000000"
     },
     "com.android.settings": {
       "^sec_dashboard_(?!.*(text|layer)).*_color\\d*$": "#262626"

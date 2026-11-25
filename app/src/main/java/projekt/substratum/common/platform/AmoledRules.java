@@ -69,10 +69,10 @@ public final class AmoledRules {
         sysui.put("basic_token_effect_blur_surface_dark", 0xf2000000);
         sysui.put("basic_token_effect_blur_chip", 0xf2000000);
         sysui.put("basic_token_effect_blur_chip_dark", 0xf2000000);
-        sysui.put("qs_tile_layout_container_bg", 0xff0d0d0d);
-        sysui.put("qs_tile_container_bg", 0xff0d0d0d);
-        sysui.put("qs_tile_round_background_off", 0xff242424);
-        sysui.put("qs_tile_round_background_dim", 0xff242424);
+        sysui.put("qs_tile_layout_container_bg", 0xff000000);
+        sysui.put("qs_tile_container_bg", 0xff000000);
+        sysui.put("qs_tile_round_background_off", 0xff000000);
+        sysui.put("qs_tile_round_background_dim", 0xff000000);
         sysui.put("seekbar_background_color", 0xff1f1f1f);
         sysui.put("seekbar_background_color_expand", 0xff1f1f1f);
         sysui.put("seekbar_color_expand", 0xfffcfcfc);
@@ -85,6 +85,10 @@ public final class AmoledRules {
         sysui.put("notification_material_background_dimmed_color", 0xff0a0a0a);
         sysui.put("notification_material_background_on_lockscreen", 0xf2000000);
         sysui.put("sec_brightness_mirror_background_color", 0xff000000);
+        sysui.put("qs_tile_container_bg_border_color", 0xff262626);
+        sysui.put("qs_tile_icon_off_tint_color", 0xfffcfcff);
+        sysui.put("sec_qs_switch_off_background_color", 0xff242424);
+        sysui.put("sec_qs_media_player_background_color", 0xff000000);
         r.exact.put("com.android.systemui", sysui);
         List<Object[]> settings = new ArrayList<>();
         settings.add(new Object[]{Pattern.compile("^sec_dashboard_(?!.*(text|layer)).*_color\\d*$"),
