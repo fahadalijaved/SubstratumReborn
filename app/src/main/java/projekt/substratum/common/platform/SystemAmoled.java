@@ -242,6 +242,44 @@ public final class SystemAmoled {
         }
     }
 
+    /**
+     * Fabricated overlays do not survive a reboot on One UI: register again everything that was
+     * applied, from the definitions kept in /data/system/substratum. AMOLED for every app comes
+     * back while its flag is set; Substratum overlays with fabricated values come back while
+     * they are enabled.
+     *
+     * @return Number of overlays registered
+     */
+    public static int restoreAll() {
+        String dir = FabricatedValues.DIR;
+        String cache = XposedBackend.DIR;
+        String out = projekt.substratum.util.helpers.Root.runCommand(
+                "n=0; " +
+                // AMOLED for every app: target = file name without the suffix
+                "if [ -f " + cache + "/" + XposedBackend.AMOLED_FLAG + " ]; then " +
+                "for f in " + dir + "/*" + SUFFIX + ".xml; do [ -f \"$f\" ] || continue; " +
+                "o=$(basename \"$f\" .xml); t=${o%" + SUFFIX + "}; " +
+                "cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" >/dev/null 2>&1 && " +
+                "cmd overlay enable --user 0 com.android.shell:\"$o\" >/dev/null 2>&1 && n=$((n+1)); " +
+                "done; fi; " +
+                // Enabled Substratum overlays with fabricated values: target from the index
+                "for e in " + cache + "/*" + XposedBackend.ENABLED + "; do [ -f \"$e\" ] || continue; " +
+                "o=$(basename \"$e\" " + XposedBackend.ENABLED + "); f=" + dir + "/\"$o\".xml; " +
+                "[ -f \"$f\" ] || continue; " +
+                "t=$(sed -n 's/^target=//p' " + cache + "/\"$o\"" + XposedBackend.INDEX + "); " +
+                "[ -n \"$t\" ] || continue; " +
+                "cmd overlay fabricate --target \"$t\" --name \"$o\" --file \"$f\" >/dev/null 2>&1 && " +
+                "cmd overlay enable --user 0 com.android.shell:\"$o\" >/dev/null 2>&1 && n=$((n+1)); " +
+                "done; echo restored=$n");
+        int restored = 0;
+        if (out != null) {
+            java.util.regex.Matcher m = Pattern.compile("restored=(\\d+)").matcher(out);
+            if (m.find()) restored = Integer.parseInt(m.group(1));
+        }
+        Log.i(TAG, "restored " + restored + " fabricated overlays after boot");
+        return restored;
+    }
+
     public static void removeAll(Context context) {
         projekt.substratum.util.helpers.Root.runCommand(
                 "rm -f " + XposedBackend.DIR + "/*" + XposedBackend.AMOLED_IDS + " " +

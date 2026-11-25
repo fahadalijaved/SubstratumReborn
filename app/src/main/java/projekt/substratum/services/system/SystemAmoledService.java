@@ -31,6 +31,7 @@ public class SystemAmoledService extends Service {
     public static final String EXTRA_APPLY = "apply";
     public static final String EXTRA_THEME = "theme";
     public static final String EXTRA_ONLY = "only";
+    public static final String EXTRA_RESTORE = "restore";
     public static final String EXTRA_DONE = "done";
     public static final String EXTRA_TOTAL = "total";
     public static final String EXTRA_PACKAGE = "package";
@@ -52,6 +53,20 @@ public class SystemAmoledService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && intent.getBooleanExtra(EXTRA_RESTORE, false)) {
+            startForeground(NOTIFICATION_ID, notification(
+                    getString(R.string.system_amoled_restoring), 0, 0, true));
+            new Thread(() -> {
+                try {
+                    SystemAmoled.restoreAll();
+                } catch (Throwable t) {
+                    Log.e("SubstratumAmoled", "restore failed", t);
+                }
+                stopForeground(STOP_FOREGROUND_REMOVE);
+                stopSelf();
+            }).start();
+            return START_NOT_STICKY;
+        }
         boolean apply = intent == null || intent.getBooleanExtra(EXTRA_APPLY, true);
         String theme = intent != null ? intent.getStringExtra(EXTRA_THEME) : null;
         String only = intent != null ? intent.getStringExtra(EXTRA_ONLY) : null;
