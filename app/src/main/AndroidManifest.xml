@@ -63,6 +63,19 @@
         <meta-data
             android:name="android.max_aspect"
             android:value="2.1" />
+        <!-- LSPosed theme engine, see projekt.substratum.xposed.XposedEntry -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="@string/xposed_description" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="93" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposed_scope" />
 
         <receiver android:name=".services.system.BootCompletedDetector">
             <intent-filter>

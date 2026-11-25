@@ -38,6 +38,7 @@ import projekt.substratum.common.Systems;
 import projekt.substratum.common.commands.CompilerCommands;
 import projekt.substratum.common.commands.FileOperations;
 import projekt.substratum.common.platform.ThemeManager;
+import projekt.substratum.common.platform.XposedBackend;
 
 import static projekt.substratum.common.Packages.getLiveOverlayVersion;
 import static projekt.substratum.common.References.BYPASS_SUBSTRATUM_BUILDER_DELETION;
@@ -348,7 +349,14 @@ public class SubstratumBuilder {
         // Superuser needed as this requires elevated privileges to run these commands
         if (!hasErroredOut) {
             if (isDeviceOMS) {
-                if (Systems.ATLEAST_PIE && !Systems.checkSubstratumService(context)) {
+                if (Systems.isXposedBackend(context)) {
+                    // Applied in-process by the LSPosed module, nothing is installed
+                    if (!XposedBackend.install(context, signedOverlayAPKPath, overlayName)) {
+                        hasErroredOut = true;
+                        dumpErrorLogs(overlayPackage,
+                                "Could not store \"" + overlayName + "\" for the LSPosed module.");
+                    }
+                } else if (Systems.ATLEAST_PIE && !Systems.checkSubstratumService(context)) {
                     // Brute force install APKs because thanks Google
                     FileOperations.mountSystemRW();
                     final String overlay = References.getPieDir() + "_" + overlayName + ".apk";

@@ -246,7 +246,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             certified = verified && fullOms;
         }
         String themeSystem;
-        if (interfacer) {
+        if (Systems.isXposedBackend(context)) {
+            themeSystem = getString(R.string.settings_system_status_xposed);
+        } else if (interfacer) {
             themeSystem = getString(R.string.settings_system_status_rootless);
         } else if (systemService) {
             themeSystem = getString(R.string.settings_system_status_ss);

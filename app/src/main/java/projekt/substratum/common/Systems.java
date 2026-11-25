@@ -36,6 +36,7 @@ import java.util.Map;
 import projekt.substratum.BuildConfig;
 import projekt.substratum.Substratum;
 import projekt.substratum.common.platform.SubstratumService;
+import projekt.substratum.common.platform.XposedBackend;
 import projekt.substratum.util.helpers.FileDownloader;
 import projekt.substratum.util.helpers.Root;
 import projekt.substratum.util.readers.ReadSupportedROMsFile;
@@ -49,6 +50,7 @@ import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_INTER
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_O_ROOTED;
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_P_ROOTED;
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_SYSSERV;
+import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_XPOSED;
 import static projekt.substratum.common.References.PLAY_STORE_PACKAGE_NAME;
 import static projekt.substratum.common.References.SST_ADDON_PACKAGE;
 import static projekt.substratum.common.References.SUBSTRATUM_LOG;
@@ -137,7 +139,14 @@ public class Systems {
             }
 
             if (ATLEAST_PIE) {
-                if (isNewSamsungDevice() && isAndromeda(context)) {
+                if (XposedBackend.isModuleActive() && Root.checkRootAccess()) {
+                    // Substratum's LSPosed module is active: resources are replaced in-process
+                    prefs.edit().putInt(
+                            "current_theme_mode",
+                            OVERLAY_MANAGER_SERVICE_XPOSED
+                    ).apply();
+                    return OVERLAY_MANAGER_SERVICE_XPOSED;
+                } else if (isNewSamsungDevice() && isAndromeda(context)) {
                     // Andromeda mode
                     prefs.edit().putInt(
                             "current_theme_mode",
@@ -277,6 +286,16 @@ public class Systems {
 
     public static boolean checkSubstratumServiceApi(Context context) {
         return !checkSubstratumService(context) || SubstratumService.checkApi();
+    }
+
+    /**
+     * Check if it is using Substratum's LSPosed backend
+     *
+     * @param context Context
+     * @return True, if overlays are applied through the LSPosed module
+     */
+    public static boolean isXposedBackend(Context context) {
+        return checkThemeSystemModule(context) == OVERLAY_MANAGER_SERVICE_XPOSED;
     }
 
     /**

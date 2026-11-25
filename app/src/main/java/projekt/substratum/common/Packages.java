@@ -386,6 +386,12 @@ public class Packages {
             Context context,
             String packageName,
             String metadata) {
+        if (!isPackageInstalled(context, packageName) &&
+                projekt.substratum.common.platform.XposedBackend.isStored(packageName)) {
+            // Overlays applied by the LSPosed module are not installed packages
+            return projekt.substratum.common.platform.XposedBackend
+                    .getMetadata(context, packageName, metadata);
+        }
         try {
             ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
                     packageName, PackageManager.GET_META_DATA);

@@ -1,0 +1,257 @@
+/*
+ * Copyright (c) 2016-2019 Projekt Substratum
+ * This file is part of Substratum.
+ *
+ * SPDX-License-Identifier: GPL-3.0-Or-Later
+ */
+
+package projekt.substratum.common.platform;
+
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import projekt.substratum.common.References;
+import projekt.substratum.util.helpers.Root;
+
+/**
+ * Theme engine for devices where no overlay route is open (OneUI 9 rejects overlay APKs that
+ * are not preinstalled by Samsung, and rejects foreign-signed overlays installed to /data).
+ * <p>
+ * Compiled overlay APKs are kept in {@link #DIR}, which every app may read. Substratum's own
+ * LSPosed module ({@link projekt.substratum.xposed.XposedEntry}) loads the enabled ones inside
+ * each target app and redirects the matching resources to them by name.
+ * <p>
+ * Per overlay {@code <name>} the directory holds:
+ * <ul>
+ * <li>{@code <name>.apk}: the compiled overlay</li>
+ * <li>{@code <name>.idx}: {@code target=<package>}, {@code package=<overlay package>}, then
+ * one {@code type/name} per resource the overlay carries</li>
+ * <li>{@code <name>.enabled}: present while the overlay is applied</li>
+ * </ul>
+ */
+public class XposedBackend {
+
+    public static final String DIR = "/data/resource-cache/substratum";
+    public static final String APK = ".apk";
+    public static final String INDEX = ".idx";
+    public static final String ENABLED = ".enabled";
+    private static final String TAG = "SubstratumXposed";
+    private static final Pattern RESOURCE_LINE =
+            Pattern.compile("spec resource 0x[0-9a-f]+ [^:]+:([a-z0-9_-]+)/(\\S+)");
+
+    /**
+     * Replaced with {@code return true} by the module when LSPosed has it active for Substratum.
+     */
+    public static boolean isModuleActive() {
+        return false;
+    }
+
+    /**
+     * Store a freshly compiled overlay. Does not enable it.
+     *
+     * @return True, if stored
+     */
+    public static boolean install(Context context, String apkPath, String name) {
+        String target = archiveMetadata(context, apkPath, References.metadataOverlayTarget);
+        if (target == null) {
+            Log.e(TAG, "Overlay has no target metadata: " + apkPath);
+            return false;
+        }
+        PackageInfo archive = context.getPackageManager().getPackageArchiveInfo(apkPath, 0);
+        if (archive == null) {
+            Log.e(TAG, "Overlay cannot be parsed: " + apkPath);
+            return false;
+        }
+        List<String> resources = listResources(context, apkPath);
+        if (resources.isEmpty()) {
+            Log.e(TAG, "Overlay carries no resources: " + apkPath);
+            return false;
+        }
+        File index = new File(context.getCacheDir(), name + INDEX);
+        try (FileWriter writer = new FileWriter(index)) {
+            writer.write("target=" + target + '\n');
+            writer.write("package=" + archive.packageName + '\n');
+            for (String resource : resources) writer.write(resource + '\n');
+        } catch (IOException e) {
+            Log.e(TAG, "Could not write overlay index", e);
+            return false;
+        }
+        String base = DIR + '/' + name;
+        Root.runCommand("mkdir -p " + DIR + " && chmod 755 " + DIR +
+                " && cp -f '" + apkPath + "' '" + base + APK + "'" +
+                " && cp -f '" + index.getAbsolutePath() + "' '" + base + INDEX + "'" +
+                " && chmod 644 '" + base + APK + "' '" + base + INDEX + "'" +
+                " && restorecon -R " + DIR);
+        //noinspection ResultOfMethodCallIgnored
+        index.delete();
+        return new File(base + APK).exists() && new File(base + INDEX).exists();
+    }
+
+    public static void enable(Iterable<String> names) {
+        StringBuilder command = new StringBuilder();
+        for (String name : names) {
+            command.append("[ -f '").append(DIR).append('/').append(name).append(APK)
+                    .append("' ] && touch '").append(DIR).append('/').append(name)
+                    .append(ENABLED).append("' && chmod 644 '").append(DIR).append('/')
+                    .append(name).append(ENABLED).append("'; ");
+        }
+        if (command.length() == 0) return;
+        Root.runCommand(command + "restorecon -R " + DIR);
+    }
+
+    public static void disable(Iterable<String> names) {
+        StringBuilder command = new StringBuilder();
+        for (String name : names) {
+            command.append("rm -f '").append(DIR).append('/').append(name).append(ENABLED)
+                    .append("'; ");
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+    }
+
+    public static void uninstall(Iterable<String> names) {
+        StringBuilder command = new StringBuilder();
+        for (String name : names) {
+            String base = DIR + '/' + name;
+            command.append("rm -f '").append(base).append(APK).append("' '").append(base)
+                    .append(INDEX).append("' '").append(base).append(ENABLED).append("'; ");
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+    }
+
+    /**
+     * @return Names of all stored overlays
+     */
+    public static List<String> listAll() {
+        List<String> list = new ArrayList<>();
+        String[] files = new File(DIR).list();
+        if (files == null) return list;
+        for (String file : files) {
+            if (file.endsWith(APK)) list.add(file.substring(0, file.length() - APK.length()));
+        }
+        return list;
+    }
+
+    public static boolean isEnabled(String name) {
+        return new File(DIR + '/' + name + ENABLED).exists();
+    }
+
+    public static boolean isStored(String name) {
+        return new File(DIR + '/' + name + APK).exists();
+    }
+
+    /**
+     * @return Target package of a stored overlay, or null
+     */
+    public static String getTarget(String name) {
+        try (BufferedReader reader = new BufferedReader(
+                new java.io.FileReader(DIR + '/' + name + INDEX))) {
+            String first = reader.readLine();
+            if (first != null && first.startsWith("target=")) return first.substring(7);
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * @return Targets that have more than one enabled overlay
+     */
+    public static List<String> targetsWithMultipleEnabled() {
+        Map<String, Integer> counts = new HashMap<>();
+        for (String name : listAll()) {
+            if (!isEnabled(name)) continue;
+            String target = getTarget(name);
+            if (target != null) counts.merge(target, 1, Integer::sum);
+        }
+        List<String> list = new ArrayList<>();
+        counts.forEach((target, count) -> {
+            if (count > 1) list.add(target);
+        });
+        return list;
+    }
+
+    /**
+     * Restart the apps the given overlays target so they reload their resources.
+     */
+    public static void restartTargets(Context context, Iterable<String> names) {
+        Set<String> targets = new HashSet<>();
+        for (String name : names) {
+            String target = getTarget(name);
+            if (target != null) targets.add(target);
+        }
+        StringBuilder command = new StringBuilder();
+        boolean systemUi = false;
+        for (String target : targets) {
+            if ("com.android.systemui".equals(target)) {
+                systemUi = true;
+            } else if (!"android".equals(target)) {
+                command.append("am force-stop ").append(target).append("; ");
+            }
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+        if (systemUi) ThemeManager.restartSystemUI(context);
+    }
+
+    /**
+     * Metadata of a stored overlay, for overlays that are not installed packages.
+     */
+    public static String getMetadata(Context context, String name, String key) {
+        String path = DIR + '/' + name + APK;
+        if (!new File(path).exists()) return null;
+        return archiveMetadata(context, path, key);
+    }
+
+    private static String archiveMetadata(Context context, String apkPath, String key) {
+        PackageInfo info = context.getPackageManager()
+                .getPackageArchiveInfo(apkPath, PackageManager.GET_META_DATA);
+        if (info == null) return null;
+        ApplicationInfo appInfo = info.applicationInfo;
+        if (appInfo == null) return null;
+        Bundle metaData = appInfo.metaData;
+        return metaData != null ? metaData.getString(key) : null;
+    }
+
+    /**
+     * List the resources an overlay carries as {@code type/name}, using the bundled aapt.
+     */
+    private static List<String> listResources(Context context, String apkPath) {
+        List<String> list = new ArrayList<>();
+        Process process = null;
+        try {
+            process = new ProcessBuilder(
+                    context.getFilesDir().getAbsolutePath() + "/aapt", "d", "resources", apkPath)
+                    .redirectErrorStream(true).start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Matcher matcher = RESOURCE_LINE.matcher(line);
+                    if (matcher.find()) list.add(matcher.group(1) + '/' + matcher.group(2));
+                }
+            }
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            Log.e(TAG, "Could not list overlay resources", e);
+        } finally {
+            if (process != null) process.destroy();
+        }
+        return list;
+    }
+}

@@ -1117,6 +1117,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (Systems.checkOMS(context)) {
                         new DoCleanUp(context).execute();
                         if (Systems.checkThemeSystemModule(context) != OVERLAY_MANAGER_SERVICE_SYSSERV
+                                && !Systems.isXposedBackend(context)
                                 && Systems.ATLEAST_PIE && Root.checkRootAccess())
                             MagiskHelper.handleModule(context);
                     }

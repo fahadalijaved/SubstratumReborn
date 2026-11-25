@@ -196,6 +196,7 @@ public class References {
     public static final int OVERLAY_MANAGER_SERVICE_P_ROOTED = 1234567;
     public static final int OVERLAY_MANAGER_SERVICE_ANDROMEDA = 1089303;
     public static final int OVERLAY_MANAGER_SERVICE_SYSSERV = 13970147;
+    public static final int OVERLAY_MANAGER_SERVICE_XPOSED = 5005005;
     public static final int OVERLAY_MANAGER_SERVICE_O_ROOTED = 1310794;
     public static final int OVERLAY_MANAGER_SERVICE_INTERFACER = 18723789;
     public static final int RUNTIME_RESOURCE_OVERLAY_N_ROOTED = 8282713;

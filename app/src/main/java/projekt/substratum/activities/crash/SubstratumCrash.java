@@ -196,6 +196,9 @@ public class SubstratumCrash extends Activity {
             case OVERLAY_MANAGER_SERVICE_O_ROOTED:
                 details += "OMS (root)";
                 break;
+            case References.OVERLAY_MANAGER_SERVICE_XPOSED:
+                details += "LSPosed";
+                break;
             case OVERLAY_MANAGER_SERVICE_ANDROMEDA:
                 details += "OMS (andromeda)";
                 break;

@@ -73,6 +73,7 @@ android {
 
 dependencies {
     implementation(files("libs/libsubstratum.jar"))
+    compileOnly("de.robv.android.xposed:api:82")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.cardview:cardview:1.0.0")

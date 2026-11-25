@@ -165,6 +165,24 @@ public class ThemeManager {
         if (overlays.isEmpty()) return;
         overlays.removeAll(Arrays.asList(PIXEL_OVERLAY_PACKAGES));
 
+        if (Systems.isXposedBackend(context)) {
+            if (Substratum.getPreferences().getBoolean("auto_disable_target_overlays", false)) {
+                for (String overlay : overlays) {
+                    String target = XposedBackend.getTarget(overlay);
+                    if (target == null) continue;
+                    List<String> others = new ArrayList<>();
+                    for (String other : XposedBackend.listAll()) {
+                        if (XposedBackend.isEnabled(other) &&
+                                target.equals(XposedBackend.getTarget(other))) others.add(other);
+                    }
+                    XposedBackend.disable(others);
+                }
+            }
+            XposedBackend.enable(overlays);
+            XposedBackend.restartTargets(context, overlays);
+            return;
+        }
+
         SharedPreferences sharedPrefs = Substratum.getPreferences();
 
         if (sharedPrefs.getBoolean("auto_disable_target_overlays", false)) {
@@ -233,6 +251,12 @@ public class ThemeManager {
         if (overlays.isEmpty()) return;
         overlays.removeAll(Arrays.asList(PIXEL_OVERLAY_PACKAGES));
 
+        if (Systems.isXposedBackend(context)) {
+            XposedBackend.disable(overlays);
+            XposedBackend.restartTargets(context, overlays);
+            return;
+        }
+
         if (checkSubstratumService(context)) {
             SubstratumService.switchOverlay(overlays, false, shouldRestartUI(context, overlays));
         } else if (checkThemeInterfacer(context)) {
@@ -273,6 +297,10 @@ public class ThemeManager {
      * @param overlays List of overlays
      */
     public static void setPriority(Context context, ArrayList<String> overlays) {
+        if (Systems.isXposedBackend(context)) {
+            // Overlays are applied in name order; priorities are not supported yet
+            return;
+        }
         if (checkSubstratumService(context)) {
             SubstratumService.setPriority(overlays, shouldRestartUI(context, overlays));
         } else if (checkThemeInterfacer(context)) {
@@ -380,6 +408,21 @@ public class ThemeManager {
                                              int overlayState,
                                              int secondaryState) {
         Set<String> list = new HashSet<>();
+        if (Systems.isXposedBackend(context)) {
+            if (secondaryState == EXPORT_RETURN_MULTIPLE_TARGETS_ENABLED) {
+                return XposedBackend.targetsWithMultipleEnabled();
+            }
+            for (String overlay : XposedBackend.listAll()) {
+                boolean enabled = XposedBackend.isEnabled(overlay);
+                if (overlayState == STATE_LIST_ALL_OVERLAYS ||
+                        secondaryState == EXPORT_RETURN_ALL_OVERLAYS && enabled ||
+                        overlayState == STATE_ENABLED && enabled ||
+                        overlayState == STATE_DISABLED && !enabled) {
+                    list.add(overlay);
+                }
+            }
+            return new ArrayList<>(list);
+        }
         try {
             // Throw certain exceptions intentionally when unsupported device found
             boolean substratumService = checkSubstratumService(context);
@@ -743,6 +786,16 @@ public class ThemeManager {
      */
     public static void uninstallOverlay(Context context,
                                         ArrayList<String> overlays) {
+
+        if (Systems.isXposedBackend(context)) {
+            List<String> enabled = new ArrayList<>();
+            for (String overlay : overlays) {
+                if (XposedBackend.isEnabled(overlay)) enabled.add(overlay);
+            }
+            XposedBackend.uninstall(overlays);
+            if (!enabled.isEmpty()) XposedBackend.restartTargets(context, enabled);
+            return;
+        }
 
         boolean shouldRestartUi = false;
         if (Systems.checkOMS(context) || checkSubstratumService(context)) {

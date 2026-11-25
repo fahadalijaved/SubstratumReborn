@@ -612,6 +612,7 @@
     <string name="settings_system_status">System certification</string>
     <string name="settings_system_status_andromeda">Andromeda mode</string>
     <string name="settings_system_status_rooted">Rooted mode</string>
+    <string name="settings_system_status_xposed">LSPosed mode</string>
     <string name="settings_system_status_rootless">Interfacer mode</string>
     <string name="settings_system_status_ss">Substratum service mode</string>
     <string name="settings_system_status_samsung">Samsung mode</string>
@@ -735,4 +736,5 @@
 
     <string name="module_placed_reboot_message">Substratum has installed its root module (Magisk / KernelSU / APatch) successfully. Please reboot to allow overlays to take effect.</string>
 
+    <string name="xposed_description" translatable="false">Substratum theme engine for ROMs that reject overlays (One UI 9). Add every app you theme to the scope.</string>
 </resources>
