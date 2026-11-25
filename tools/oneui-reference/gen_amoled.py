@@ -47,11 +47,11 @@ def literal(v, t, depth=0):
 SURF={  # One UI design tokens, dark
  'basic_token_sys_background_dark':'#ff000000','basic_token_sys_background_variant_dark':'#ff000000',
  'basic_token_sys_surface_dark':'#ff000000','basic_token_sys_surface_variant_dark':'#ff000000',
- 'basic_token_sys_surface_container_lowest_dark':'#ff000000','basic_token_sys_surface_container_low_dark':'#ff0a0a0a',
- 'basic_token_sys_surface_container_dark':'#ff121212','basic_token_sys_surface_container_high_dark':'#ff1a1a1a',
+ 'basic_token_sys_surface_container_lowest_dark':'#ff000000','basic_token_sys_surface_container_low_dark':'#ff121212',
+ 'basic_token_sys_surface_container_dark':'#ff161616','basic_token_sys_surface_container_high_dark':'#ff1c1c1c',
  'basic_token_sys_surface_container_higher_dark':'#ff222222','basic_token_sys_surface_container_highest_dark':'#ff2a2a2a',
- 'basic_token_sys_surface_bright_dark':'#ff1a1a1a','basic_token_sys_surface_brightest_dark':'#ff262626',
- 'basic_token_effect_blur_surface_dark':'#ff0a0a0a','basic_token_component_navibar_translucent_background_dark':'#ff000000',
+ 'basic_token_sys_surface_bright_dark':'#ff1c1c1c','basic_token_sys_surface_brightest_dark':'#ff1f1f1f',
+ 'basic_token_effect_blur_surface_dark':'#ff000000','basic_token_component_navibar_translucent_background_dark':'#ff000000',
  'basic_token_component_dialog_surface_container_dark':'#ff121212','basic_token_component_dialog_surface_container_low_dark':'#ff0a0a0a',
 }
 NIGHT={
@@ -67,7 +67,11 @@ NIGHT={
   'sec_control_default_background':'#ff0a0a0a','sec_control_enabled_default_background':'#ff111111',
   'panel_background_blur_color':'#ff000000',
  },
- 'com.android.settings':{'background_common':'#ff000000'},
+ 'com.android.settings':{'background_common':'#ff000000','sesl_fragment_bgcolor':'#ff121212'},
+}
+# name -> AMOLED value for names matched by a regex, dark mode only (stock light value is kept)
+NIGHT_PATTERNS={
+ 'com.android.settings':[(r'^sec_dashboard_(?!.*(text|layer)).*_color\d*$','#ff262626')],
 }
 DEFAULT_ONLY={'com.android.systemui':{'qs_tile_container_bg':'#ff0a0a0a','sec_panel_background_color':'#ff000000'}}
 TOKEN_PKGS=sorted(p for p in os.listdir(REF) if os.path.exists(f'{REF}/{p}/values/color.csv') and any(l.startswith('basic_token_sys_background_dark,') for l in open(f'{REF}/{p}/values/color.csv')))
@@ -77,10 +81,13 @@ for pkg in TOKEN_PKGS:
         if n in t: day.append((n,v,'design token'))
     for n,v in DEFAULT_ONLY.get(pkg,{}).items():
         if n in t: day.append((n,v,''))
-    for n,v in NIGHT.get(pkg,{}).items():
+    night_items=dict(NIGHT.get(pkg,{}))
+    for pattern,v in NIGHT_PATTERNS.get(pkg,[]):
+        for n in t:
+            if re.match(pattern,n): night_items.setdefault(n,v)
+    for n,v in night_items.items():
         if n not in t: skipped.append(n+' (absent)'); continue
-        if 'night' not in t[n]:
-            skipped.append(n+' (no night variant)'); continue
+        # values-night only works if light mode keeps a value, so copy the stock light value
         if 'default' not in t[n]:
             night.append((n,v)); continue  # night-only in the target: no light fallback needed
         d=literal(t[n].get('default'),t)
