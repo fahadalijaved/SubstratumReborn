@@ -50,6 +50,7 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     private static final String SYSTEMUI = "com.android.systemui";
     // Plain values replaced directly, per target Resources, so they can follow light/dark changes
     private static final Map<Resources, List<ValueReplacement>> VALUES = new WeakHashMap<>();
+    private static final Map<Resources, List<int[]>> IDS = new WeakHashMap<>();
     private static boolean configHooked;
 
     private static final class ValueReplacement {
@@ -107,12 +108,54 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                                                    resparam) {
         String target = resparam.packageName;
         if (FRAMEWORK.equals(target)) return; // handled in initZygote
+        try {
+            applyAmoledIds(resparam.res, target);
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + "skipping AMOLED colors for " + target + ": " + t);
+        }
         for (String name : enabledOverlays()) {
             try {
                 apply(resparam.res, target, name);
             } catch (Throwable t) {
                 // Never take the target app down because of one overlay
                 XposedBridge.log(TAG + "skipping " + name + " for " + target + ": " + t);
+            }
+        }
+    }
+
+    /**
+     * AMOLED colors handed over by resource id (apps with obfuscated resource names, or apps
+     * that refuse overlays): {id, light, night} per color, switched with night mode.
+     */
+    private static void applyAmoledIds(XResources res, String target) throws IOException {
+        File file = new File(XposedBackend.DIR, target + XposedBackend.AMOLED_IDS);
+        if (!file.exists()) return;
+        List<int[]> colors = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.trim().split(" ");
+                if (parts.length != 3) continue;
+                colors.add(new int[]{(int) Long.parseLong(parts[0].substring(2), 16),
+                        (int) Long.parseLong(parts[1].substring(2), 16),
+                        (int) Long.parseLong(parts[2].substring(2), 16)});
+            }
+        }
+        synchronized (IDS) {
+            IDS.put(res, colors);
+        }
+        applyIds(res, colors);
+        XposedBridge.log(TAG + "AMOLED: " + colors.size() + " colors by id in " + target);
+    }
+
+    private static void applyIds(XResources res, List<int[]> colors) {
+        boolean night = (res.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES;
+        for (int[] c : colors) {
+            try {
+                res.setReplacement(c[0], Integer.valueOf(night ? c[2] : c[1]));
+            } catch (Throwable ignored) {
+                // not in this app's table
             }
         }
     }
@@ -237,6 +280,11 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) {
                             if (!(param.thisObject instanceof XResources)) return;
+                            List<int[]> ids;
+                            synchronized (IDS) {
+                                ids = IDS.get(param.thisObject);
+                            }
+                            if (ids != null) applyIds((XResources) param.thisObject, ids);
                             List<ValueReplacement> list;
                             synchronized (VALUES) {
                                 list = VALUES.get(param.thisObject);

@@ -79,8 +79,18 @@ public final class SystemAmoled {
                 FabricatedValues.disable(java.util.Collections.singletonList(pkg + SUFFIX));
                 awaitStock(context, pkg);
                 List<String[]> items = compute(context, pkg, rules);
+                removeById(pkg);
                 if (items.isEmpty()) continue;
-                int count = register(context, pkg, items);
+                int count;
+                if (ambiguous(items)) {
+                    // Obfuscated resource names (Play Store and other Google apps): an overlay
+                    // names its targets, so only the LSPosed module, which works by id, can help
+                    count = registerById(context, pkg, items);
+                } else {
+                    count = register(context, pkg, items);
+                    // The app refuses overlays for these colors: the module by id instead
+                    if (count == 0) count = registerById(context, pkg, items);
+                }
                 if (count > 0) {
                     apps++;
                     colors += count;
@@ -169,7 +179,67 @@ public final class SystemAmoled {
         return rejected;
     }
 
+    /**
+     * True when several resources share a name, which happens when names are obfuscated.
+     */
+    private static boolean ambiguous(List<String[]> items) {
+        java.util.Map<String, String> seen = new java.util.HashMap<>();
+        for (String[] item : items) {
+            String previous = seen.put(item[0], item[4]);
+            if (previous != null && !previous.equals(item[4])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Hand the colors to the LSPosed module, which replaces them by resource id inside the app
+     * (the app has to be in the module's scope). One line per color: id, light value, night value.
+     *
+     * @return Number of colors handed over
+     */
+    private static int registerById(Context context, String pkg, List<String[]> items) {
+        java.util.Map<String, String[]> byId = new java.util.LinkedHashMap<>();
+        for (String[] item : items) {
+            String[] line = byId.get(item[4]);
+            if (line == null) byId.put(item[4], line = new String[]{item[4], item[2], item[2]});
+            if ("night".equals(item[3])) line[2] = item[2];
+            else line[1] = item[2];
+        }
+        StringBuilder content = new StringBuilder();
+        for (String[] line : byId.values()) {
+            content.append(line[0]).append(' ').append(line[1]).append(' ').append(line[2])
+                    .append('\n');
+        }
+        java.io.File local = new java.io.File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
+        try (java.io.FileWriter writer = new java.io.FileWriter(local)) {
+            writer.write(content.toString());
+        } catch (java.io.IOException e) {
+            return 0;
+        }
+        String file = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
+        String out = projekt.substratum.util.helpers.Root.runCommand(
+                "mkdir -p " + XposedBackend.DIR + " && chmod 755 " + XposedBackend.DIR +
+                        " && cp -f '" + local.getAbsolutePath() + "' '" + file + "'" +
+                        " && chmod 644 '" + file + "' && restorecon '" + file + "'; echo rc=$?");
+        //noinspection ResultOfMethodCallIgnored
+        local.delete();
+        if (out == null || !out.trim().endsWith("rc=0")) return 0;
+        // The colors load when the app starts
+        projekt.substratum.util.helpers.Root.runCommand("am force-stop " + pkg);
+        Log.i(TAG, pkg + ": " + byId.size() + " colors handed to the LSPosed module by id");
+        return byId.size();
+    }
+
+    private static void removeById(String pkg) {
+        String file = XposedBackend.DIR + '/' + pkg + XposedBackend.AMOLED_IDS;
+        if (new java.io.File(file).exists()) {
+            projekt.substratum.util.helpers.Root.runCommand("rm -f '" + file + "'");
+        }
+    }
+
     public static void removeAll(Context context) {
+        projekt.substratum.util.helpers.Root.runCommand(
+                "rm -f " + XposedBackend.DIR + "/*" + XposedBackend.AMOLED_IDS);
         List<String> names = new ArrayList<>();
         for (PackageInfo info : context.getPackageManager().getInstalledPackages(0)) {
             names.add(info.packageName + SUFFIX);
@@ -252,10 +322,11 @@ public final class SystemAmoled {
             } catch (Resources.NotFoundException ignored) {
                 // no light value
             }
+            String hexId = String.format("0x%08x", id);
             items.add(new String[]{"color/" + name, "28",
-                    String.format("0x%08x", light), ""});
+                    String.format("0x%08x", light), "", hexId});
             items.add(new String[]{"color/" + name, "28",
-                    String.format("0x%08x", mapped), "night"});
+                    String.format("0x%08x", mapped), "night", hexId});
         }
         return items;
     }
@@ -334,7 +405,9 @@ public final class SystemAmoled {
         if (line && floating) return rules.outline;
         if (a < 0xff) {
             // see-through white or tinted surfaces would show as grey or tint on black
-            if (a <= 0x66 && hi > 0x60 && (bg || line)) return 0;
+            // (over blur that would leave the bare, untinted blur: the AMOLED blur instead)
+            if (a <= 0x66 && hi > 0x60 && (bg || line))
+                return name.contains("blur") ? rules.blur : 0;
             if (a <= 0x40 && lo >= 0xc0) return 0;
             // see-through dark tints over blur: an AMOLED blur
             if (hi <= 0x60 && a >= 0x20 && (bg || floating)) return rules.blur;

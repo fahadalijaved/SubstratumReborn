@@ -196,5 +196,14 @@
         <item>org.omnirom.omniswitch</item>
         <item>org.thoughtcrime.securesms</item>
         <item>tv.twitch.android.app</item>
+        <item>com.android.vending</item>
+        <item>com.android.chrome</item>
+        <item>com.google.android.apps.maps</item>
+        <item>com.android.intentresolver</item>
+        <item>com.google.android.photopicker</item>
+        <item>com.google.android.marvin.talkback</item>
+        <item>com.android.managedprovisioning</item>
+        <item>com.google.android.cellbroadcastreceiver</item>
+        <item>com.google.android.captiveportallogin</item>
     </string-array>
 </resources>

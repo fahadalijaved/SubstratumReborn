@@ -71,10 +71,13 @@ public final class AmoledRules {
         sysui.put("basic_token_effect_blur_chip_dark", 0xf2000000);
         sysui.put("qs_tile_layout_container_bg", 0xff0d0d0d);
         sysui.put("qs_tile_container_bg", 0xff0d0d0d);
-        sysui.put("qs_tile_round_background_off", 0xff1a1a1a);
-        sysui.put("qs_tile_round_background_dim", 0xff121212);
+        sysui.put("qs_tile_round_background_off", 0xff242424);
+        sysui.put("qs_tile_round_background_dim", 0xff242424);
+        sysui.put("seekbar_background_color", 0xff1f1f1f);
+        sysui.put("seekbar_background_color_expand", 0xff1f1f1f);
+        sysui.put("seekbar_color_expand", 0xfffcfcfc);
         sysui.put("qs_tile_round_background_on", 0xff387aff);
-        sysui.put("qs_switch_off_background_color", 0xff1a1a1a);
+        sysui.put("qs_switch_off_background_color", 0xff242424);
         sysui.put("qs_detail_layout_popup_menu_background_color", 0xfa000000);
         sysui.put("qs_detail_layout_popup_menu_background_color_no_blur", 0xff000000);
         sysui.put("sec_qs_detail_bg_color", 0xfa000000);

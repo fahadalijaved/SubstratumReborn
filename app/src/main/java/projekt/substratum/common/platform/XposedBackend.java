@@ -51,6 +51,10 @@ public class XposedBackend {
     public static final String INDEX = ".idx";
     public static final String ENABLED = ".enabled";
     public static final String FABRICATED = "fabricated=true";
+    /**
+     * AMOLED colors for one app, applied by resource id: "id light night" per line
+     */
+    public static final String AMOLED_IDS = ".amoled.ids";
     private static final String TAG = "SubstratumXposed";
 
     /**
