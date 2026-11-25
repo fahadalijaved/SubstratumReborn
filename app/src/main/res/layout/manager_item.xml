@@ -20,7 +20,7 @@
             type="projekt.substratum.adapters.fragments.manager.ManagerItem" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/overlayCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -158,5 +158,5 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true" />
         </RelativeLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

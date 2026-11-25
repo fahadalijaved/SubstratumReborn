@@ -14,8 +14,8 @@
     <dimen name="app_splash_icon_height">130dp</dimen>
     <dimen name="app_splash_icon_width">130dp</dimen>
 
-    <dimen name="main_screen_card_elevation">2dp</dimen>
-    <dimen name="main_screen_card_corner_radius">2dp</dimen>
+    <dimen name="main_screen_card_elevation">0dp</dimen>
+    <dimen name="main_screen_card_corner_radius">24dp</dimen>
 
     <dimen name="fab_sheet_elevation">0dp</dimen>
 
@@ -30,7 +30,7 @@
     <dimen name="special_ui_card_height">96dp</dimen>
 
     <!-- Misc -->
-    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_corner_radius">24dp</dimen>
     <dimen name="card_elevation">6dp</dimen>
 
     <!-- Drag view -->

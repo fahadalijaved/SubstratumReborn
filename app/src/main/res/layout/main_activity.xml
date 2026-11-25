@@ -14,13 +14,11 @@
         android:fitsSystemWindows="true"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="@dimen/action_bar_elevation"
-            android:theme="@style/ToolbarTheme">
+            android:background="?attr/colorSurface">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -31,16 +29,18 @@
                     android:id="@+id/activity_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?android:textColorPrimary"
-                    android:textSize="20sp" />
+                    android:textAppearance="?attr/textAppearanceTitleLarge"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/theme_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/actionbar_theme_count_loading" />
+                    android:text="@string/actionbar_theme_count_loading"
+                    android:textAppearance="?attr/textAppearanceLabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.MaterialToolbar>
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/drawer_container"
@@ -56,23 +56,11 @@
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-        <View
-            android:id="@+id/bottomBar_shadow"
-            android:layout_width="match_parent"
-            android:layout_height="5dp"
-            android:layout_above="@id/bottomBar"
-            android:background="@drawable/bottombar_shadow" />
-
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/bottombar_bar_background"
-            android:elevation="@dimen/action_bar_elevation"
-            app:elevation="@dimen/action_bar_elevation"
-            app:itemIconTint="@color/bottombar_icon_text_selected"
-            app:itemTextColor="@color/bottombar_icon_text_selected"
             app:menu="@menu/bottombar_tabs" />
     </RelativeLayout>
 </layout>

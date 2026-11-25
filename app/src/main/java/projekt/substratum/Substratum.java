@@ -204,6 +204,8 @@ public class Substratum extends Application {
     public void onCreate() {
         super.onCreate();
         substratum = this;
+        // Material 3 Expressive: take the palette from the wallpaper (Material You)
+        com.google.android.material.color.DynamicColors.applyToActivitiesIfAvailable(this);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String selectedTheme = preferences.getString(APP_THEME, DEFAULT_THEME);

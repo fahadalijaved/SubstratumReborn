@@ -54,7 +54,7 @@
                         android:scaleType="centerCrop"
                         app:layout_collapseMode="parallax" />
 
-                    <androidx.appcompat.widget.Toolbar
+                    <com.google.android.material.appbar.MaterialToolbar
                         android:id="@+id/toolbar"
                         android:layout_width="match_parent"
                         android:layout_height="?attr/actionBarSize"
@@ -70,7 +70,7 @@
                             android:textAppearance="@style/CollapsedAppBar"
                             android:visibility="gone" />
 
-                    </androidx.appcompat.widget.Toolbar>
+                    </com.google.android.material.appbar.MaterialToolbar>
 
                     <com.google.android.material.tabs.TabLayout
                         android:layout_width="match_parent"
@@ -113,7 +113,7 @@
                 android:gravity="end|bottom"
                 android:orientation="vertical">
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/fab_sheet"
                     style="@style/Widget.MaterialSheetFab.Sheet"
                     android:backgroundTint="@color/fab_menu_background_card">
@@ -177,7 +177,7 @@
                             android:text="@string/fab_menu_enable_disable" />
                     </LinearLayout>
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
             </io.codetail.widget.RevealLinearLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </RelativeLayout>

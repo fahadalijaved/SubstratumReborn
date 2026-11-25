@@ -27,7 +27,7 @@
         android:paddingTop="4dp"
         android:paddingBottom="4dp">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/theme_card"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
@@ -136,6 +136,6 @@
                     app:visibility="@{showcaseItem.isPaid() ? View.VISIBLE : View.GONE}" />
 
             </RelativeLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </layout>

@@ -6,6 +6,6 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/colorAccent" android:state_checked="true" />
+    <item android:color="?attr/colorOnSecondaryContainer" android:state_checked="true" />
     <item android:color="@color/bottombar_icon_inactive_tint" android:state_checked="false" />
 </selector>

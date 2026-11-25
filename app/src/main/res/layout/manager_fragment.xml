@@ -154,7 +154,7 @@
             android:gravity="end|bottom"
             android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/fab_sheet"
                 style="@style/Widget.MaterialSheetFab.Sheet"
                 android:backgroundTint="@color/fab_menu_background_card">
@@ -188,7 +188,7 @@
                         android:drawableStart="@drawable/fab_menu_enable"
                         android:text="@string/fab_menu_enable" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
         </io.codetail.widget.RevealLinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

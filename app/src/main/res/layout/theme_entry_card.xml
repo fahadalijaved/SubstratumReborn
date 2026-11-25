@@ -17,7 +17,7 @@
             type="ThemeItem" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/theme_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -90,5 +90,5 @@
             </RelativeLayout>
         </RelativeLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

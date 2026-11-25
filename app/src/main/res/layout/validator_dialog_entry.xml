@@ -19,7 +19,7 @@
             type="ValidatorInfo" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/pack_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -84,5 +84,5 @@
 
         </RelativeLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

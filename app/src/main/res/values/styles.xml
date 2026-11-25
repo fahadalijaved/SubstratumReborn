@@ -7,28 +7,29 @@
 
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <!-- Material 3 Expressive; colors come from dynamic color (wallpaper) where available -->
+    <style name="AppTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/window_bg</item>
-        <item name="android:navigationBarColor">@color/navigationBarColor</item>
-        <item name="android:statusBarColor">@color/statusBarColor</item>
+        <item name="android:navigationBarColor">?attr/colorSurfaceContainer</item>
+        <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">@bool/windowLightStatusBar</item>
-        <item name="android:toolbarStyle">@style/ToolbarTheme</item>
+        <item name="android:windowLightNavigationBar">@bool/windowLightNavigationBar</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="colorControlHighlight">@color/colorRipple</item>
+        <item name="materialCardViewStyle">@style/AppTheme.Card</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.DialogAlert" parent="@android:style/Theme.DeviceDefault.Light.Dialog.Alert" />
-
-    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <!-- Tonal filled cards with the large Expressive corner -->
+    <style name="AppTheme.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">@color/main_screen_card_background</item>
+        <item name="shapeAppearance">?attr/shapeAppearanceCornerLarge</item>
     </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
+
+    <style name="AppTheme.DialogAlert" parent="Theme.Material3Expressive.DayNight.Dialog.Alert" />
+
+    <style name="AppTheme.Dialog" parent="Theme.Material3Expressive.DayNight.Dialog" />
 
     <style name="AppTheme.InformationActivity" parent="AppTheme">
         <item name="android:windowActionBarOverlay">true</item>
@@ -40,11 +41,7 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
     </style>
 
-    <style name="ToolbarTheme" parent="Theme.AppCompat.DayNight">
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
-
-    <style name="CollapsedAppBar" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title" />
+    <style name="CollapsedAppBar" parent="TextAppearance.Material3.TitleLarge" />
 
     <style name="CustomWelcomeScreenTheme" parent="WelcomeScreenTheme">
         <item name="welcomeIndicatorStyle">@style/WelcomeScreenPageIndicator.Custom</item>
@@ -65,7 +62,7 @@
         <item name="android:windowBackground">@color/do_not_theme_this_color</item>
     </style>
 
-    <style name="PhotoCrop.ActivityTheme" parent="Theme.AppCompat.DayNight">
+    <style name="PhotoCrop.ActivityTheme" parent="Theme.Material3Expressive.DayNight">
         <item name="colorPrimary">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="android:colorPrimary">@android:color/transparent</item>
@@ -76,19 +73,17 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="RestoreDialog" parent="@android:style/Theme.DeviceDefault.Light.Dialog.Alert" />
+    <style name="RestoreDialog" parent="Theme.Material3Expressive.DayNight.Dialog.Alert" />
 
-    <style name="TextAppearance.ExpandedTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textSize">26sp</item>
-    </style>
+    <style name="TextAppearance.ExpandedTitle" parent="TextAppearance.Material3.HeadlineMedium" />
 
-    <style name="SplashScreen.ActivityTheme" parent="Theme.AppCompat.DayNight">
+    <style name="SplashScreen.ActivityTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:navigationBarColor">@color/splashscreen_background</item>
         <item name="android:statusBarColor">@color/splashscreen_background</item>
         <item name="android:windowLightStatusBar">@bool/SplashscreenWindowLightStatusBar</item>
     </style>
 
-    <style name="SubstratumBuilder.ActivityTheme" parent="Theme.AppCompat.DayNight">
+    <style name="SubstratumBuilder.ActivityTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:textColor">@color/dialog_text_color</item>
         <item name="android:windowAnimationStyle">@style/SubstratumBuilder.WindowAnimation</item>
@@ -101,7 +96,7 @@
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
-    <style name="Theme.AppCompat.Translucent" parent="Theme.AppCompat.DayNight">
+    <style name="Theme.AppCompat.Translucent" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -111,8 +106,7 @@
         <item name="android:windowAnimationStyle">@style/SubstratumBuilder.WindowAnimation</item>
     </style>
 
-    <style name="FloatUiDialog" parent="@style/Theme.AppCompat.DayNight.Dialog.Alert">
-        <item name="android:colorAccent">@color/floatui_dialog_button_color</item>
+    <style name="FloatUiDialog" parent="Theme.Material3Expressive.DayNight.Dialog.Alert">
         <item name="android:windowTitleStyle">@style/FloatUiDialog</item>
         <item name="android:windowBackground">@color/floatui_dialog_background</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
@@ -142,7 +136,8 @@
         <item name="cardBackgroundColor">@color/fab_menu_background_card</item>
         <item name="cardElevation">@dimen/fab_sheet_elevation</item>
         <item name="cardMaxElevation">@dimen/fab_sheet_elevation</item>
-        <item name="contentPadding">-3dp</item>
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="contentPadding">8dp</item>
     </style>
 
     <style name="TextAppearance.MaterialSheetFab.Sheet.Item" parent="">
@@ -151,12 +146,12 @@
         <item name="android:padding">@dimen/sheet_item_spacing</item>
         <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:clickable">true</item>
-        <item name="android:textSize">@dimen/sheet_item_textsize</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
         <item name="android:textColor">@color/fab_menu_text_color</item>
         <item name="android:drawablePadding">@dimen/sheet_item_image_spacing</item>
     </style>
 
-    <style name="ShowcaseDialog" parent="Theme.AppCompat.DayNight.Dialog">
+    <style name="ShowcaseDialog" parent="Theme.Material3Expressive.DayNight.Dialog">
         <item name="android:windowBackground">@color/window_bg</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>

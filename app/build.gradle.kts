@@ -85,7 +85,7 @@ dependencies {
     implementation("com.android.tools.build:apksig:8.7.3")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.github.recruit-lifestyle:FloatingView:2.4.4")
-    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.google.android.material:material:1.14.0")
     implementation("com.github.gowong:material-sheet-fab:v1.2.1")
     implementation("com.jaredrummler:animated-svg-view:1.0.6")
     implementation("com.mikepenz:aboutlibraries:7.0.0@aar") {

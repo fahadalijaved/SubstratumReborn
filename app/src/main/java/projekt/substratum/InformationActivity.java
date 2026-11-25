@@ -186,7 +186,7 @@ public class InformationActivity extends AppCompatActivity {
                 return palette.getDominantColor(
                         context.getColor(R.color.main_screen_card_background));
             } else {
-                return context.getColor(R.color.colorPrimary);
+                return context.getColor(R.color.theme_information_background);
             }
         } catch (IllegalArgumentException ignored) {
         }

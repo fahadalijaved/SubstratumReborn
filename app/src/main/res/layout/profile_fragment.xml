@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/backup_card"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -51,7 +51,7 @@
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="10dp"
                             android:text="@string/backup"
-                            android:textColor="@color/colorAccent"
+                            android:textColor="?attr/colorPrimary"
                             android:textStyle="bold" />
 
                         <TextView
@@ -103,9 +103,9 @@
 
                     </RelativeLayout>
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/restore_card"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -129,7 +129,7 @@
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="10dp"
                             android:text="@string/restore"
-                            android:textColor="@color/colorAccent"
+                            android:textColor="?attr/colorPrimary"
                             android:textStyle="bold" />
 
                         <TextView
@@ -181,9 +181,9 @@
 
                     </RelativeLayout>
 
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
 
-                <androidx.cardview.widget.CardView
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/scheduled_profiles_card"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -206,7 +206,7 @@
                             android:layout_marginStart="16dp"
                             android:gravity="center_vertical"
                             android:text="@string/scheduled_night_profile"
-                            android:textColor="@color/colorAccent"
+                            android:textColor="?attr/colorPrimary"
                             android:textStyle="bold" />
 
                         <Switch
@@ -339,7 +339,7 @@
                             android:text="@string/apply"
                             android:textColor="@color/restore_button_text_color" />
                     </RelativeLayout>
-                </androidx.cardview.widget.CardView>
+                </com.google.android.material.card.MaterialCardView>
             </RelativeLayout>
         </ScrollView>
     </RelativeLayout>

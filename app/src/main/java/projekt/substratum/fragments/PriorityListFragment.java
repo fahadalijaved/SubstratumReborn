@@ -219,7 +219,7 @@ public class PriorityListFragment extends Fragment {
                 // The themer broke the animation, skip!
             }
 
-            int colorFrom = context.getColor(R.color.colorAccent);
+            int colorFrom = context.getColor(R.color.fab_background_color);
             int colorTo = context.getColor(R.color.fab_icon_success);
             ValueAnimator colorAnimation = ValueAnimator.ofObject(
                     new ArgbEvaluator(), colorFrom, colorTo);
