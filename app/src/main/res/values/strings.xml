@@ -624,6 +624,8 @@
     <string name="system_amoled_done">AMOLED applied to %1$d apps (%2$d colors)</string>
     <string name="system_amoled_removed">AMOLED removed from every app</string>
     <string name="system_amoled_needs_root">AMOLED for every app needs root</string>
+    <string name="system_amoled_background">Run in background</string>
+    <string name="system_amoled_failed">AMOLED could not be applied, see the log</string>
     <string name="install_starter_theme_running">Installing Reborn AMOLED…</string>
     <string name="install_starter_theme_failed">Could not install Reborn AMOLED</string>
     <string name="settings_system_status_rootless">Interfacer mode</string>

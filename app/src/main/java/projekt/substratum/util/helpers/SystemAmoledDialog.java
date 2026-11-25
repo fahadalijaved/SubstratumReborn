@@ -6,62 +6,95 @@
 package projekt.substratum.util.helpers;
 
 import android.app.Activity;
-import android.os.Handler;
-import android.os.Looper;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import projekt.substratum.R;
-import projekt.substratum.common.platform.SystemAmoled;
+import projekt.substratum.services.system.SystemAmoledService;
 
 /**
- * Menu entry for {@link SystemAmoled}: apply or remove AMOLED for every app, with progress.
+ * Apply or remove AMOLED for every app, with live progress. The work runs in
+ * {@link SystemAmoledService}, so it continues (with its notification) if this screen is left.
  */
 public final class SystemAmoledDialog {
 
     private SystemAmoledDialog() {
     }
 
-    public static void show(Activity activity) {
+    /**
+     * @param themePackage A rules theme (assets/amoled/rules.json), or null for the built-in rules
+     */
+    public static void show(Activity activity, String themePackage, CharSequence themeName) {
+        if (SystemAmoledService.isRunning()) {
+            showProgress(activity, true);
+            return;
+        }
         if (!Root.checkRootAccess()) {
             Toast.makeText(activity, R.string.system_amoled_needs_root, Toast.LENGTH_LONG).show();
             return;
         }
         new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.system_amoled_title)
+                .setTitle(themeName != null ? themeName :
+                        activity.getString(R.string.system_amoled_title))
                 .setMessage(R.string.system_amoled_message)
-                .setPositiveButton(R.string.system_amoled_apply, (d, w) -> run(activity, true))
-                .setNeutralButton(R.string.system_amoled_remove, (d, w) -> run(activity, false))
+                .setPositiveButton(R.string.system_amoled_apply, (d, w) -> {
+                    SystemAmoledService.start(activity, true, themePackage);
+                    showProgress(activity, true);
+                })
+                .setNeutralButton(R.string.system_amoled_remove, (d, w) -> {
+                    SystemAmoledService.start(activity, false, null);
+                    showProgress(activity, false);
+                })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
     }
 
-    private static void run(Activity activity, boolean apply) {
-        AlertDialog progress = new MaterialAlertDialogBuilder(activity)
+    public static void show(Activity activity) {
+        show(activity, null, null);
+    }
+
+    private static void showProgress(Activity activity, boolean apply) {
+        View view = LayoutInflater.from(activity).inflate(R.layout.system_amoled_progress, null);
+        LinearProgressIndicator bar = view.findViewById(R.id.amoled_progress);
+        TextView text = view.findViewById(R.id.amoled_progress_text);
+        text.setText(apply ? R.string.system_amoled_working : R.string.system_amoled_removing);
+        AlertDialog dialog = new MaterialAlertDialogBuilder(activity)
                 .setTitle(R.string.system_amoled_title)
-                .setMessage(apply ? R.string.system_amoled_working : R.string.system_amoled_removing)
-                .setCancelable(false)
+                .setView(view)
+                .setPositiveButton(R.string.system_amoled_background, null)
                 .show();
-        Handler main = new Handler(Looper.getMainLooper());
-        new Thread(() -> {
-            String result;
-            if (apply) {
-                int[] done = SystemAmoled.applyAll(activity.getApplicationContext(),
-                        (pkg, i, total) -> main.post(() -> progress.setMessage(
-                                activity.getString(R.string.system_amoled_progress, i + 1, total,
-                                        pkg))));
-                result = activity.getString(R.string.system_amoled_done, done[0], done[1]);
-            } else {
-                SystemAmoled.removeAll(activity.getApplicationContext());
-                result = activity.getString(R.string.system_amoled_removed);
+        LocalBroadcastManager broadcasts = LocalBroadcastManager.getInstance(activity);
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getBooleanExtra(SystemAmoledService.EXTRA_FINISHED, false)) {
+                    String result = intent.getStringExtra(SystemAmoledService.EXTRA_RESULT);
+                    Toast.makeText(context, result, Toast.LENGTH_LONG).show();
+                    dialog.dismiss();
+                    return;
+                }
+                int done = intent.getIntExtra(SystemAmoledService.EXTRA_DONE, 0);
+                int total = intent.getIntExtra(SystemAmoledService.EXTRA_TOTAL, 0);
+                bar.setIndeterminate(false);
+                bar.setMax(Math.max(total, 1));
+                bar.setProgressCompat(done, true);
+                text.setText(context.getString(R.string.system_amoled_progress, done, total,
+                        intent.getStringExtra(SystemAmoledService.EXTRA_PACKAGE)));
             }
-            main.post(() -> {
-                progress.dismiss();
-                Toast.makeText(activity.getApplicationContext(), result, Toast.LENGTH_LONG).show();
-            });
-        }).start();
+        };
+        broadcasts.registerReceiver(receiver, new IntentFilter(SystemAmoledService.PROGRESS));
+        dialog.setOnDismissListener(d -> broadcasts.unregisterReceiver(receiver));
     }
 }

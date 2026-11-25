@@ -92,35 +92,83 @@ Weather, Software update and DressRoom.
 
 Every value in the samples is the stock One UI 9 value.
 
-## Making an AMOLED theme
+## Rules themes (AMOLED for every app)
 
-`themes/amoled` (Reborn AMOLED) is generated from the reference by
-`tools/oneui-reference/gen_amoled.py`, and is the easiest way to see what an AMOLED One UI theme
-has to touch. [`samples/amoled_attributes.csv`](samples/amoled_attributes.csv) lists every
-attribute it changes: package, resource name, the stock dark value and the AMOLED value. Copy the
-lines you want into your own theme's `res/values-night/colors.xml`, together with the stock
-light value in `res/values/colors.xml` (rule 1 above).
+A theme can also be a set of **rules** instead of a list of overlays. SubstratumReborn then looks
+at every installed app that the rules cover, reads the app's own dark-mode colors on the device,
+and turns them into a night-only fabricated overlay. It works for whatever apps each user has
+and on any One UI release, with nothing to regenerate. Tapping such a theme in Substratum opens
+"AMOLED for every app" (Apply / Remove) instead of the overlay list; the work runs in the
+background with a progress notification. The same is available for the built-in rules from the
+Themes tab menu.
 
-The generator decides by the **dark-mode value each color actually resolves to**, following One
-UI's reference chains, and by the resource name:
+A rules theme is an ordinary Substratum theme (manifest metadata, `SubstratumLauncher`, hero
+image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the reference:
 
-| Dark-mode value | Becomes | Examples |
-|---|---|---|
-| Any dark color (brightest channel up to `0x30`), any hue | `#000000` | page, cards, list rows, the blue suggestion card |
-| Dark neutral grey up to `0x80`, background-like name | `#000000` | cards `#17171a`, keyboard keys `#3a3a3d` |
-| Same, line-like name (`divider`, `outline`, `stroke`, `border`) | `#000000` | dividers, card outlines |
-| Same, floating element (`popup`, `menu`, `dialog`, `search` field, `navi`, `toolbar`, `chip`, `fab`) | `#0a0a0a` | popups, sheets, nav pill, search field |
-| Scrollbar thumb / track | `#2a2a2a` / `#000000` | the scroll position stays visible |
-| See-through white up to 25% (`#1affffff`...) | transparent | `basic_token_sys_tone_on_tone`, button backgrounds, outlines |
-| See-through dark tint over blur | at least 80% black | panel and sheet blur |
-| Text, icons, press/selection states, accents | unchanged | |
+```json
+{
+  "background": "#000000",
+  "floating":   "#000000",
+  "outline":    "#1f1f1f",
+  "blur":       "#fa000000",
+  "slider":     "#1a1a1a",
+  "thumb":      "#2a2a2a",
+  "include":    ["^(android|com\\.(samsung|sec|google|android)\\..*)$"],
+  "exclude":    [],
+  "colors": {
+    "com.android.systemui": { "qs_tile_round_background_on": "#387aff" },
+    "com.android.settings": { "^sec_dashboard_(?!.*(text|layer)).*_color\\d*$": "#262626" }
+  }
+}
+```
 
-A few names are set by hand on top of the rules: QS tiles on `#387aff` / off `#141414`, the QS
-tile container transparent, Settings' coloured icon plates `#262626` (the glyphs stay white), and
-the framework's Material 3 surfaces. Light mode is never changed.
+| Key | What it sets |
+|---|---|
+| `background` | every dark surface: pages, cards, list rows, buttons, keyboard keys |
+| `floating` | popups, 3-dot menus, dialogs, floating bottom bars, search fields |
+| `outline` | the thin border that keeps floating elements visible on a black page |
+| `blur` | tint over blurred panels (notification shade, QS); its alpha is how much blur shows |
+| `slider`, `thumb` | slider and seekbar tracks, scrollbar thumbs |
+| `include`, `exclude` | regexes of package names to theme |
+| `colors` | hand-picked values per package; keys are resource names, or regexes when they start with `^` |
 
-Google Play services is left out: its code modules share resource ids with it, and the LSPosed
-part broke them.
+Every key is optional; what a theme leaves out keeps Reborn AMOLED's value. Make a variant by
+copying `themes/amoled`, changing the package name, and editing the values: a dark grey
+`background`, a coloured `outline`, a different QS accent. The [reference](reference) shows the
+resource names for `colors`.
+
+### How colors are chosen
+
+For every color of every covered app, the dark-mode value it actually resolves to (through One
+UI's reference chains) and its resource name decide:
+
+| Dark-mode value | Becomes |
+|---|---|
+| Text, icons, press/selection states, accents, content colors (`on_*`, `inverse*`) | unchanged |
+| Light-theme variants (names ending in `_light` / `_day`) | unchanged |
+| Any dark color (brightest channel up to `0x30`), any hue | `background` (`floating` for floating elements) |
+| Dark neutral grey up to `0x52` (cards, containers, lines) | `background` (`floating` for floating elements) |
+| Mid grey (palette tones such as `neutral1_500`), used for secondary text | unchanged |
+| Outline of a floating element | `outline` |
+| See-through white or tinted surface (up to 40% opacity) | transparent |
+| See-through dark tint over blur | `blur` |
+| Slider or track / scrollbar thumb | `slider` / `thumb` |
+
+Each night value is registered together with the app's stock light value, so light mode never
+changes. Colors are always read with the app's previous AMOLED overlay disabled, so running it
+again gives the same result.
+
+## Classic AMOLED theme (static overlays)
+
+`themes/amoled-static` (Reborn AMOLED Static) holds the same result as classic Substratum
+overlays, exported from a One UI 9 device with `tools/oneui-reference/fab_to_theme.py`: one
+overlay per app, the stock light values in `res/values` and the AMOLED values in
+`res/values-night`. It only covers the apps of the device it came from, so use it as a sample of
+exactly which attributes an AMOLED theme changes. [`samples/amoled_attributes.csv`](samples/amoled_attributes.csv)
+lists them in one sheet.
+
+Google Play services is excluded from the LSPosed module (its code modules share resource ids
+with it); rules themes do not use the module, so they theme it too.
 
 ## Battery
 
@@ -146,7 +194,10 @@ tools/oneui-reference/pull_and_build.sh -s <device> OUT android com.android.syst
 tools/oneui-reference/pull_and_build.sh -s <device> OUT --from-theme <installed theme package>
 tools/oneui-reference/gen_token_sample.py OUT/reference/com.android.systemui/values/color.csv docs/oneui9/samples/design_tokens.xml
 tools/oneui-reference/gen_samples.py OUT/reference docs/oneui9/samples/overlays
-tools/oneui-reference/gen_amoled.py OUT/reference OUT/apks/android.apk themes/amoled/src/main/assets/overlays docs/oneui9/samples/amoled_attributes.csv
+# after "AMOLED for every app" ran on the device:
+adb -s <device> shell su -c 'cp -r /data/system/substratum /data/local/tmp/ && chmod -R 755 /data/local/tmp/substratum'
+adb -s <device> pull /data/local/tmp/substratum OUT/definitions
+tools/oneui-reference/fab_to_theme.py OUT/definitions themes/amoled-static/src/main/assets/overlays docs/oneui9/samples/amoled_attributes.csv
 ```
 
 The reference records names and values only; it does not contain Samsung's files.

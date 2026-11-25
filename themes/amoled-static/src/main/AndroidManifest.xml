@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:hasCode="true"
+        android:label="@string/theme_name">
+
+        <!-- Substratum theme metadata; Substratum_Plugin must stay a string, not a number -->
+        <meta-data
+            android:name="Substratum_Name"
+            android:value="@string/theme_name" />
+        <meta-data
+            android:name="Substratum_Author"
+            android:value="@string/theme_author" />
+        <meta-data
+            android:name="Substratum_Plugin"
+            android:value="@string/theme_plugin_version" />
+
+        <activity
+            android:name=".SubstratumLauncher"
+            android:exported="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="projekt.substratum.THEME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="projekt.substratum.GET_KEYS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

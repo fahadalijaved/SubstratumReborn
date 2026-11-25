@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_name" translatable="false">Reborn AMOLED Static</string>
+    <string name="theme_author" translatable="false">SubstratumReborn</string>
+    <string name="theme_plugin_version" translatable="false">15.0.0</string>
+</resources>
