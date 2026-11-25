@@ -12,7 +12,7 @@
 # --from-theme takes the target list from an installed Substratum theme
 # (its assets/overlays/<package> folders); only the folder names are read.
 # Without packages, the framework, SystemUI and Settings are used.
-set -euo pipefail
+set -uo pipefail
 
 ADB=(adb)
 if [[ "${1:-}" == "-s" ]]; then ADB=(adb -s "$2"); shift 2; fi
@@ -43,12 +43,16 @@ for pkg in "${packages[@]}"; do
     "${ADB[@]}" pull /system/framework/framework-res.apk "$APKS/android.apk" >/dev/null
     pulled+=("$APKS/android.apk"); echo "pulled android"; continue
   fi
-  paths=$("${ADB[@]}" shell pm path "$pkg" 2>/dev/null | cut -d: -f2 | tr -d '\r' || true)
+  paths=$("${ADB[@]}" shell pm path "$pkg" </dev/null 2>/dev/null | cut -d: -f2 | tr -d '\r')
   if [[ -z "$paths" ]]; then echo "not installed: $pkg" >&2; continue; fi
   i=0
   for path in $paths; do
     dest="$APKS/$pkg$([[ $i -gt 0 ]] && echo ".split$i").apk"
-    "${ADB[@]}" pull "$path" "$dest" >/dev/null && pulled+=("$dest")
+    if "${ADB[@]}" pull "$path" "$dest" </dev/null >/dev/null 2>&1; then
+      pulled+=("$dest")
+    else
+      echo "pull failed: $pkg ($path)" >&2
+    fi
     i=$((i + 1))
   done
   echo "pulled $pkg ($i apk)"
