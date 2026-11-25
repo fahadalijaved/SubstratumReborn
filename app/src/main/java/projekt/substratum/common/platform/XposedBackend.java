@@ -208,9 +208,22 @@ public class XposedBackend {
      * Metadata of a stored overlay, for overlays that are not installed packages.
      */
     public static String getMetadata(Context context, String name, String key) {
+        PackageInfo info = getArchiveInfo(context, name, PackageManager.GET_META_DATA);
+        if (info == null || info.applicationInfo == null) return null;
+        Bundle metaData = info.applicationInfo.metaData;
+        if (metaData == null) return null;
+        // aapt stores numeric-looking values as numbers, so do not assume strings
+        Object value = metaData.get(key);
+        return value != null ? String.valueOf(value) : null;
+    }
+
+    /**
+     * Package info parsed from a stored overlay's APK, or null if it is not stored.
+     */
+    public static PackageInfo getArchiveInfo(Context context, String name, int flags) {
         String path = DIR + '/' + name + APK;
         if (!new File(path).exists()) return null;
-        return archiveMetadata(context, path, key);
+        return context.getPackageManager().getPackageArchiveInfo(path, flags);
     }
 
     private static String archiveMetadata(Context context, String apkPath, String key) {

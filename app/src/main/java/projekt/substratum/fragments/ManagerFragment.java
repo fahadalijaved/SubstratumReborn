@@ -68,6 +68,7 @@ import projekt.substratum.common.Systems;
 import projekt.substratum.common.commands.ElevatedCommands;
 import projekt.substratum.common.commands.FileOperations;
 import projekt.substratum.common.platform.ThemeManager;
+import projekt.substratum.common.platform.XposedBackend;
 import projekt.substratum.databinding.ManagerFragmentBinding;
 import projekt.substratum.util.helpers.StringUtils;
 import projekt.substratum.util.views.FloatingActionMenu;
@@ -658,14 +659,22 @@ public class ManagerFragment extends Fragment {
                             }
                             if (canContinue) {
                                 try {
-                                    ApplicationInfo applicationInfo = context
-                                            .getPackageManager()
-                                            .getApplicationInfo(overlay, 0);
-                                    String packageTitle = context.getPackageManager()
-                                            .getApplicationLabel(applicationInfo).toString();
-                                    String targetApplication = Packages.getOverlayTarget(
-                                            context,
-                                            packageTitle);
+                                    String targetApplication;
+                                    if (Systems.isXposedBackend(context) &&
+                                            XposedBackend.isStored(overlay)) {
+                                        // Not an installed package, see XposedBackend
+                                        targetApplication = XposedBackend.getTarget(overlay);
+                                    } else {
+                                        ApplicationInfo applicationInfo = context
+                                                .getPackageManager()
+                                                .getApplicationInfo(overlay, 0);
+                                        String packageTitle = context.getPackageManager()
+                                                .getApplicationLabel(applicationInfo)
+                                                .toString();
+                                        targetApplication = Packages.getOverlayTarget(
+                                                context,
+                                                packageTitle);
+                                    }
 
                                     if (isPackageInstalled(context, targetApplication)) {
                                         unsortedMap.put(

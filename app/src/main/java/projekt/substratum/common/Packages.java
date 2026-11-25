@@ -280,6 +280,16 @@ public class Packages {
      */
     public static int getOverlaySubstratumVersion(Context context,
                                                   String packageName) {
+        if (!isPackageInstalled(context, packageName) &&
+                projekt.substratum.common.platform.XposedBackend.isStored(packageName)) {
+            String version = projekt.substratum.common.platform.XposedBackend
+                    .getMetadata(context, packageName, metadataThemeVersion);
+            try {
+                return version != null ? Integer.parseInt(version) : 0;
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
         try {
             ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(
                     packageName, PackageManager.GET_META_DATA);
@@ -349,6 +359,11 @@ public class Packages {
      */
     public static String getAppVersion(Context context,
                                        String packageName) {
+        if (!isPackageInstalled(context, packageName)) {
+            PackageInfo stored = projekt.substratum.common.platform.XposedBackend
+                    .getArchiveInfo(context, packageName, 0);
+            if (stored != null) return stored.versionName;
+        }
         try {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(packageName, 0);
             return pInfo.versionName;
