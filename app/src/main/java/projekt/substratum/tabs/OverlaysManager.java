@@ -122,10 +122,14 @@ final class OverlaysManager {
             } else {
                 compile.execute("");
             }
-            for (OverlaysItem overlay : overlays.currentInstance.checkedOverlays) {
-                Substratum.log("OverlayTargetPackageKiller", "Killing package : " + overlay
-                        .getPackageName());
-                overlays.activityManager.killBackgroundProcesses(overlay.getPackageName());
+            // The LSPosed engine restarts each target once when it applies; killing them here
+            // as well stacks up SystemUI deaths and trips LSPosed's crash detection
+            if (!Systems.isXposedBackend(overlays.context)) {
+                for (OverlaysItem overlay : overlays.currentInstance.checkedOverlays) {
+                    Substratum.log("OverlayTargetPackageKiller", "Killing package : " + overlay
+                            .getPackageName());
+                    overlays.activityManager.killBackgroundProcesses(overlay.getPackageName());
+                }
             }
         } else {
             if (overlays.toggleAll.isChecked()) overlays.toggleAll.setChecked(false);
@@ -181,10 +185,13 @@ final class OverlaysManager {
                 } else {
                     compile.execute("");
                 }
-                for (OverlaysItem overlay : overlays.currentInstance.checkedOverlays) {
-                    Substratum.log("OverlayTargetPackageKiller", "Killing package: " +
-                            overlay.getPackageName());
-                    overlays.activityManager.killBackgroundProcesses(overlay.getPackageName());
+                if (!Systems.isXposedBackend(overlays.context)) {
+                    for (OverlaysItem overlay : overlays.currentInstance.checkedOverlays) {
+                        Substratum.log("OverlayTargetPackageKiller", "Killing package: " +
+                                overlay.getPackageName());
+                        overlays.activityManager.killBackgroundProcesses(
+                                overlay.getPackageName());
+                    }
                 }
             } else {
                 if (overlays.toggleAll.isChecked()) overlays.toggleAll.setChecked(false);
