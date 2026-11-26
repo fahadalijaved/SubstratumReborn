@@ -80,12 +80,17 @@ fun BrandDeck(modifier: Modifier = Modifier, size: Dp = 30.dp, fan: Float = 0f) 
 }
 
 /**
- * Home's brand mark: the deck at 30 dp on a 40 dp Cookie12Sided plate. It fans out once when it
- * first shows, and again while pressed, on the expressive spatial spring.
+ * The brand mark: the deck on a Cookie12Sided plate ([size]; the deck takes three quarters of it),
+ * 40 dp on Home's brand bar and larger in About. It fans out once when it first shows, and again
+ * while pressed, on the expressive spatial spring.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BrandMark(modifier: Modifier = Modifier, plate: Color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+fun BrandMark(
+    modifier: Modifier = Modifier,
+    plate: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    size: Dp = 40.dp,
+) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val fan = remember { Animatable(0f) }
@@ -103,13 +108,13 @@ fun BrandMark(modifier: Modifier = Modifier, plate: Color = MaterialTheme.colorS
     }
     Box(
         modifier
-            .size(40.dp)
+            .size(size)
             .clip(MaterialShapes.Cookie12Sided.toShape())
             .background(plate)
             .clickable(interactionSource = interaction, indication = null, role = Role.Image) {}
             .clearAndSetSemantics { },
         contentAlignment = Alignment.Center,
     ) {
-        BrandDeck(size = 30.dp, fan = fan.value)
+        BrandDeck(size = size * 0.75f, fan = fan.value)
     }
 }

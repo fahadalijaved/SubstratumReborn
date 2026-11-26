@@ -48,15 +48,17 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.LibsBuilder
 import projekt.substratum.BuildConfig
 import projekt.substratum.R
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.RebornCache
-import projekt.substratum.reborn.components.AppIcon
-import projekt.substratum.reborn.components.BrandDeck
+import projekt.substratum.reborn.components.BrandMark
 import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.SectionHeader
 import projekt.substratum.reborn.components.ShapedIcon
@@ -67,20 +69,27 @@ import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
 import projekt.substratum.reborn.components.design.SectionLabel
 import projekt.substratum.reborn.components.design.SegmentedGroup
 import projekt.substratum.reborn.components.design.rebornSegmentColors
+import projekt.substratum.reborn.components.design.softTitle
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.theme.LocalRebornColors
 
 /** This fork's repository (the git remote it is published from; public) */
 private const val SOURCE_URL = "https://github.com/fahadalijaved/SubstratumReborn"
+/** The branch the app is built from: the docs links point at it */
+private const val BRANCH_URL = "$SOURCE_URL/blob/oneui9-root"
 /** The theme format and the engine, for themers */
-internal const val THEMERS_URL = "$SOURCE_URL/blob/oneui9-root/docs/oneui9/README.md"
+internal const val THEMERS_URL = "$BRANCH_URL/docs/oneui9/README.md"
+/** What changed in each version */
+private const val CHANGELOG_URL = "$BRANCH_URL/CHANGELOG.md"
 /** The project it is based on */
 private const val UPSTREAM_URL = "https://github.com/substratum/substratum"
 private const val TAG = "RebornAbout"
 
 /**
- * About Substratum Reborn: the version and build, what the engine and the module report right
- * now, the source, the open-source licences, What's new, and where it comes from.
+ * About Reborn: the swatch-deck mark over "Reborn" and a quiet "Substratum", the tagline, the
+ * version, build and engine, what the engine and the module report right now, the links (What's
+ * new, the changelog, the source, the themers' guide, the open-source licences, the original
+ * Substratum) as one segmented list, and the credits.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -95,7 +104,6 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     RebornFlexibleScaffold(
         title = stringResource(R.string.reborn_about_title),
-        subtitle = stringResource(R.string.reborn_about_subtitle),
         navigationIcon = { BackIcon(onBack) },
     ) { padding ->
         LazyColumn(
@@ -111,32 +119,41 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
             item(key = "identity") {
                 HeroCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // The Substratum swatch deck, in the app's colours
-                        Box(
-                            Modifier
-                                .size(64.dp)
-                                .clip(MaterialShapes.Cookie12Sided.toShape())
-                                .background(scheme.surfaceContainerHigh),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            BrandDeck(size = 48.dp)
-                        }
+                        // The Substratum swatch deck, in the app's colours; it fans out on a press
+                        BrandMark(size = 64.dp)
                         Spacer(Modifier.width(18.dp))
-                        Column(Modifier.weight(1f)) {
+                        // "Reborn" over a quiet "Substratum", as on Home's brand bar, larger
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .semantics(mergeDescendants = true) { heading() },
+                        ) {
                             Text(
                                 stringResource(R.string.reborn_about_name),
-                                style = MaterialTheme.typography.headlineSmallEmphasized,
+                                style = MaterialTheme.typography.softTitle.copy(
+                                    fontSize = 32.sp,
+                                    lineHeight = 38.sp,
+                                    letterSpacing = (-0.4).sp,
+                                ),
+                                maxLines = 1,
                             )
                             Text(
-                                BuildConfig.VERSION_NAME,
-                                style = MaterialTheme.typography.titleMediumEmphasized,
-                                color = scheme.primary,
+                                stringResource(R.string.reborn_home_brand_sub),
+                                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.3.sp),
+                                color = scheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                maxLines = 1,
                             )
                         }
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(18.dp))
                     Text(
                         stringResource(R.string.reborn_about_tagline),
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                        color = scheme.primary,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.reborn_about_lead),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Spacer(Modifier.height(8.dp))
@@ -227,11 +244,11 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                         external = false, onClick = onWhatsNew,
                     ),
                     Link(
-                        R.drawable.ic_reborn_themes,
-                        stringResource(R.string.reborn_about_themers),
-                        stringResource(R.string.reborn_about_themers_text),
-                        scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Sunny.toShape(),
-                        onClick = { openUrl(context, THEMERS_URL) },
+                        R.drawable.ic_reborn_setup,
+                        stringResource(R.string.reborn_about_changelog),
+                        stringResource(R.string.reborn_about_changelog_text),
+                        scheme.secondaryContainer, scheme.onSecondaryContainer, MaterialShapes.Cookie9Sided.toShape(),
+                        onClick = { openUrl(context, CHANGELOG_URL) },
                     ),
                     Link(
                         R.drawable.ic_reborn_open,
@@ -239,6 +256,13 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                         SOURCE_URL.removePrefix("https://"),
                         scheme.secondaryContainer, scheme.onSecondaryContainer, MaterialShapes.Cookie6Sided.toShape(),
                         onClick = { openUrl(context, SOURCE_URL) },
+                    ),
+                    Link(
+                        R.drawable.ic_reborn_themes,
+                        stringResource(R.string.reborn_about_themers),
+                        stringResource(R.string.reborn_about_themers_text),
+                        scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Sunny.toShape(),
+                        onClick = { openUrl(context, THEMERS_URL) },
                     ),
                     Link(
                         R.drawable.ic_reborn_file,
@@ -263,22 +287,35 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                 }
             }
             item(key = "credits") {
-                SectionCard {
-                    Text(
-                        stringResource(R.string.reborn_about_based_on),
-                        style = MaterialTheme.typography.titleSmallEmphasized,
-                    )
-                    Spacer(Modifier.height(6.dp))
+                val credits = listOf(
+                    Credit(
+                        stringResource(R.string.reborn_about_credit_substratum),
+                        stringResource(R.string.reborn_about_credit_substratum_text),
+                        scheme.surfaceContainerHighest, scheme.onSurfaceVariant, MaterialShapes.Cookie4Sided.toShape(),
+                        icon = R.drawable.ic_reborn_layers,
+                    ),
+                    Credit(
+                        stringResource(R.string.reborn_about_credit_font),
+                        stringResource(R.string.reborn_about_credit_font_text),
+                        scheme.primaryContainer, scheme.onPrimaryContainer, MaterialShapes.Cookie7Sided.toShape(),
+                        // The face itself stands for it
+                        glyph = stringResource(R.string.reborn_about_credit_font_glyph),
+                    ),
+                    Credit(
+                        stringResource(R.string.reborn_about_credit_symbols),
+                        stringResource(R.string.reborn_about_credit_symbols_text),
+                        scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Clover4Leaf.toShape(),
+                        icon = R.drawable.ic_reborn_apps,
+                    ),
+                )
+                Column {
+                    SectionLabel(stringResource(R.string.reborn_about_credits))
+                    SegmentedGroup(credits.size) { i, shapes -> CreditRow(credits[i], shapes) }
                     Text(
                         stringResource(R.string.reborn_about_licence_text),
                         style = MaterialTheme.typography.bodyMedium,
                         color = scheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        stringResource(R.string.reborn_about_themes_text),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, end = 4.dp, top = 14.dp),
                     )
                 }
             }
@@ -336,6 +373,47 @@ private fun LinkRow(link: Link, shapes: ListItemShapes) {
         },
     ) {
         Text(link.title, style = MaterialTheme.typography.bodyLargeEmphasized)
+    }
+}
+
+/** One credit: what it is, who made it and its licence; an [icon], or a [glyph] in the app's type. */
+private class Credit(
+    val title: String,
+    val subtitle: String,
+    val container: Color,
+    val content: Color,
+    val shape: Shape,
+    @DrawableRes val icon: Int? = null,
+    val glyph: String? = null,
+)
+
+@Composable
+private fun CreditRow(credit: Credit, shapes: ListItemShapes) {
+    SegmentedListItem(
+        shapes = shapes,
+        colors = rebornSegmentColors(),
+        leadingContent = {
+            if (credit.icon != null) {
+                ShapedIcon(credit.icon, credit.container, credit.content, size = 44.dp, shape = credit.shape)
+            } else {
+                Box(
+                    Modifier
+                        .size(44.dp)
+                        .clip(credit.shape)
+                        .background(credit.container),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        credit.glyph.orEmpty(),
+                        style = MaterialTheme.typography.titleMediumEmphasized,
+                        color = credit.content,
+                    )
+                }
+            }
+        },
+        supportingContent = { Text(credit.subtitle) },
+    ) {
+        Text(credit.title, style = MaterialTheme.typography.bodyLargeEmphasized)
     }
 }
 

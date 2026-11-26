@@ -208,4 +208,35 @@
     <!-- License section -->
     <string name="library_expandablelayout_licenseId" translatable="false" tools:keep="@string/library_expandablelayout_licenseId">apache_2_0</string>
 
+    <!-- Google Sans Flex: the Reborn screens' typeface (res/font/google_sans_flex.ttf,
+         licence text in assets/licenses/google_sans_flex_OFL.txt) -->
+    <string name="define_google_sans_flex" translatable="false" tools:keep="@string/define_google_sans_flex" />
+    <!-- Author section -->
+    <string name="library_google_sans_flex_author" translatable="false" tools:keep="@string/library_google_sans_flex_author">The Google Sans Flex Authors</string>
+    <string name="library_google_sans_flex_authorWebsite" translatable="false" tools:keep="@string/library_google_sans_flex_authorWebsite">https://github.com/googlefonts/googlesans-flex</string>
+    <!-- Library section -->
+    <string name="library_google_sans_flex_libraryName" translatable="false" tools:keep="@string/library_google_sans_flex_libraryName">Google Sans Flex</string>
+    <string name="library_google_sans_flex_libraryDescription" tools:keep="@string/library_google_sans_flex_libraryDescription">The variable typeface of the Reborn screens.</string>
+    <string name="library_google_sans_flex_libraryWebsite" translatable="false" tools:keep="@string/library_google_sans_flex_libraryWebsite">https://github.com/googlefonts/googlesans-flex</string>
+    <!-- OpenSource section -->
+    <string name="library_google_sans_flex_isOpenSource" translatable="false" tools:keep="@string/library_google_sans_flex_isOpenSource">true</string>
+    <string name="library_google_sans_flex_repositoryLink" translatable="false" tools:keep="@string/library_google_sans_flex_repositoryLink">https://github.com/googlefonts/googlesans-flex</string>
+    <!-- License section: AboutLibraries' own SIL Open Font License 1.1 entry -->
+    <string name="library_google_sans_flex_licenseId" translatable="false" tools:keep="@string/library_google_sans_flex_licenseId">SIL_OFL_1_1</string>
+
+    <!-- Material Symbols: the Reborn screens' icons (res/drawable/ic_reborn_*.xml) -->
+    <string name="define_material_symbols" translatable="false" tools:keep="@string/define_material_symbols" />
+    <!-- Author section -->
+    <string name="library_material_symbols_author" translatable="false" tools:keep="@string/library_material_symbols_author">Google</string>
+    <string name="library_material_symbols_authorWebsite" translatable="false" tools:keep="@string/library_material_symbols_authorWebsite">https://fonts.google.com/icons</string>
+    <!-- Library section -->
+    <string name="library_material_symbols_libraryName" translatable="false" tools:keep="@string/library_material_symbols_libraryName">Material Symbols</string>
+    <string name="library_material_symbols_libraryDescription" tools:keep="@string/library_material_symbols_libraryDescription">The Rounded icons of the Reborn screens, as vector drawables.</string>
+    <string name="library_material_symbols_libraryWebsite" translatable="false" tools:keep="@string/library_material_symbols_libraryWebsite">https://fonts.google.com/icons</string>
+    <!-- OpenSource section -->
+    <string name="library_material_symbols_isOpenSource" translatable="false" tools:keep="@string/library_material_symbols_isOpenSource">true</string>
+    <string name="library_material_symbols_repositoryLink" translatable="false" tools:keep="@string/library_material_symbols_repositoryLink">https://github.com/google/material-design-icons</string>
+    <!-- License section -->
+    <string name="library_material_symbols_licenseId" translatable="false" tools:keep="@string/library_material_symbols_licenseId">apache_2_0</string>
+
 </resources>

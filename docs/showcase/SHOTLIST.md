@@ -11,11 +11,13 @@ demo data and show nothing personal.
 
 | File | Screen and state | Crop |
 |---|---|---|
-| `home.png` | Reborn Home, dark mode, Reborn AMOLED applied. Status hero all green, the *See the difference* carousel on its Quick Settings page with the divider near the middle. No snackbar. | Full screen, status bar included only in demo mode. Keep the *Try a look* row out of frame. |
-| `themes.png` | Themes tab, dark mode, scrolled so only the **Built in** section shows (Reborn AMOLED). No installed theme in frame. | Full screen. Crop above the *Installed* header if it shows. |
+| `home.png` | Reborn Home, dark mode, Reborn AMOLED applied (Pure black). The brand bar with the engine pill on *All good*, the Now card and Re-apply / Customize / Undo under it. No snackbar, no What's new sheet. | From the top of the screen to just under the quick actions, status bar included only in demo mode. *Try next* stays out of frame (it can show third-party themes). |
+| `themes.png` | Themes tab, dark mode, the **Built in** filter selected, so only built-in themes show (Reborn AMOLED). No installed theme in frame. | Full screen. |
 | `detail.png` | Themes › **Reborn AMOLED**: its page at the top, the hero, the Preview and the floating toolbar (Apply or Customize). | Full screen. |
 | `studio.png` | Themes › Reborn AMOLED › **Customize** (its Studio), scrolled so the Look presets and the Live preview show, preset *Pure black* or *Elevated cards* selected, nothing pending. | Full screen. Only the first two preset cards in view. |
 | `inspector.png` | Create › **Inspect an app** › **Settings** (`com.android.settings`): its colour list, stock to themed, with rules. | Full screen. The app list behind it must not be visible. |
+| `create.png` | Create tab at the top: the hero (*Your theme on every app*, *Design in the Studio*) and the Tools list. | Full screen. |
+| `engine.png` | Home › the engine pill › **Engine**, everything green: the status rows, *What the engine can do here* and the start of *Quick actions*. No fix banner, no snackbar. | Full screen. |
 | `qs-before.png` | The real Quick Settings panel, fully expanded, **Reborn AMOLED removed** (stock One UI 9 dark mode). | The panel only, from the top of the tiles to the media card. |
 | `qs-after.png` | The same panel with Reborn AMOLED applied (Pure black, opaque shade, dark tracks). Same tiles in the same order as `qs-before.png`. | Same crop as `qs-before.png`, pixel for pixel. |
 | `settings-before.png` | Settings > **Display**, Reborn AMOLED removed. Not the main Settings page (it shows the account card). | From the page title to the fourth row. |
@@ -74,4 +76,4 @@ demo command, crop the status bar out instead of capturing the real one.
 - **The owner reviews every image before it is committed.** Until then the files stay out of
   git (`git status` must not list them as staged).
 
-When the images are in, uncomment the screenshot block at the top of the root `README.md`.
+When the images are in, uncomment the screenshot block in the root `README.md`'s Screens section.

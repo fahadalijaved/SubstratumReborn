@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="96" height="96" role="img" aria-labelledby="reborn-mark-title">
+  <title id="reborn-mark-title">Reborn: the Substratum swatch deck</title>
+  <!-- Four pill swatches fanned about a rivet at (15, 35), back to front -->
+  <rect x="9" y="7" width="12" height="34" rx="6" fill="#FF9A5C" transform="rotate(66 15 35)"/>
+  <rect x="9" y="7" width="12" height="34" rx="6" fill="#FFD36E" transform="rotate(44 15 35)"/>
+  <rect x="9" y="7" width="12" height="34" rx="6" fill="#7B8CFF" transform="rotate(22 15 35)"/>
+  <rect x="9" y="7" width="12" height="34" rx="6" fill="#A8C7FA"/>
+  <circle cx="15" cy="35" r="3.6" fill="#FFFFFF"/>
+</svg>

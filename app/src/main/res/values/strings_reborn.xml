@@ -184,25 +184,25 @@
 
     <!-- What's new (once per version, and from About) -->
     <string name="reborn_new_overline">What\'s new</string>
-    <string name="reborn_new_headline">Themes first</string>
-    <string name="reborn_new_lead">Reborn is a theme engine. Every theme now has its own page, Reborn AMOLED is one of the built-in themes, and Create gathers the tools for themers.</string>
-    <string name="reborn_new_pages">A page for every theme</string>
-    <string name="reborn_new_pages_text">Every theme gets its own page: preview, what it changes, Apply and Customize.</string>
-    <string name="reborn_new_builtin">Reborn AMOLED, built in</string>
-    <string name="reborn_new_builtin_text">Reborn AMOLED is a built-in theme: Customize opens its Studio.</string>
-    <string name="reborn_new_create">Create</string>
-    <string name="reborn_new_create_text">Tools for themers, starting with the app inspector and the preview roles.</string>
-    <string name="reborn_new_shortcuts">Launcher shortcuts</string>
-    <string name="reborn_new_shortcuts_text">Long-press the app icon for Themes and Create, and for Customize after an apply.</string>
+    <string name="reborn_new_headline">A new Home</string>
+    <string name="reborn_new_lead">Home leads with the theme you use, the engine has a screen of its own, and Reborn wears the Substratum swatch deck again.</string>
+    <string name="reborn_new_home">The theme in use, first</string>
+    <string name="reborn_new_home_text">Home opens on the theme you use, with Re-apply, Customize and Undo under it and more themes to try next.</string>
+    <string name="reborn_new_engine">The Engine screen</string>
+    <string name="reborn_new_engine_text">Tap the status pill on Home: root, LSPosed and System UI in plain words, a fix for each problem, quick actions and Rescue.</string>
+    <string name="reborn_new_mark">A new mark</string>
+    <string name="reborn_new_mark_text">The Substratum swatch deck, redrawn in your colours, and a launcher icon to match, themed on Android 13 and newer.</string>
+    <string name="reborn_new_classic">Classic themes, dark mode only</string>
+    <string name="reborn_new_classic_text">Classic themes now leave light mode stock. The switch is on each classic theme\'s page.</string>
     <string name="reborn_new_done">Got it</string>
     <string name="reborn_explore_themes">Explore themes</string>
     <string name="reborn_create_a_theme">Create a theme</string>
 
-    <!-- About -->
+    <!-- About: "Reborn" over a quiet "Substratum" (reborn_home_brand_sub), then the tagline -->
     <string name="reborn_about_title">About</string>
-    <string name="reborn_about_subtitle">A theme engine for One UI and AOSP</string>
-    <string name="reborn_about_name">Substratum Reborn</string>
-    <string name="reborn_about_tagline">Substratum\'s theme engine, rebuilt for themers on fabricated overlays and an LSPosed module. Reborn AMOLED is one of its built-in themes.</string>
+    <string name="reborn_about_name">Reborn</string>
+    <string name="reborn_about_tagline">Substratum, reborn for One UI and AOSP</string>
+    <string name="reborn_about_lead">A theme engine first, for themers. Classic Substratum themes and Reborn engine themes apply as fabricated overlays and through an LSPosed module. Reborn AMOLED is one of its built-in themes.</string>
     <string name="reborn_about_tested">Tested on One UI 9 (Galaxy A36, Android 17). AOSP-based ROMs with root and LSPosed are a target, not tested yet.</string>
     <string name="reborn_about_version">Version</string>
     <string name="reborn_about_version_value">%1$s (%2$d)</string>
@@ -213,15 +213,24 @@
     <string name="reborn_about_more">More</string>
     <string name="reborn_about_whats_new">What\'s new</string>
     <string name="reborn_about_whats_new_text">This version\'s highlights</string>
+    <string name="reborn_about_changelog">Changelog</string>
+    <string name="reborn_about_changelog_text">What changed in each version, newest first</string>
     <string name="reborn_about_themers">For themers</string>
     <string name="reborn_about_themers_text">The theme layout, the rules format and what each platform supports</string>
     <string name="reborn_about_source">Source code</string>
     <string name="reborn_about_licences">Open-source licences</string>
-    <string name="reborn_about_licences_text">The libraries Reborn is built with, and their licences</string>
+    <string name="reborn_about_licences_text">The libraries, type and icons Reborn is built with, and their licences</string>
     <string name="reborn_about_upstream">Original Substratum</string>
-    <string name="reborn_about_based_on">Based on Substratum (GPL-3.0) by Projekt Substratum</string>
+    <string name="reborn_about_credits">Credits</string>
+    <string name="reborn_about_credit_substratum">Substratum</string>
+    <string name="reborn_about_credit_substratum_text">The theme engine Reborn is based on, by Projekt Substratum · GPL-3.0</string>
+    <string name="reborn_about_credit_font">Google Sans Flex</string>
+    <string name="reborn_about_credit_font_text">The typeface, by the Google Sans Flex Authors · SIL Open Font License 1.1</string>
+    <!-- Shown in the typeface itself, as its sample -->
+    <string name="reborn_about_credit_font_glyph" translatable="false">Aa</string>
+    <string name="reborn_about_credit_symbols">Material Symbols</string>
+    <string name="reborn_about_credit_symbols_text">The icons, by Google · Apache License 2.0</string>
     <string name="reborn_about_licence_text">Substratum Reborn is free software under the GNU General Public License, version 3 or later, and comes with no warranty.</string>
-    <string name="reborn_about_themes_text">Compatible legacy Substratum themes still install and apply; Reborn engine themes open their page in Themes.</string>
 
     <!-- The platform, named in copy about the stock look -->
     <string name="reborn_platform_stock_oneui">stock One UI</string>

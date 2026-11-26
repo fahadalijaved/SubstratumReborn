@@ -6,6 +6,7 @@ package projekt.substratum.reborn.home
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -61,8 +63,11 @@ import androidx.graphics.shapes.RoundedPolygon
  */
 object WhatsNew {
 
-    /** The release whose news the sheet shows ("Themes first") */
-    const val RELEASE = 2100
+    /**
+     * The release whose news the sheet shows ("A new Home", Reborn 2.6). Only ever raised: 2100 was
+     * "Themes first", so the version code (2006) is not used here.
+     */
+    const val RELEASE = 2600
 
     /** The release the sheet was last shown for */
     const val PREF_SEEN = "reborn_whats_new_seen"
@@ -79,8 +84,9 @@ object WhatsNew {
     }
 }
 
+/** One highlight: an [icon] on its shape, or, with no icon, the brand mark itself. */
 private class Highlight(
-    @DrawableRes val icon: Int,
+    @DrawableRes val icon: Int?,
     @StringRes val title: Int,
     @StringRes val text: Int,
     val shape: RoundedPolygon,
@@ -89,13 +95,13 @@ private class Highlight(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val highlights: List<Highlight> by lazy {
     listOf(
-        Highlight(R.drawable.ic_reborn_themes, R.string.reborn_new_pages, R.string.reborn_new_pages_text,
+        Highlight(R.drawable.ic_reborn_home, R.string.reborn_new_home, R.string.reborn_new_home_text,
             MaterialShapes.Flower),
-        Highlight(R.drawable.ic_reborn_amoled, R.string.reborn_new_builtin, R.string.reborn_new_builtin_text,
-            MaterialShapes.Clover4Leaf),
-        Highlight(R.drawable.ic_reborn_create, R.string.reborn_new_create, R.string.reborn_new_create_text,
-            MaterialShapes.Cookie9Sided),
-        Highlight(R.drawable.ic_reborn_shortcut, R.string.reborn_new_shortcuts, R.string.reborn_new_shortcuts_text,
+        Highlight(R.drawable.ic_reborn_engine, R.string.reborn_new_engine, R.string.reborn_new_engine_text,
+            MaterialShapes.Sunny),
+        Highlight(null, R.string.reborn_new_mark, R.string.reborn_new_mark_text,
+            MaterialShapes.Cookie12Sided),
+        Highlight(R.drawable.ic_reborn_dark_mode, R.string.reborn_new_classic, R.string.reborn_new_classic_text,
             MaterialShapes.Cookie6Sided),
     )
 }
@@ -201,7 +207,20 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onExploreThemes: () -> Unit) {
 @Composable
 private fun HighlightRow(item: Highlight, container: Color, content: Color) {
     Row(verticalAlignment = Alignment.Top) {
-        ShapedIcon(item.icon, container, content, size = 44.dp, shape = item.shape.toShape())
+        if (item.icon != null) {
+            ShapedIcon(item.icon, container, content, size = 44.dp, shape = item.shape.toShape())
+        } else {
+            // The swatch deck on its Cookie12Sided plate, as on Home's brand bar
+            Box(
+                Modifier
+                    .size(44.dp)
+                    .clip(item.shape.toShape())
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                contentAlignment = Alignment.Center,
+            ) {
+                BrandDeck(size = 33.dp)
+            }
+        }
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(

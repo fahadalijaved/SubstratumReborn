@@ -1,15 +1,21 @@
-# Theming One UI 9 and AOSP with SubstratumReborn
+# Theming One UI 9 and AOSP with Substratum Reborn
 
-SubstratumReborn is a theme engine for themers: you build ordinary Substratum themes, or rules
-themes, and the engine applies them on today's Android. Reborn AMOLED (`themes/amoled`) is one of
-its built-in themes and the reference for the rules format.
+Substratum Reborn ("Reborn" in the app) is the Substratum theme engine rebuilt for current
+Android, for themers. It applies two kinds of theme on the same engine: classic Substratum
+themes, compiled on the phone as before, and Reborn engine themes, a set of rules that reads each
+app's own colours on the phone. In the app, every theme has its own page in **Themes** (a preview
+against stock, the apps it changes on this phone, Apply); **Customize** opens an engine theme's
+Studio, **Create** holds the tools for themers (an inspector for any app's colours, the preview
+roles and this guide), **Applied** lists everything that is on, and the **Engine** screen, behind
+Home's status pill, says whether root, the LSPosed module and the System UI hooks work. Reborn
+AMOLED (`themes/amoled`) is one of the built-in themes and the reference for the rules format.
 
 **Where it runs.** It is tested on One UI 9 (Galaxy A36, Android 17). The engine itself uses
-standard Android pieces, shell fabricated overlays (Android 12 and newer) and an LSPosed module,
-so AOSP-based ROMs (Pixel stock, LineageOS and similar, rooted with LSPosed) are a target as
-well; it has **not been tested on a Pixel or another AOSP device yet**. Sections marked
-*One UI only* (the design tokens, the One UI 9 quick settings and the Quick Settings designer)
-need a Samsung build.
+standard Android pieces, fabricated overlays registered from a definition file (Android 14 and
+newer) and an LSPosed module, so AOSP-based ROMs (Pixel stock, LineageOS and similar, rooted with
+LSPosed) are a target as well; it has **not been tested on a Pixel or another AOSP device yet**.
+Sections marked *One UI only* (the design tokens, the One UI 9 quick settings and the Quick
+Settings designer) need a Samsung build.
 
 One UI 9 (Android 17) skips overlay APKs that Samsung did not preinstall, and Android limits
 what an overlay signed with another key may change. SubstratumReborn therefore applies themes in
@@ -26,11 +32,13 @@ Themes are still ordinary Substratum themes; the split happens when Substratum b
 
 ## What you need on the device
 
-- Root: KernelSU, Magisk or APatch, with Substratum granted root.
-- LSPosed, with the **substratum** module enabled. Its scope must include Substratum itself and
-  every app your theme targets. SystemUI and Settings are in the default scope; add the others.
-- Reborn's Home says in plain words whether root, the module, its scope and the System UI hooks
-  work, and the Setup checklist (first launch, or Home's checklist button) fixes each of them.
+- Root: KernelSU (tested), Magisk or APatch, with Reborn granted root.
+- LSPosed, with the **Reborn** module enabled. Its scope needs System UI and Settings (the
+  default scope), plus every app whose drawables, layouts or dimens your theme changes, and the
+  apps the Studio marks *Needs scope*. Reborn itself does not need to be in its own scope.
+- Reborn's Engine screen (Home's status pill) says in plain words whether root, the module, its
+  scope and the System UI hooks work, and the Setup checklist (first launch, or the Engine
+  screen's Setup checklist) fixes each of them.
 
 ## Theme layout
 
@@ -155,8 +163,8 @@ image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the r
 | `include`, `exclude` | regexes of package names to theme |
 | `colors` | hand-picked values per package; keys are resource names, or regexes when they start with `^` |
 
-Every key is optional; what a theme leaves out keeps Reborn AMOLED's value. The look chosen on
-the AMOLED screen (preset, level, accent, active tile) overrides the theme's, and the user's own
+Every key is optional; what a theme leaves out keeps Reborn AMOLED's value. The look chosen in
+the theme's Studio (preset, level, accent, active tile) overrides the theme's, and the user's own
 rules (keep a color stock, pin one; `files/amoled/user_rules.json`) come before everything. Make a variant by
 copying `themes/amoled`, changing the package name, and editing the values: a dark grey
 `background`, a coloured `outline`, a different QS accent. The [reference](reference) shows the
@@ -357,9 +365,10 @@ written), the night value, and the stock night value, or `csl` for a color state
 
 System UI writes `reborn_module_status` in `Settings.Global` once the module has set up (or
 skipped) its hooks: `v=<versionCode>;t=<millis>;qs=..;layout=..;battery=..;guard=ok|tripped|off`
-(see [Module status](#module-status)). Home reads it: no heartbeat since boot, a tripped guard or
-paused hooks are problems with a Fix; a heartbeat from an older build (the app was updated after
-System UI started) is not, and Home offers a System UI restart to load the new hooks. The guard
+(see [Module status](#module-status)). The Engine screen reads it: no heartbeat since boot, a
+tripped guard or paused hooks are problems with a Fix; a heartbeat from an older build (the app
+was updated after System UI started) is not, and the Engine screen offers a System UI restart to
+load the new hooks. The guard
 counts starts in each hooked app's device-protected data; see
 [Crash loop guard](#crash-loop-guard).
 
@@ -490,12 +499,12 @@ cmd overlay disable --user 0 com.android.shell:<package>.RebornSystemAmoled
 ```
 
 The next boot registers them again until **Remove** runs (the theme's page or its Studio, or
-**Undo everything** on Home or Applied).
+**Undo everything** on Home, Applied or the Engine screen).
 
 ### LSPosed
 
 To turn the module off completely, open LSPosed Manager, go to Modules, and switch
-**substratum** off (or take single apps out of its scope). Then force-stop the scoped apps and
+**Reborn** off (or take single apps out of its scope). Then force-stop the scoped apps and
 restart System UI, or soft reboot if LSPosed asks for it.
 
 ### Full reboot

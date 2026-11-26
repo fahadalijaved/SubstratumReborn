@@ -863,5 +863,5 @@
 
     <string name="module_placed_reboot_message">Substratum has installed its root module (Magisk / KernelSU / APatch) successfully. Please reboot to allow overlays to take effect.</string>
 
-    <string name="xposed_description" translatable="false">Substratum Reborn, the theme engine for One UI and AOSP: applies theme colours by resource id where overlays cannot reach. Add every app you theme to the scope.</string>
+    <string name="xposed_description" translatable="false">Substratum, reborn for One UI and AOSP. The theme engine\'s module: applies what overlays cannot reach in System UI, Settings and the apps you add to its scope.</string>
 </resources>
