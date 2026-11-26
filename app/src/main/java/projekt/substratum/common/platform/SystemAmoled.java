@@ -622,6 +622,21 @@ public final class SystemAmoled {
      * version), or an enabled Substratum overlay has fabricated values. Needs no root (the
      * module's folder is readable by apps); when that folder cannot be listed, assume there is.
      */
+    /**
+     * The running system server, as {@code start_count:start_elapsed}, or "" if unknown.
+     * Fabricated overlays live exactly as long as it does: a soft reboot starts a new one.
+     * Android 15+ also sends BOOT_COMPLETED when the app is first opened after an update or a
+     * force stop, when nothing was lost.
+     */
+    public static String serverInstance() {
+        String start = projekt.substratum.common.Systems.getProp(
+                "sys.system_server.start_elapsed");
+        if (start == null || start.trim().isEmpty()) return "";
+        String count = projekt.substratum.common.Systems.getProp(
+                "sys.system_server.start_count");
+        return (count == null ? "" : count.trim()) + ':' + start.trim();
+    }
+
     public static boolean hasRestorable(Context context) {
         File dir = new File(XposedBackend.DIR);
         String[] files = dir.list();

@@ -66,6 +66,32 @@ public class Root {
     }
 
     /**
+     * Run a short command on a second root shell kept for status reads, so screens never wait
+     * behind a long job (an AMOLED apply holds the main shell for minutes).
+     *
+     * @return String output
+     */
+    public static String runQuickCommand(String command) {
+        return getQuickSU().runCommand(command);
+    }
+
+    /**
+     * {@link #isAlive()} on the status shell.
+     */
+    public static boolean isAliveQuick() {
+        String out = runQuickCommand("id -u");
+        return out != null && out.trim().equals("0");
+    }
+
+    private static SU quick;
+
+    private static synchronized SU getQuickSU() {
+        if ((quick == null) || quick.closed || quick.denied)
+            quick = new SU();
+        return quick;
+    }
+
+    /**
      * Obtain a process of SU
      *
      * @return Instance of SU

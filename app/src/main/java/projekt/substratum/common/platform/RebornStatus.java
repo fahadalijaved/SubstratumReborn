@@ -184,7 +184,7 @@ public final class RebornStatus {
         RootInfo info = new RootInfo();
         try {
             boolean granted = Root.checkRootAccess();
-            if (granted && !Root.isAlive()) {
+            if (granted && !Root.isAliveQuick()) {
                 // A temporary root is gone after a full reboot: ask again next time
                 SharedPreferences prefs = Substratum.getPreferences();
                 if (prefs != null) prefs.edit().remove("root_access").apply();
@@ -193,7 +193,7 @@ public final class RebornStatus {
             info.granted = granted;
             if (granted) {
                 // From /dev/null: an su without -v must not keep the shell waiting
-                info.version = suVersion(Root.runCommand("su -v </dev/null 2>/dev/null"));
+                info.version = suVersion(Root.runQuickCommand("su -v </dev/null 2>/dev/null"));
             }
         } catch (RuntimeException e) {
             Log.w(TAG, "root check failed", e);
@@ -306,7 +306,7 @@ public final class RebornStatus {
                 .append("[ -n \"$ctx\" ] && chcon \"$ctx\" ").append(to).append("/* 2>/dev/null; ")
                 .append("[ -f ").append(to).append('/').append(LSPOSED_DB)
                 .append(" ] && echo rc=0 || echo rc=1");
-        String out = Root.runCommand(cmd.toString());
+        String out = Root.runQuickCommand(cmd.toString());
         if (out == null || !out.trim().endsWith("rc=0")) return false;
         for (String name : LSPOSED_FILES) {
             File from = new File(raw, name);
@@ -511,7 +511,7 @@ public final class RebornStatus {
      */
     public static boolean openLsposedWithRoot() {
         // From /dev/null: nothing may read the shared root shell's input (its end marker)
-        String out = Root.runCommand("am start -c org.lsposed.manager.LAUNCH_MANAGER " +
+        String out = Root.runQuickCommand("am start -c org.lsposed.manager.LAUNCH_MANAGER " +
                 "com.android.shell/.BugreportWarningActivity </dev/null 2>&1; echo rc=$?");
         if (out == null) return false;
         String trimmed = out.trim();

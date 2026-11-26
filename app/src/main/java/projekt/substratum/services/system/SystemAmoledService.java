@@ -43,6 +43,7 @@ public class SystemAmoledService extends Service {
     public static final String EXTRA_THEME = "theme";
     public static final String EXTRA_ONLY = "only";
     public static final String EXTRA_RESTORE = "restore";
+    private static final String PREF_SERVER = "reborn_amoled_server_instance";
     public static final String EXTRA_RESTART_SYSTEMUI = "restart_systemui";
     public static final String EXTRA_DONE = "done";
     public static final String EXTRA_TOTAL = "total";
@@ -160,6 +161,11 @@ public class SystemAmoledService extends Service {
             result = getString(R.string.system_amoled_failed);
             Log.e(TAG, job + " failed", t);
         }
+        if (ok) {
+            // Whatever was registered now lives as long as this system server
+            projekt.substratum.Substratum.getPreferences().edit()
+                    .putString(PREF_SERVER, SystemAmoled.serverInstance()).apply();
+        }
         // Long jobs leave their result as a notification; switches and restores do not
         if (result != null && job.kind != AmoledJobs.Kind.SET_ENABLED &&
                 job.kind != AmoledJobs.Kind.RESTORE) {
@@ -244,6 +250,14 @@ public class SystemAmoledService extends Service {
      */
     private boolean restore() {
         NotificationManager notifications = getSystemService(NotificationManager.class);
+        // Same system server as the last finished job: the overlays are still registered
+        // (Android 15+ sends BOOT_COMPLETED again when the app is first opened after an update)
+        String server = SystemAmoled.serverInstance();
+        if (!server.isEmpty() && server.equals(
+                projekt.substratum.Substratum.getPreferences().getString(PREF_SERVER, ""))) {
+            Log.i(TAG, "restore: no reboot since the last job, nothing was lost");
+            return true;
+        }
         // Nothing applied: no root needed, and no "not restored" notification at every boot
         if (!SystemAmoled.hasRestorable(this)) {
             Log.i(TAG, "restore: nothing to restore");
