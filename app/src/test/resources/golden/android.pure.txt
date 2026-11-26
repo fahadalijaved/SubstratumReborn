@@ -42,7 +42,7 @@ car_seekbar_track_background_dark #ff5f6368 -> #ff1a1a1a slider
 car_toast_background #ff282a2d -> #ff000000 floating
 car_white_1000 #1effffff -> #00000000 clear
 chooser_gradient_background #ff44484c -> #ff000000 surface
-chooser_row_divider #ff46464b -> #ff000000 surface
+chooser_row_divider #ff46464b -> #ff303030 hairline
 customColorShadeDisabled #ff0d0e12 -> #ff000000 surface
 customColorShadeInactive #ff2f3035 -> #ff000000 surface
 customColorSurfaceEffect0Fallback #ff2a3042 -> #ff000000 surface
@@ -56,7 +56,7 @@ holo_control_normal #39cccccc -> #00000000 clear
 holo_gray_bright #33cccccc -> #00000000 clear
 holo_primary #ff222222 -> #ff000000 surface
 legacy_primary #ff222222 -> #ff000000 surface
-list_divider_color_dark #ff46464b -> #ff000000 surface
+list_divider_color_dark #ff46464b -> #ff303030 hairline
 loading_gradient_background_color_dark #ff44484c -> #ff000000 surface
 magnification_thumbnail_color #ff252525 -> #ff2a2a2a thumb
 materialColorBackground #ff1d1d20 -> #ff000000 surface

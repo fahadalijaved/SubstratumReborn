@@ -103,6 +103,9 @@ final class AppAmoledHook {
                     int stock = hex(parts[3]);
                     // Only opaque surfaces: translucent layers and text keep their colors
                     if (stock >>> 24 != 0xff || ambiguous.contains(stock)) continue;
+                    // Material's outline greys drawn as filled shapes (Compose borders of chips
+                    // and outlined buttons) never turn into the page (lists of older versions)
+                    if (outline(stock) && brightest(night) <= 0x20) continue;
                     Integer previous = surfaces.put(stock, night);
                     if (previous != null && previous != night) {
                         // Two resources share this stock value but get different AMOLED
@@ -269,6 +272,24 @@ final class AppAmoledHook {
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    /**
+     * Material's dark outline (#8E918F) and outline variant (#444746), or a wallpaper-tinted grey
+     * near them
+     */
+    private static boolean outline(int color) {
+        return near(color, 0x444746) || near(color, 0x8e918f);
+    }
+
+    private static boolean near(int color, int rgb) {
+        return Math.abs(((color >> 16) & 0xff) - ((rgb >> 16) & 0xff)) <= 0x0c &&
+                Math.abs(((color >> 8) & 0xff) - ((rgb >> 8) & 0xff)) <= 0x0c &&
+                Math.abs((color & 0xff) - (rgb & 0xff)) <= 0x0c;
+    }
+
+    private static int brightest(int color) {
+        return Math.max((color >> 16) & 0xff, Math.max((color >> 8) & 0xff, color & 0xff));
     }
 
     private static int hex(String value) {

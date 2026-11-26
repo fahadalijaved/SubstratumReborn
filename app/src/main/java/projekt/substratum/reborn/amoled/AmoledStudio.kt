@@ -275,6 +275,8 @@ private fun StudioMain(
     val dirty by StudioState.lookDirty.collectAsStateWithLifecycle()
     val qs by StudioState.qs.collectAsStateWithLifecycle()
     val lsposedScope by StudioState.lsposedScope.collectAsStateWithLifecycle()
+    val engineClassic by StudioState.engineClassic.collectAsStateWithLifecycle()
+    val autoTheme by StudioState.autoTheme.collectAsStateWithLifecycle()
     val pending = StudioState.pending(summary, look, dirty, theme)
     val on = summary?.enabled == true
 
@@ -324,6 +326,12 @@ private fun StudioMain(
                             RebornActions.openClassicAmoled(context, theme, themes.firstOrNull { it.pkg == theme }?.label)
                         },
                         onTheme = StudioState::chooseTheme,
+                        options = EngineOptions(
+                            classic = engineClassic,
+                            autoTheme = autoTheme,
+                            onClassic = StudioState::setEngineClassic,
+                            onAutoTheme = StudioState::setAutoTheme,
+                        ),
                     )
                 }
             }
@@ -396,6 +404,7 @@ private fun HeroCard(
     onReapplyChanged: () -> Unit,
     onClassic: () -> Unit,
     onTheme: (String?) -> Unit,
+    options: EngineOptions,
 ) {
     val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
@@ -518,11 +527,21 @@ private fun HeroCard(
                     onRemove = onRemove,
                     onReapplyChanged = onReapplyChanged,
                     onClassic = onClassic,
+                    options = options,
                 )
             }
         }
     }
 }
+
+/** The engine switches of the overflow menu */
+@androidx.compose.runtime.Immutable
+private class EngineOptions(
+    val classic: Boolean,
+    val autoTheme: Boolean,
+    val onClassic: (Boolean) -> Unit,
+    val onAutoTheme: (Boolean) -> Unit,
+)
 
 @Composable
 private fun relativeTime(time: Long): String =
@@ -577,6 +596,7 @@ private fun ApplyButtons(
     onRemove: () -> Unit,
     onReapplyChanged: () -> Unit,
     onClassic: () -> Unit,
+    options: EngineOptions,
 ) {
     val haptics = LocalHapticFeedback.current
     var menu by remember { mutableStateOf(false) }
@@ -657,6 +677,23 @@ private fun ApplyButtons(
                         onClick = {
                             menu = false
                             confirmRemove = true
+                        },
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.reborn_studio_auto_theme)) },
+                        trailingIcon = { Switch(checked = options.autoTheme, onCheckedChange = null) },
+                        onClick = {
+                            menu = false
+                            options.onAutoTheme(!options.autoTheme)
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.reborn_studio_engine_classic)) },
+                        trailingIcon = { Switch(checked = options.classic, onCheckedChange = null) },
+                        onClick = {
+                            menu = false
+                            options.onClassic(!options.classic)
                         },
                     )
                     HorizontalDivider()

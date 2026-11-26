@@ -269,14 +269,7 @@ public final class FabricatedValues {
 
         File definition = new File(context.getCacheDir(), name + ".xml");
         try (FileWriter writer = new FileWriter(definition)) {
-            writer.write("<overlay>\n");
-            for (String[] item : items) {
-                writer.write(String.format(Locale.US,
-                        "  <item target=\"%s\" type=\"0x%02x\" value=\"%s\"%s />\n",
-                        item[0], Integer.parseInt(item[1]), item[2],
-                        item[3].isEmpty() ? "" : " config=\"" + item[3] + "\""));
-            }
-            writer.write("</overlay>\n");
+            writer.write(definitionXml(items));
         } catch (IOException e) {
             Log.e(TAG, "Could not write the definition", e);
             return 0;
@@ -298,6 +291,20 @@ public final class FabricatedValues {
             return 0;
         }
         return items.size();
+    }
+
+    /**
+     * The definition file of prepared items {target, type (decimal), value, config}.
+     */
+    static String definitionXml(List<String[]> items) {
+        StringBuilder xml = new StringBuilder("<overlay>\n");
+        for (String[] item : items) {
+            xml.append(String.format(Locale.US,
+                    "  <item target=\"%s\" type=\"0x%02x\" value=\"%s\"%s />\n",
+                    item[0], Integer.parseInt(item[1]), item[2],
+                    item[3].isEmpty() ? "" : " config=\"" + item[3] + "\""));
+        }
+        return xml.append("</overlay>\n").toString();
     }
 
     /**

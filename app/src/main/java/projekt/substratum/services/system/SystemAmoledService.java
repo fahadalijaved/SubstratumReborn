@@ -19,12 +19,16 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import projekt.substratum.R;
 import projekt.substratum.common.References;
+import projekt.substratum.common.platform.AmoledEngine;
 import projekt.substratum.common.platform.AmoledJobs;
 import projekt.substratum.common.platform.AmoledRules;
 import projekt.substratum.common.platform.AmoledState;
@@ -63,6 +67,16 @@ public class SystemAmoledService extends Service {
      * Safety limit of one acquire; every job acquires again, so only a job stuck this long loses it
      */
     private static final long WAKE_LOCK_TIMEOUT = 30L * 60L * 1000L;
+    /**
+     * Doze disables wake locks: while jobs run, Substratum is on the temporary allowlist, for this
+     * long, renewed every {@link #ALLOWLIST_RENEW} while the queue runs
+     */
+    private static final long ALLOWLIST_MS = 30L * 60L * 1000L;
+    private static final long ALLOWLIST_RENEW = 20L * 60L * 1000L;
+    /**
+     * Progress notifications at most this often (a warm apply reports hundreds of apps a second)
+     */
+    private static final long PROGRESS_EVERY_MS = 250;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private int lastStartId;
@@ -73,6 +87,15 @@ public class SystemAmoledService extends Service {
      * otherwise suspend in the middle of an apply (and the job freezes until the screen wakes)
      */
     private PowerManager.WakeLock wakeLock;
+    private volatile long lastProgress;
+    private final Runnable renewAllowlist = new Runnable() {
+        @Override
+        public void run() {
+            if (PENDING.get() == 0) return;
+            new Thread(SystemAmoledService::allowWhileIdle, "AmoledAllowlist").start();
+            main.postDelayed(this, ALLOWLIST_RENEW);
+        }
+    };
 
     /**
      * @deprecated Use {@link AmoledJobs#snapshot()}
@@ -98,7 +121,10 @@ public class SystemAmoledService extends Service {
         }
         holdWakeLock();
         AmoledJobs.queued(job);
-        PENDING.incrementAndGet();
+        if (PENDING.incrementAndGet() == 1) {
+            main.removeCallbacks(renewAllowlist);
+            main.postDelayed(renewAllowlist, ALLOWLIST_RENEW);
+        }
         QUEUE.execute(() -> {
             try {
                 run(job);
@@ -114,6 +140,7 @@ public class SystemAmoledService extends Service {
      */
     private void stopIfIdle() {
         if (PENDING.get() != 0) return;
+        main.removeCallbacks(renewAllowlist);
         try {
             AmoledJobs.idle();
             String result = lastResult;
@@ -140,8 +167,26 @@ public class SystemAmoledService extends Service {
 
     @Override
     public void onDestroy() {
+        main.removeCallbacks(renewAllowlist);
         releaseWakeLock();
         super.onDestroy();
+    }
+
+    /**
+     * Doze turns off every wake lock, and an apply with the screen off froze until the screen
+     * came on: Substratum goes on the temporary Doze allowlist (root, nothing permanent in the
+     * battery settings). On the status root shell, so it never waits behind the job itself.
+     */
+    private static void allowWhileIdle() {
+        try {
+            if (!Root.checkRootAccess()) return;
+            String out = Root.runQuickCommand("cmd deviceidle tempwhitelist -u 0 -d " +
+                    ALLOWLIST_MS + " " + References.SUBSTRATUM_PACKAGE + " 2>&1");
+            Log.i(TAG, "Doze allowlist for " + (ALLOWLIST_MS / 60000) + " min" +
+                    (out != null && !out.trim().isEmpty() ? ": " + out.trim() : ""));
+        } catch (RuntimeException e) {
+            Log.w(TAG, "No Doze allowlist: " + e);
+        }
     }
 
     /**
@@ -175,6 +220,7 @@ public class SystemAmoledService extends Service {
     private void run(AmoledJobs.Job job) {
         // A new safety period for this job
         holdWakeLock();
+        if (job.kind != AmoledJobs.Kind.RESTORE) allowWhileIdle();
         AmoledJobs.started(job);
         show(ongoing(startText(job), 0, 0, true));
         boolean ok = true;
@@ -194,6 +240,8 @@ public class SystemAmoledService extends Service {
                     SystemAmoled.removeAll(this);
                     // The module's System UI hooks (solid shade, dark tracks) unload with it
                     QsOptions.restartSystemUi();
+                    // Nothing applied: no update check
+                    AmoledWatchJob.schedule(this);
                     result = getString(R.string.system_amoled_removed);
                     break;
                 case RESTORE:
@@ -217,9 +265,10 @@ public class SystemAmoledService extends Service {
             projekt.substratum.Substratum.getPreferences().edit()
                     .putString(PREF_SERVER, SystemAmoled.serverInstance()).apply();
         }
-        // Long jobs leave their result as a notification; switches and restores do not
+        // Long jobs leave their result as a notification; switches, restores and silent
+        // re-themes after updates do not
         if (result != null && job.kind != AmoledJobs.Kind.SET_ENABLED &&
-                job.kind != AmoledJobs.Kind.RESTORE) {
+                job.kind != AmoledJobs.Kind.RESTORE && !job.auto) {
             lastResult = result;
         }
         AmoledJobs.finished(job, ok, result);
@@ -234,9 +283,13 @@ public class SystemAmoledService extends Service {
             return null;
         }
         AmoledRules rules = rules(job.theme);
+        long start = android.os.SystemClock.elapsedRealtime();
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), null);
+        long elapsed = android.os.SystemClock.elapsedRealtime() - start;
         SystemAmoled.markApplied(this, job.theme, rules);
+        // Updated apps are re-themed on their own from now on
+        AmoledWatchJob.applied(this);
         // Everything is registered again: an old "not restored" notice no longer applies
         getSystemService(NotificationManager.class).cancel(NO_ROOT_NOTIFICATION_ID);
         // The theme's quick settings layout, unless one was chosen in Substratum, and the
@@ -253,17 +306,41 @@ public class SystemAmoledService extends Service {
         Log.i(TAG, "applied to " + done[0] + " apps, " + done[1] + " colors, look " +
                 rules.level().key() + (rules.accent() != null ?
                 String.format(" accent #%08x", rules.accent()) : ""));
-        return getString(R.string.system_amoled_done, done[0], done[1]);
+        return done(done, elapsed);
+    }
+
+    /**
+     * "AMOLED applied to N apps (M colors) in X.X s"
+     */
+    private String done(int[] done, long elapsed) {
+        return getString(R.string.system_amoled_done_timed, done[0], done[1],
+                String.format(Locale.getDefault(), "%.1f", elapsed / 1000.0));
     }
 
     private String applyOne(AmoledJobs.Job job) {
         AmoledState state = AmoledState.read(this);
         if (!state.enabled) return getString(R.string.system_amoled_saved_off);
         AmoledRules rules = rules(job.theme != null ? job.theme : state.rulesTheme);
+        long start = android.os.SystemClock.elapsedRealtime();
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), job.packages);
+        long elapsed = android.os.SystemClock.elapsedRealtime() - start;
         Log.i(TAG, "applied to " + job.packages + ": " + done[1] + " colors");
-        return getString(R.string.system_amoled_done, done[0], done[1]);
+        if (job.auto) {
+            // "Re-themed Play Store and 2 more after updates", for the apps that got colors
+            AmoledState after = AmoledState.read(this);
+            List<String> labels = new ArrayList<>();
+            for (String pkg : job.packages) {
+                AmoledState.App app = after.perApp.get(pkg);
+                if (app != null && app.colors > 0 && (app.route == AmoledState.Route.OVERLAY ||
+                        app.route == AmoledState.Route.MODULE)) {
+                    labels.add(label(pkg));
+                }
+            }
+            Log.i(AmoledEngine.TAG, "re-themed after updates: " + labels);
+            AmoledWatchJob.notifyRethemed(this, labels);
+        }
+        return done(done, elapsed);
     }
 
     /**
@@ -274,8 +351,10 @@ public class SystemAmoledService extends Service {
         AmoledState state = AmoledState.read(this);
         if (!state.enabled) return getString(R.string.system_amoled_saved_off);
         AmoledRules rules = rules(job.theme != null ? job.theme : state.rulesTheme);
+        long start = android.os.SystemClock.elapsedRealtime();
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), job.packages);
+        long elapsed = android.os.SystemClock.elapsedRealtime() - start;
         // The track color from the rules, before System UI starts again
         QsOptions options = QsOptions.read();
         if (options.trackColor != rules.qsTrack()) {
@@ -283,7 +362,7 @@ public class SystemAmoledService extends Service {
             options.write(this);
         }
         if (job.restart) QsOptions.restartSystemUi();
-        return getString(R.string.system_amoled_done, done[0], done[1]);
+        return done(done, elapsed);
     }
 
     private String setEnabled(AmoledJobs.Job job) {
@@ -324,6 +403,7 @@ public class SystemAmoledService extends Service {
         if (!server.isEmpty() && server.equals(
                 projekt.substratum.Substratum.getPreferences().getString(PREF_SERVER, ""))) {
             Log.i(TAG, "restore: no reboot since the last job, nothing was lost");
+            checkUpdated();
             return true;
         }
         // Nothing applied: no root needed, and no "not restored" notification at every boot
@@ -349,7 +429,21 @@ public class SystemAmoledService extends Service {
         }
         notifications.cancel(NO_ROOT_NOTIFICATION_ID);
         SystemAmoled.restoreAll(this);
+        checkUpdated();
         return true;
+    }
+
+    /**
+     * After a restore: apps updated meanwhile (or while the phone was off) are read again, and the
+     * periodic check is scheduled.
+     */
+    private void checkUpdated() {
+        try {
+            AmoledWatchJob.schedule(this);
+            AmoledWatchJob.check(this, "boot");
+        } catch (RuntimeException e) {
+            Log.w(TAG, "update check failed: " + e);
+        }
     }
 
     private AmoledRules rules(String theme) {
@@ -369,8 +463,12 @@ public class SystemAmoledService extends Service {
 
     private void progress(AmoledJobs.Job job, String pkg, int index, int total) {
         String label = label(pkg);
-        String text = getString(R.string.system_amoled_progress, index + 1, total, label);
-        show(ongoing(text, index + 1, total, false));
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now - lastProgress >= PROGRESS_EVERY_MS || index + 1 >= total) {
+            lastProgress = now;
+            String text = getString(R.string.system_amoled_progress, index + 1, total, label);
+            show(ongoing(text, index + 1, total, false));
+        }
         AmoledJobs.progress(job, pkg, label, index + 1, total);
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(PROGRESS)
                 .putExtra(EXTRA_DONE, index + 1).putExtra(EXTRA_TOTAL, total)

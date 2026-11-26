@@ -88,7 +88,7 @@ public final class SystemAmoled {
     /**
      * Apply to every Samsung, Google and system app. Runs for a while: call off the main thread.
      *
-     * @return {apps themed, colors changed}
+     * @return {apps themed, colors changed, apps read from the cache, apps processed}
      */
     public static int[] applyAll(Context context, AmoledRules rules, Progress progress) {
         return applyAll(context, rules, progress, null);
@@ -101,10 +101,12 @@ public final class SystemAmoled {
      *
      * @param only Packages to process, or null for every covered app (and every app applied
      *             before that the rules no longer cover, which is cleaned up)
-     * @return {apps themed, colors changed}
+     * @return {apps themed, colors changed, apps read from the cache, apps processed}
      */
     public static int[] applyAll(Context context, AmoledRules rules, Progress progress,
                                  List<String> only) {
+        if (AmoledEngine.isEnabled()) return AmoledEngine.applyAll(context, rules, progress, only);
+        long start = android.os.SystemClock.elapsedRealtime();
         List<String> targets = only != null ? only : targets(context, rules);
         Map<String, Character> overlays = overlayStates();
         int apps = 0, colors = 0;
@@ -123,7 +125,10 @@ public final class SystemAmoled {
                 AmoledState.update(context, s -> s.app(pkg).error = String.valueOf(t));
             }
         }
-        return new int[]{apps, colors};
+        Log.i(AmoledEngine.TAG, AmoledEngine.summary(apps, colors,
+                android.os.SystemClock.elapsedRealtime() - start, 0, targets.size()) +
+                ", classic engine");
+        return new int[]{apps, colors, 0, targets.size()};
     }
 
     /**
@@ -169,6 +174,8 @@ public final class SystemAmoled {
         String name = pkg + SUFFIX;
         boolean overlayWasOn = Character.valueOf('x').equals(overlays.get(pkg));
         boolean hadModule = new File(XposedBackend.DIR, pkg + XposedBackend.AMOLED_IDS).exists();
+        // What the cached engine knows of this app no longer holds
+        AmoledCache.delete(context, pkg);
         if (!installed(context, pkg)) {
             clean(pkg);
             AmoledChange.delete(context, pkg);
@@ -264,7 +271,7 @@ public final class SystemAmoled {
         return count;
     }
 
-    private static AmoledState.App none(AmoledState.App app) {
+    static AmoledState.App none(AmoledState.App app) {
         app.route = Route.NONE;
         app.colors = 0;
         app.error = null;
@@ -282,15 +289,15 @@ public final class SystemAmoled {
                 pkg + XposedBackend.AMOLED_IDS + "'");
     }
 
-    private static void deleteDefinition(String pkg) {
+    static void deleteDefinition(String pkg) {
         Root.runCommand("rm -f '" + definition(pkg) + "'");
     }
 
-    private static String definition(String pkg) {
+    static String definition(String pkg) {
         return FabricatedValues.DIR + '/' + pkg + SUFFIX + ".xml";
     }
 
-    private static boolean installed(Context context, String pkg) {
+    static boolean installed(Context context, String pkg) {
         try {
             context.getPackageManager().getApplicationInfo(pkg, 0);
             return true;
@@ -314,7 +321,7 @@ public final class SystemAmoled {
      * Disabling an overlay reaches this process asynchronously (for the framework, through a
      * configuration change). Wait until a value of the previous definition reads stock again.
      */
-    private static void awaitStock(Context context, String pkg) {
+    static void awaitStock(Context context, String pkg) {
         String line = Root.runCommand(
                 "grep -m1 'config=\"night\"' '" + definition(pkg) + "' 2>/dev/null");
         if (line == null) return;
@@ -349,6 +356,23 @@ public final class SystemAmoled {
     }
 
     /**
+     * An app's resources as it shows them (its enabled overlays included), {night, day}: the
+     * classic read, after its AMOLED overlay was disabled.
+     */
+    static Resources[] packageResources(Context context, String pkg)
+            throws PackageManager.NameNotFoundException {
+        Context app = context.createPackageContext(pkg, Context.CONTEXT_IGNORE_SECURITY);
+        Configuration night = new Configuration(app.getResources().getConfiguration());
+        night.uiMode = (night.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
+                Configuration.UI_MODE_NIGHT_YES;
+        Resources res = app.createConfigurationContext(night).getResources();
+        Configuration day = new Configuration(night);
+        day.uiMode = (day.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
+                Configuration.UI_MODE_NIGHT_NO;
+        return new Resources[]{res, app.createConfigurationContext(day).getResources()};
+    }
+
+    /**
      * Register and enable an app's overlay. Apps that declare overlayable resources only accept
      * those: one other entry and the whole overlay is refused (STATE_NO_IDMAP). In that case the
      * entries idmap2 rejected are dropped and the rest is registered again.
@@ -358,13 +382,22 @@ public final class SystemAmoled {
      */
     private static int register(Context context, String pkg, List<String[]> items,
                                 Set<String> rejected) {
+        return register(context, pkg, items, rejected, System.currentTimeMillis() - 2000);
+    }
+
+    /**
+     * {@link #register(Context, String, List, Set)}
+     *
+     * @param since Wall time before the first attempt: only idmap2d's log from then on is read
+     */
+    static int register(Context context, String pkg, List<String[]> items, Set<String> rejected,
+                        long since) {
         String name = pkg + SUFFIX;
         List<String> names = new ArrayList<>();
         names.add(name);
         // idmap2d names at most 50 rejected resources per attempt, so keep trying while each
         // attempt reveals new ones. Only the log since this package started is read: scanning
         // the whole buffer took 20 s to many minutes per call on One UI 9.
-        long since = System.currentTimeMillis() - 2000;
         for (int attempt = 0; attempt < MAX_REGISTER_ATTEMPTS && !items.isEmpty(); attempt++) {
             if (FabricatedValues.registerItems(context, pkg, name, items) == 0) return 0;
             FabricatedValues.enable(names);
@@ -388,7 +421,7 @@ public final class SystemAmoled {
     /**
      * Colors in a list of items: one night item each (a light item is optional)
      */
-    private static int colorCount(List<String[]> items) {
+    static int colorCount(List<String[]> items) {
         Set<String> targets = new HashSet<>();
         for (String[] item : items) if ("night".equals(item[3])) targets.add(item[0]);
         return targets.size();
@@ -411,7 +444,7 @@ public final class SystemAmoled {
     /**
      * True when several resources share a name, which happens when names are obfuscated.
      */
-    private static boolean ambiguous(List<String[]> items) {
+    static boolean ambiguous(List<String[]> items) {
         Map<String, String> seen = new HashMap<>();
         for (String[] item : items) {
             String previous = seen.put(item[0], item[4]);
@@ -432,9 +465,37 @@ public final class SystemAmoled {
      *
      * @return Number of colors handed over
      */
-    private static int registerById(Context context, String pkg, List<String[]> items,
-                                    String key) {
+    static int registerById(Context context, String pkg, List<String[]> items, String key) {
         if (key == null) return 0;
+        String content = idsContent(items, key);
+        File local = new File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
+        try (FileWriter writer = new FileWriter(local)) {
+            writer.write(content);
+        } catch (IOException e) {
+            return 0;
+        }
+        boolean copied = installIds(local, pkg);
+        //noinspection ResultOfMethodCallIgnored
+        local.delete();
+        if (!copied) return 0;
+        int count = idsCount(content);
+        Log.i(TAG, pkg + ": " + count + " colors handed to the LSPosed module by id");
+        return count;
+    }
+
+    /**
+     * Colors in a module list: one line per resource id after the key line
+     */
+    static int idsCount(String content) {
+        int lines = 0;
+        for (int i = 0; i < content.length(); i++) if (content.charAt(i) == '\n') lines++;
+        return Math.max(0, lines - 1);
+    }
+
+    /**
+     * The module list of an app's colors (see {@link #registerById}).
+     */
+    static String idsContent(List<String[]> items, String key) {
         Map<String, String[]> byId = new LinkedHashMap<>();
         for (String[] item : items) {
             String[] line = byId.get(item[4]);
@@ -456,18 +517,7 @@ public final class SystemAmoled {
             if (!line[3].isEmpty()) content.append(' ').append(line[3]);
             content.append('\n');
         }
-        File local = new File(context.getCacheDir(), pkg + XposedBackend.AMOLED_IDS);
-        try (FileWriter writer = new FileWriter(local)) {
-            writer.write(content.toString());
-        } catch (IOException e) {
-            return 0;
-        }
-        boolean copied = installIds(local, pkg);
-        //noinspection ResultOfMethodCallIgnored
-        local.delete();
-        if (!copied) return 0;
-        Log.i(TAG, pkg + ": " + byId.size() + " colors handed to the LSPosed module by id");
-        return byId.size();
+        return content.toString();
     }
 
     /**
@@ -832,14 +882,21 @@ public final class SystemAmoled {
     /**
      * Status of every AMOLED overlay: 'x' enabled, ' ' disabled, '-' refused by the system
      */
-    private static Map<String, Character> overlayStates() {
+    static Map<String, Character> overlayStates() {
         return overlayStates(false);
     }
 
-    private static Map<String, Character> overlayStates(boolean quick) {
-        Map<String, Character> states = new HashMap<>();
+    static Map<String, Character> overlayStates(boolean quick) {
         String command = "cmd overlay list 2>/dev/null | grep '" + SUFFIX + "'";
         String out = quick ? Root.runQuickCommand(command) : Root.runCommand(command);
+        return parseOverlayStates(out);
+    }
+
+    /**
+     * The AMOLED overlays in a {@code cmd overlay list} output (see {@link #overlayStates()})
+     */
+    static Map<String, Character> parseOverlayStates(String out) {
+        Map<String, Character> states = new HashMap<>();
         if (out == null) return states;
         Matcher m = Pattern.compile(
                 "\\[(.)\\] com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX) + "|" +
@@ -1028,7 +1085,7 @@ public final class SystemAmoled {
         return list;
     }
 
-    private static boolean isOverlay(PackageInfo info) {
+    static boolean isOverlay(PackageInfo info) {
         try {
             return PackageInfo.class.getField("overlayTarget").get(info) != null;
         } catch (ReflectiveOperationException | RuntimeException e) {
@@ -1062,15 +1119,22 @@ public final class SystemAmoled {
     static List<AmoledChange> compute(Context context, String pkg, AmoledRules rules,
                                       int[] stockPrimary)
             throws PackageManager.NameNotFoundException {
-        Context app = context.createPackageContext(pkg, Context.CONTEXT_IGNORE_SECURITY);
-        Configuration night = new Configuration(app.getResources().getConfiguration());
-        night.uiMode = (night.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
-                Configuration.UI_MODE_NIGHT_YES;
-        Resources res = app.createConfigurationContext(night).getResources();
-        Configuration day = new Configuration(night);
-        day.uiMode = (day.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
-                Configuration.UI_MODE_NIGHT_NO;
-        Resources dayRes = app.createConfigurationContext(day).getResources();
+        Resources[] res = packageResources(context, pkg);
+        return compute(res[0], res[1], pkg, rules, stockPrimary, null, null);
+    }
+
+    /**
+     * {@link #compute(Context, String, AmoledRules, int[])} with the resources given (thread safe
+     * for resources of its own).
+     *
+     * @param res    Dark mode
+     * @param dayRes Light mode
+     * @param known  The app's color resource ids when known, or null to walk its resource table
+     * @param found  If not null, receives the ids that were read
+     */
+    static List<AmoledChange> compute(Resources res, Resources dayRes, String pkg,
+                                      AmoledRules rules, int[] stockPrimary, List<Integer> known,
+                                      List<Integer> found) {
         TypedValue dayRaw = new TypedValue();
         TypedValue dayValue = new TypedValue();
         int primary50 = primary50(res, pkg);
@@ -1078,8 +1142,10 @@ public final class SystemAmoled {
 
         List<AmoledChange> changes = new ArrayList<>();
         TypedValue tv = new TypedValue();
-        List<Integer> ids = colorIds(res, pkg);
-        Log.d(TAG, pkg + ": " + ids.size() + " color resources");
+        List<Integer> ids = known != null ? known : colorIds(res, pkg);
+        if (found != null) found.addAll(ids);
+        Log.d(TAG, pkg + ": " + ids.size() + " color resources" +
+                (known != null ? " (known)" : ""));
         for (int id : ids) {
             String name;
             Integer stockDark;

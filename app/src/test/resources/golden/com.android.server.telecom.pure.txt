@@ -31,7 +31,7 @@ sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
 sesl_gray_D6 #ff47474a -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_inner_round_dark #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff3a3a3d -> #ff000000 floating
 sesl_popup_menu_blur_background_dark #1affffff -> #ff000000 blur
@@ -40,7 +40,7 @@ sesl_round_and_bgcolor_dark #ff010102 -> #ff000000 surface
 sesl_sliding_pane_background_dark #ff010102 -> #ff000000 surface
 sesl_sliding_pane_drawer_background_dark #ff17171a -> #ff000000 surface
 sesl_status_bar_color_dark #ff252528 -> #ff000000 surface
-sesl_switch_divider_color_dark #ff47474a -> #ff000000 surface
+sesl_switch_divider_color_dark #ff47474a -> #ff303030 hairline
 sesl_switch_thumb_off_disabled_stroke_color #668c8c8c -> #00000000 clear
 sesl_switch_thumb_off_disabled_stroke_color_dark #668f8f8f -> #00000000 clear
 sesl_switch_track_off_color_dark #ff636368 -> #ff1a1a1a slider

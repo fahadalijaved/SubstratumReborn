@@ -11,7 +11,7 @@ aod_music_panel_media_button_mask_color #b3000000 -> #ff000000 blur
 aod_music_panel_seekbar_progress_background_color #12ffffff -> #00000000 clear
 aod_music_panel_seekbar_progress_color #66ffffff -> #00000000 clear
 aod_pref_preview_bg_color #ff17171a -> #ff000000 surface
-aod_routine_button_divider #ff47474a -> #ff000000 surface
+aod_routine_button_divider #ff47474a -> #ff303030 hairline
 apps_picker_bg_color #ff010102 -> #ff000000 surface
 automated_bg_color #80000000 -> #ff000000 blur
 b7_preview_shape_background_color #40000000 -> #ff000000 blur
@@ -53,8 +53,8 @@ basic_token_sys_color_inverse_on_surface_container #ff010102 -> #ff000000 surfac
 basic_token_sys_color_inverse_on_surface_container_dark #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface #ff17171a -> #ff000000 surface
 basic_token_sys_surface_bright #ff252528 -> #ff000000 surface
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
@@ -89,7 +89,7 @@ common_module_background_color #78383838 -> #ff000000 blur
 common_module_background_color_aod #99252525 -> #ff000000 blur
 common_roaming_middle_divider_color #66fafafa -> #00000000 clear
 common_roaming_middle_divider_reversed_shadow_color #29fafafa -> #00000000 clear
-common_roaming_outer_divider_reversed_color #ff444444 -> #ff000000 surface
+common_roaming_outer_divider_reversed_color #ff444444 -> #ff303030 hairline
 common_roaming_outer_divider_reversed_shadow_color #66fafafa -> #00000000 clear
 common_s_view_wallet_cover_music_page_widget_button_container_background_color #3dfafafa -> #00000000 clear
 common_stripe_cover_music_page_widget_button_container_background_color #2bfafafa -> #00000000 clear
@@ -138,7 +138,7 @@ facewidget_music_panel_seekbar_progress_background_color_dark #4d252525 -> #ff00
 facewidget_music_panel_seekbar_progress_color_dark #ff252525 -> #ff1a1a1a slider
 facewidget_music_settings_black_color #ff252525 -> #ff000000 surface
 facewidget_setting_recycler_background_color #ff17171a -> #ff000000 surface
-facewidget_settings_list_divider_color #ff3a3a3d -> #ff000000 surface
+facewidget_settings_list_divider_color #ff3a3a3d -> #ff303030 hairline
 facewidget_settings_music_layout_background_color #ff171717 -> #ff000000 surface
 fingerprinter_toast_bg_color #cc1e1e1e -> #ff000000 blur
 informative_shortcut_bg_color_accessibility_black_tint #ff2d2d30 -> #ff000000 surface
@@ -172,7 +172,7 @@ m3_ref_palette_secondary20 #ff332d41 -> #ff000000 surface
 m3_ref_palette_yellow10 #ff2f1400 -> #ff000000 surface
 m3_sys_color_dark_background #ff141218 -> #ff000000 surface
 m3_sys_color_dark_inverse_on_surface #ff322f35 -> #ff000000 surface
-m3_sys_color_dark_outline_variant #ff49454f -> #ff000000 surface
+m3_sys_color_dark_outline_variant #ff49454f -> #ff303030 hairline
 m3_sys_color_dark_surface #ff141218 -> #ff000000 surface
 m3_sys_color_dark_surface_bright #ff3b383e -> #ff000000 surface
 m3_sys_color_dark_surface_container #ff211f26 -> #ff000000 surface
@@ -304,7 +304,7 @@ sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
 sesl_gray_D6 #ff47474a -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark #ff343434 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
@@ -349,7 +349,7 @@ sesl_viewpager_item_background_dark #ff17171a -> #ff000000 surface
 setting_clock_style_thumbnail_dim_color #26ffffff -> #00000000 clear
 settings_clockstyle_ar_custom_clock_add_list_button_color #ff454545 -> #ff000000 surface
 settings_clockstyle_dialog_background_color #ff171717 -> #ff000000 floating
-settings_clockstyle_divider_color #ff3a3a3d -> #ff000000 surface
+settings_clockstyle_divider_color #ff3a3a3d -> #ff303030 hairline
 settings_clockstyle_imagetab_sticker_new_badge_dot_color #ff252525 -> #ff000000 surface
 settings_clockstyle_imagetab_tray_tab_divider_color #668f8f8f -> #00000000 clear
 settings_nowbar_preview_bg_color #4dffffff -> #00000000 clear
@@ -383,12 +383,12 @@ subscreen_clock_style_settings_custom_shuffle_background_color #ff252525 -> #ff0
 subscreen_clock_style_settings_multipack_cue_background_color #73000000 -> #ff000000 blur
 subscreen_clock_style_settings_multipack_cue_border_color #4dfafafa -> #00000000 clear
 theme_clock_date_color_black #ff444444 -> #ff000000 surface
-theme_pattern_line_color_black #ff444444 -> #ff000000 surface
-tile_divider_color #ff505050 -> #ff000000 surface
+theme_pattern_line_color_black #ff444444 -> #ff303030 hairline
+tile_divider_color #ff505050 -> #ff303030 hairline
 time_setting_background_color #ff1f1f1f -> #ff000000 surface
 time_setting_picker_dim_color #19fafafa -> #00000000 clear
 whitebg_facewidget_dashboard_setting_text_color #ff444444 -> #ff000000 surface
 widget_bg_dark_color #ff010102 -> #ff000000 surface
-widget_divider_color #ff3a3a3d -> #ff000000 surface
+widget_divider_color #ff3a3a3d -> #ff303030 hairline
 widget_setting_progress_color_control_normal #26fcfcff -> #00000000 clear
 widget_setting_seek_bar_thumb_background_tint #ff010102 -> #ff2a2a2a thumb

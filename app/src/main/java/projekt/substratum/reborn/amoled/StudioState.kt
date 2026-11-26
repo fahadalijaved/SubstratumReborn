@@ -29,6 +29,7 @@ import projekt.substratum.R
 import projekt.substratum.Substratum
 import projekt.substratum.common.Packages
 import projekt.substratum.common.platform.AmoledChange
+import projekt.substratum.common.platform.AmoledEngine
 import projekt.substratum.common.platform.AmoledJobs
 import projekt.substratum.common.platform.AmoledLevel
 import projekt.substratum.common.platform.AmoledPalette
@@ -45,6 +46,7 @@ import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.RebornCache
 import projekt.substratum.reborn.applied.AppliedRepository
 import projekt.substratum.reborn.components.mock.MockRoles
+import projekt.substratum.services.system.AmoledWatchJob
 import projekt.substratum.util.helpers.Root
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
@@ -185,6 +187,12 @@ object StudioState {
     val records: StateFlow<Int> = _records.asStateFlow()
     private val _events = MutableSharedFlow<Event>(extraBufferCapacity = 8)
     val events: SharedFlow<Event> = _events.asSharedFlow()
+    private val _engineClassic = MutableStateFlow(false)
+    /** Applies use the classic engine (the preference [AmoledEngine.PREF_ENGINE]) */
+    val engineClassic: StateFlow<Boolean> = _engineClassic.asStateFlow()
+    private val _autoTheme = MutableStateFlow(true)
+    /** Updated apps are re-themed on their own ([AmoledWatchJob]) */
+    val autoTheme: StateFlow<Boolean> = _autoTheme.asStateFlow()
 
     private var attached = 0
     private var themeChosen = false
@@ -262,6 +270,8 @@ object StudioState {
     fun attach(context: Context) {
         app = context.applicationContext
         if (attached++ == 0) AmoledJobs.addListener(listener)
+        _engineClassic.value = !AmoledEngine.isEnabled()
+        _autoTheme.value = AmoledWatchJob.isOn()
         syncJob()
         if (_look.value == null) _look.value = readLook()
         if (_scope.value == null) {
@@ -607,8 +617,42 @@ object StudioState {
         }
     }
 
-    /** Apps updated since their colours were read, or read with another level. */
+    /** The classic engine (one app at a time, its overlay off while it is read) or the fast one. */
+    fun setEngineClassic(classic: Boolean) {
+        AmoledEngine.setClassic(classic)
+        _engineClassic.value = classic
+        say(string(if (classic) R.string.reborn_studio_engine_classic_on else R.string.reborn_studio_engine_classic_off))
+    }
+
+    /** Re-theme updated apps on their own, or not. */
+    fun setAutoTheme(on: Boolean) {
+        _autoTheme.value = on
+        scope.launch {
+            withContext(Dispatchers.IO) { AmoledWatchJob.setOn(app, on) }
+            say(string(if (on) R.string.reborn_studio_auto_theme_on else R.string.reborn_studio_auto_theme_off))
+        }
+    }
+
+    /**
+     * The apps an apply would change: with the fast engine, those its cache does not hold in
+     * place for their installed version and the current look (updated, new, gone, or read with
+     * other rules); with the classic one, apps updated since their colours were read, or read with
+     * another level.
+     */
     fun reapplyChanged() {
+        if (AmoledEngine.isEnabled()) {
+            val theme = _summary.value?.rulesTheme
+            withRoot {
+                val changed = withContext(Dispatchers.IO) { AmoledEngine.changedPackages(app, theme) }
+                if (changed.isEmpty()) {
+                    say(string(R.string.reborn_studio_nothing_changed))
+                    return@withRoot
+                }
+                queue(AmoledJobs.Kind.APPLY_ONE) { AmoledJobs.applyOne(app, changed) }
+                say(string(R.string.reborn_studio_reapplying_changed, changed.size))
+            }
+            return
+        }
         val rows = _apps.value
         if (rows == null) {
             say(string(R.string.reborn_studio_apps_loading))

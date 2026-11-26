@@ -36,8 +36,8 @@ basic_token_sys_color_inverse_on_surface_container #ff010102 -> #ff000000 surfac
 basic_token_sys_color_inverse_on_surface_container_dark #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface #ff17171a -> #ff000000 surface
 basic_token_sys_surface_bright #ff252528 -> #ff000000 surface
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
@@ -75,7 +75,7 @@ dw_data_type_empty_color #ff3a3a3d -> #ff000000 surface
 dw_dialog_sub_header_divider_color #ff636368 -> #ff1f1f1f outline
 dw_graph_bg_section_color #ff010102 -> #ff000000 surface
 dw_half_circle_empty_color #ff252528 -> #ff000000 surface
-dw_marker_bg_line_color #ff3a3a3d -> #ff000000 surface
+dw_marker_bg_line_color #ff3a3a3d -> #ff303030 hairline
 dw_sub_tab_bg_color #ff010102 -> #ff000000 surface
 dw_warning_popup_background_color #ff252528 -> #ff000000 floating
 dw_warning_popup_button_divider_color #ffa3a3a7 -> #ff1f1f1f outline
@@ -142,7 +142,7 @@ sesl_gray_D1 #ff010102 -> #ff000000 surface
 sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating

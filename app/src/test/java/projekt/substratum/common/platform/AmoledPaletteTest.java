@@ -70,6 +70,40 @@ public class AmoledPaletteTest {
     }
 
     @Test
+    public void linesNeverVanishIntoThePage() {
+        AmoledRules rules = AmoledRules.defaults();
+        check(AmoledPalette.decide(0xff3a3a3d, "list_divider_color", rules),
+                rules.hairline, AmoledPalette.HAIRLINE);
+        check(AmoledPalette.decide(0xff49454f, "m3_sys_color_dark_outline_variant", rules),
+                rules.hairline, AmoledPalette.HAIRLINE);
+        // The stroke of a background is a line; the background of a bordered thing a surface
+        check(AmoledPalette.decide(0xff47474a, "dex_background_stroke_color", rules),
+                rules.hairline, AmoledPalette.HAIRLINE);
+        check(AmoledPalette.decide(0xff17171a, "rp_content_bordered_button_bg_color_color_dark",
+                rules), rules.background, AmoledPalette.SURFACE);
+        // A dim line keeps its color; a near-black one went with the stock page already
+        check(AmoledPalette.decide(0xff2d2d2d, "more_info_divider_color", rules),
+                null, AmoledPalette.LINE_KEPT);
+        check(AmoledPalette.decide(0xff0f0f0f, "expand_divider_color", rules),
+                rules.background, AmoledPalette.SURFACE);
+        // Obfuscated names (Play Store): Material's outline variant by its value
+        check(AmoledPalette.decide(0xff444746, "0_resource_name_obfuscated", rules),
+                rules.hairline, AmoledPalette.HAIRLINE);
+        check(AmoledPalette.decide(0xff46464f, "a", rules),
+                rules.hairline, AmoledPalette.HAIRLINE);
+        check(AmoledPalette.decide(0xff1e1f20, "0_resource_name_obfuscated", rules),
+                rules.background, AmoledPalette.SURFACE);
+        assertNull(AmoledPalette.decide(0xff8e918f, "0_resource_name_obfuscated", rules).color);
+        // A named surface with that value stays a surface
+        check(AmoledPalette.decide(0xff444746, "card_background", rules),
+                rules.background, AmoledPalette.SURFACE);
+        // Levels with a ramp: a line takes a step above the page, as before
+        AmoledRules elevated = AmoledRules.defaults().setLevel(AmoledLevel.ELEVATED);
+        check(AmoledPalette.decide(0xff3a3a3d, "list_divider_color", elevated),
+                0xff1c1c1c, AmoledPalette.SURFACE);
+    }
+
+    @Test
     public void explicitColorsNameTheirRule() {
         AmoledRules rules = AmoledRules.defaults();
         AmoledPalette.Decision exact = AmoledPalette.forColor("com.android.systemui",

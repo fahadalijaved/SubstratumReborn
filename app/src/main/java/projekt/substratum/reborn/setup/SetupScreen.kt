@@ -73,7 +73,7 @@ import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.rememberSnackbar
 import projekt.substratum.reborn.components.statusColors
 
-private enum class StepFix { RootManager, Lsposed, RestartSystemUi, ResetGuard, ResumeHooks }
+private enum class StepFix { RootManager, Lsposed, RestartSystemUi, ResetGuard, ResumeHooks, Battery }
 
 private data class Step(
     val title: Int,
@@ -82,6 +82,8 @@ private data class Step(
     val value: String,
     val fix: StepFix?,
     val detail: String? = null,
+    /** Counts towards "ready"; a recommended step does not */
+    val required: Boolean = true,
 )
 
 /** Labels for the packages the module's scope needs. */
@@ -164,6 +166,16 @@ private fun steps(context: android.content.Context, s: RebornStatus.Snapshot): L
     }
     // Restarting System UI needs root: without it step 1 is the fix
     list += if (root.granted) hooks else hooks.copy(fix = null)
+    // Doze pauses an apply with the screen off; unrestricted battery use lets it finish
+    val power = context.getSystemService(android.os.PowerManager::class.java)
+    val unrestricted = power?.isIgnoringBatteryOptimizations(context.packageName) == true
+    list += Step(
+        R.string.reborn_step_battery, R.string.reborn_step_battery_text,
+        if (unrestricted) ChipState.OK else ChipState.Warn,
+        context.getString(if (unrestricted) R.string.reborn_value_unrestricted else R.string.reborn_value_optimized),
+        if (unrestricted) null else StepFix.Battery,
+        required = false,
+    )
     return list
 }
 
@@ -186,7 +198,7 @@ fun SetupScreen(onDone: () -> Unit) {
         RebornStatus.read(context).also { RebornCache.status = it }
     }
     val list = remember(status) { status?.let { steps(context, it) } }
-    val done = list?.count { it.state == ChipState.OK } ?: 0
+    val done = list?.count { it.required && it.state == ChipState.OK } ?: 0
     val progress by animateFloatAsState(done / 4f, label = "setup")
 
     androidx.compose.runtime.CompositionLocalProvider(LocalSnackbar provides snackbarState) {
@@ -224,6 +236,9 @@ fun SetupScreen(onDone: () -> Unit) {
                             val resumed = RebornActions.setHooksPaused(false)
                             snackbar(context.getString(if (resumed) R.string.reborn_resumed_done else R.string.reborn_failed))
                             recheck(6000L)
+                        }
+                        StepFix.Battery -> if (!RebornActions.openBatteryOptimization(context)) {
+                            snackbar(context.getString(R.string.reborn_no_battery_settings))
                         }
                     }
                 } catch (e: CancellationException) {
@@ -348,7 +363,8 @@ private fun StepCard(number: Int, step: Step, busy: Boolean, onFix: () -> Unit) 
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.reborn_step_number, number),
+                    text = if (step.required) stringResource(R.string.reborn_step_number, number)
+                    else stringResource(R.string.reborn_step_recommended),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,

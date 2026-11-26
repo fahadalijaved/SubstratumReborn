@@ -26,8 +26,8 @@ basic_token_gray_95 #ff17171a -> #ff000000 surface
 basic_token_sys_background_dark #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
 basic_token_sys_surface_brightest #ff3a3a3d -> #ff000000 surface
 basic_token_sys_surface_brightest_dark #ff3a3a3d -> #ff000000 surface
@@ -45,7 +45,7 @@ capsule_entity_background #ff3a3a3d -> #ff000000 surface
 cardview_dark_background #ff424242 -> #ff000000 surface
 cardview_shadow_start_color #37000000 -> #ff000000 blur
 change_creature_cover_icon_bg_color #ff3a3a3d -> #ff000000 surface
-change_creature_cover_icon_bg_stroke #ff3a3a3d -> #ff000000 surface
+change_creature_cover_icon_bg_stroke #ff3a3a3d -> #ff303030 hairline
 collection_footer_button_color #ff3a3a3d -> #ff000000 surface
 colorControlHighlight #26ffffff -> #00000000 clear
 content_type_container_background #80252525 -> #ff000000 blur
@@ -65,7 +65,7 @@ daynight_memory_pictures_background_color #ff010102 -> #ff000000 surface
 daynight_memory_pictures_bottom_navigation_view_bg_color #ff010102 -> #ff000000 floating
 daynight_memory_pictures_toolbar_bg_color #ff010102 -> #ff000000 floating
 daynight_motion_photo_view_mode_layout_bg #ff3a3a3d -> #ff000000 surface
-daynight_search_category_item_divider_line_color #ff3a3a3d -> #ff000000 surface
+daynight_search_category_item_divider_line_color #ff3a3a3d -> #ff303030 hairline
 daynight_search_history_broken_thumb_background_color #ff3a3a3d -> #ff2a2a2a thumb
 daynight_settings_preference_list_item_background #ff17171a -> #ff000000 surface
 daynight_thumbnail_border_color #4dffffff -> #00000000 clear
@@ -103,7 +103,6 @@ floating_move_bar_divider_color #3ba3a3a7 -> #ff1f1f1f outline
 floating_recommendation_chunking_bg_color #cc17171a -> #ff000000 blur
 folder_no_album_first_layer_color #ff252528 -> #ff000000 surface
 folder_no_album_second_layer_color #ff4d4d52 -> #ff000000 surface
-gallery360viewer_play_pause_button_stroke_color #ff252525 -> #ff000000 surface
 gallery_splash_background #ff010102 -> #ff000000 surface
 gallery_status_bar_background_color #ff010102 -> #ff000000 surface
 gallery_status_bar_fw_background_color #ff010102 -> #ff000000 surface
@@ -131,12 +130,11 @@ memory_pictures_option_view_bg_color #f2252525 -> #ff000000 blur
 memory_pictures_related_view_background_color #ff252525 -> #ff000000 surface
 memory_pictures_toolbar_bg_color #ff010102 -> #ff000000 floating
 merged_album_tip_card_recycler_item_bg_color #ff3a3a3d -> #ff000000 surface
-more_info_divider_color #ff2d2d2d -> #ff000000 surface
 moreinfo_3rd_party_bg_stroke_color #4dffffff -> #00000000 clear
 moreinfo_location_button_bg_color #ff010102 -> #ff000000 surface
-moreinfo_location_button_stroke_color #ff3a3a3d -> #ff000000 surface
+moreinfo_location_button_stroke_color #ff3a3a3d -> #ff303030 hairline
 moreinfo_oneui5x_capture_mode_bg_color #ff252525 -> #ff000000 surface
-moreinfo_oneui5x_divider_color #ff3a3a3a -> #ff000000 surface
+moreinfo_oneui5x_divider_color #ff3a3a3a -> #ff303030 hairline
 moreinfo_tag_border_color #4dffffff -> #00000000 clear
 mtrl_scrim_color #52000000 -> #ff000000 blur
 new_search_bar_close_button_bg #1afcfcfa -> #00000000 clear
@@ -161,7 +159,7 @@ screen_shot_filter_button_background_color #ff2d2d30 -> #ff000000 surface
 search_all_filter_chip_bg_color #ff3a3a3d -> #ff000000 floating
 search_blur_dim_color #4d000000 -> #ff000000 blur
 search_card_divider_color #4dffffff -> #00000000 clear
-search_category_item_divider_line_color #ff3a3a3d -> #ff000000 surface
+search_category_item_divider_line_color #ff3a3a3d -> #ff303030 hairline
 search_category_shot_mode_background #ff3a3a3d -> #ff000000 surface
 search_chip_remove_icon_bg_color #1afcfcff -> #00000000 clear
 search_count_header_background_line_color #4dffffff -> #00000000 clear
@@ -176,7 +174,7 @@ search_keyword_divider_color #26a3a3a3 -> #00000000 clear
 search_map_icon_bg_color #cc010102 -> #ff000000 blur
 search_no_blur_dim_color #cc000000 -> #ff000000 blur
 search_pictures_no_item_suggestion_button_bg #ff3a3a3d -> #ff000000 surface
-search_shot_types_divider_color #ff3a3a3d -> #ff000000 surface
+search_shot_types_divider_color #ff3a3a3d -> #ff303030 hairline
 search_tag_chip_bg_color #ff010102 -> #ff000000 floating
 search_tag_chip_stroke_color #ff636368 -> #ff1f1f1f outline
 search_tag_me_tip_card_background #ff252528 -> #ff000000 surface
@@ -207,7 +205,7 @@ sesl_gray_D1 #ff010102 -> #ff000000 surface
 sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating
@@ -241,7 +239,7 @@ sesl_viewpager_background_dark #ff2d2d30 -> #ff000000 surface
 sesl_viewpager_background_for_theme #ff3a3a3d -> #ff000000 surface
 sesl_viewpager_item_background_dark #ff17171a -> #ff000000 surface
 settings_preference_list_item_background #ff17171a -> #ff000000 surface
-settings_preference_switch_divider_color #ff47474a -> #ff000000 surface
+settings_preference_switch_divider_color #ff47474a -> #ff303030 hairline
 shared_photo_cover_empty_color #ff2b2b2b -> #ff000000 surface
 shared_sub_title_icon_bg_color #ff1f1f1f -> #ff000000 surface
 sharing_pictures_group_information_bg #33000000 -> #ff000000 blur
@@ -278,7 +276,7 @@ text_extraction_capsule_bg_color #ff3a3a3d -> #ff000000 surface
 text_extraction_hint_bg_color #4d000000 -> #ff000000 blur
 textextraction_dialog_bg_color #ff252528 -> #ff000000 floating
 textextraction_dialog_content_bg_color #1afcfcff -> #00000000 clear
-third_party_access_layout_divider_color #ff47474a -> #ff000000 surface
+third_party_access_layout_divider_color #ff47474a -> #ff303030 hairline
 thumbnail_border_color #4dffffff -> #00000000 clear
 thumbnail_border_cover_widget_color #26ffffff -> #00000000 clear
 thumbnail_content_n_days_background #66000000 -> #ff000000 blur

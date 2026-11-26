@@ -65,6 +65,18 @@ object RebornActions {
         return onIo { runCatching { RebornStatus.openLsposedWithRoot() }.getOrDefault(false) }
     }
 
+    /**
+     * Android's "allow unrestricted battery use" dialog for Reborn, else the list of battery
+     * optimizations.
+     */
+    fun openBatteryOptimization(context: Context): Boolean {
+        @Suppress("BatteryLife")
+        val ask = Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            android.net.Uri.parse("package:" + context.packageName))
+        return start(context, ask) ||
+            start(context, Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+    }
+
     fun openClassic(context: Context, manager: Boolean = false) {
         start(context, Intent(context, MainActivity::class.java).apply {
             if (manager) putExtra("launch_manager_fragment", true)

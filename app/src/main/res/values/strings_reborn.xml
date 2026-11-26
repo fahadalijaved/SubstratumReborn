@@ -169,6 +169,12 @@
     <string name="reborn_scope_self">Reborn</string>
     <string name="reborn_step_hooks">SystemUI hooked</string>
     <string name="reborn_step_hooks_text">SystemUI reports the module after it starts. A restart of SystemUI loads it.</string>
+    <string name="reborn_step_battery">Battery: unrestricted (recommended)</string>
+    <string name="reborn_step_battery_text">With the screen off, Android pauses background work. Unrestricted battery use lets an AMOLED apply, and the hourly re-theme of updated apps, finish with the screen off. Reborn uses no battery while nothing runs.</string>
+    <string name="reborn_step_recommended">Recommended</string>
+    <string name="reborn_value_unrestricted">Unrestricted</string>
+    <string name="reborn_value_optimized">Optimized</string>
+    <string name="reborn_no_battery_settings">Could not open the battery setting</string>
 
     <!-- AMOLED tab -->
     <string name="reborn_amoled_apps">%1$d of %2$d apps themed</string>
@@ -352,6 +358,19 @@
     <string name="reborn_studio_removing">Removing AMOLED from every app…</string>
     <string name="reborn_studio_reapplying_changed">Reading %1$d changed apps again…</string>
     <string name="reborn_studio_nothing_changed">Every app is up to date</string>
+    <string name="reborn_studio_engine_classic">Engine: classic</string>
+    <string name="reborn_studio_engine_classic_on">Classic engine: apps are read one by one, with their overlay off</string>
+    <string name="reborn_studio_engine_classic_off">Fast engine: cached, batched and flicker-free</string>
+    <string name="reborn_studio_auto_theme">Auto-theme updated apps</string>
+    <string name="reborn_studio_auto_theme_on">Updated apps get re-themed on their own</string>
+    <string name="reborn_studio_auto_theme_off">Updated apps stay stock until you re-apply</string>
+
+    <!-- AMOLED: re-theme after updates -->
+    <string name="amoled_auto_rethemed_one">Re-themed %1$s after an update</string>
+    <string name="amoled_auto_rethemed_more">Re-themed %1$s and %2$d more after updates</string>
+    <string name="amoled_ota_title">System updated: re-apply AMOLED</string>
+    <string name="amoled_ota_text">The phone was updated since AMOLED was applied. Re-apply so every app is read again.</string>
+    <string name="amoled_ota_reapply">Re-apply</string>
     <string name="reborn_studio_apps_loading">Still reading the app list</string>
 
     <!-- AMOLED Studio: look -->

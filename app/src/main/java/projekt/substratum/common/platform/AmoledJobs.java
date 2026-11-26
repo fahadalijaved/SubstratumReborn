@@ -38,6 +38,7 @@ public final class AmoledJobs {
     public static final String EXTRA_PACKAGES = "packages";
     public static final String EXTRA_ON = "on";
     public static final String EXTRA_RESTART = "restart";
+    public static final String EXTRA_AUTO = "auto";
     // Extras of older versions (SystemAmoledActivity passes its intent through)
     private static final String LEGACY_APPLY = "apply";
     private static final String LEGACY_ONLY = "only";
@@ -76,14 +77,25 @@ public final class AmoledJobs {
          * APPLY_SYSTEMUI: restart System UI afterwards
          */
         public final boolean restart;
+        /**
+         * APPLY_ONE started on its own for apps updated since their colors were read
+         * (AmoledWatchJob): it leaves its own notification instead of the usual result
+         */
+        public final boolean auto;
 
         Job(Kind kind, String theme, List<String> packages, boolean on, boolean restart) {
+            this(kind, theme, packages, on, restart, false);
+        }
+
+        Job(Kind kind, String theme, List<String> packages, boolean on, boolean restart,
+            boolean auto) {
             this.id = IDS.incrementAndGet();
             this.kind = kind;
             this.theme = theme;
             this.packages = Collections.unmodifiableList(new ArrayList<>(packages));
             this.on = on;
             this.restart = restart;
+            this.auto = auto;
         }
 
         public String packageName() {
@@ -153,6 +165,17 @@ public final class AmoledJobs {
 
     public static void applyOne(Context context, Collection<String> packages) {
         start(context, Kind.APPLY_ONE, null, new ArrayList<>(packages), false, false);
+    }
+
+    /**
+     * {@link #applyOne(Context, Collection)} for apps updated since their colors were read,
+     * started on its own: a "Re-themed" notification afterwards, no usual result.
+     */
+    public static void applyUpdated(Context context, Collection<String> packages) {
+        Intent intent = intent(context, Kind.APPLY_ONE)
+                .putExtra(EXTRA_PACKAGES, packages.toArray(new String[0]))
+                .putExtra(EXTRA_AUTO, true);
+        context.getApplicationContext().startForegroundService(intent);
     }
 
     /**
@@ -235,7 +258,8 @@ public final class AmoledJobs {
             }
             if (kind == Kind.APPLY_SYSTEMUI) list = Collections.singletonList(SYSTEMUI);
             return new Job(kind, theme, list, intent.getBooleanExtra(EXTRA_ON, false),
-                    intent.getBooleanExtra(EXTRA_RESTART, false));
+                    intent.getBooleanExtra(EXTRA_RESTART, false),
+                    kind == Kind.APPLY_ONE && intent.getBooleanExtra(EXTRA_AUTO, false));
         }
         if (intent.getBooleanExtra(LEGACY_RESTORE, false)) {
             return new Job(Kind.RESTORE, null, Collections.emptyList(), false, false);

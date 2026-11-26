@@ -45,8 +45,8 @@ basic_token_sys_color_inverse_on_surface_container #ff010102 -> #ff000000 surfac
 basic_token_sys_color_inverse_on_surface_container_dark #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface #ff17171a -> #ff000000 surface
 basic_token_sys_surface_bright #ff252528 -> #ff000000 surface
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
@@ -78,7 +78,7 @@ call_bg_main_scr_mode_btn_color #26fafafa -> #00000000 clear
 call_bg_preview_divider_color #16d4d4d4 -> #00000000 clear
 call_bg_preview_scr_mode_btn_color #26ffffff -> #00000000 clear
 call_bg_window_background_color #ff080808 -> #ff000000 surface
-call_translate_list_divider_color #ff3a3a3d -> #ff000000 surface
+call_translate_list_divider_color #ff3a3a3d -> #ff303030 hairline
 cardview_dark_background #ff424242 -> #ff000000 surface
 cardview_shadow_start_color #37000000 -> #ff000000 blur
 cu_widget_round_and_bgcolor #ff010102 -> #ff000000 surface
@@ -105,7 +105,7 @@ m3_ref_palette_secondary10 #ff1d192b -> #ff000000 surface
 m3_ref_palette_secondary20 #ff332d41 -> #ff000000 surface
 m3_sys_color_dark_background #ff141218 -> #ff000000 surface
 m3_sys_color_dark_inverse_on_surface #ff322f35 -> #ff000000 surface
-m3_sys_color_dark_outline_variant #ff49454f -> #ff000000 surface
+m3_sys_color_dark_outline_variant #ff49454f -> #ff303030 hairline
 m3_sys_color_dark_surface #ff141218 -> #ff000000 surface
 m3_sys_color_dark_surface_bright #ff3b383e -> #ff000000 surface
 m3_sys_color_dark_surface_container #ff211f26 -> #ff000000 surface
@@ -170,7 +170,7 @@ sesl_gray_D1 #ff010102 -> #ff000000 surface
 sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating

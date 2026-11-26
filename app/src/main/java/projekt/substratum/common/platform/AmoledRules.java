@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
  *   "background": "#000000",      every dark surface: pages, cards, lists, buttons (level pure)
  *   "floating":   "#000000",      popups, menus, dialogs, floating bars (level pure)
  *   "outline":    "#1f1f1f",      outline of floating elements
+ *   "hairline":   "#303030",      lines, strokes and dividers that would vanish into the page
  *   "blur":       "#ff000000",    tint over blurred panels (alpha = how much blur shows)
  *   "slider":     "#1a1a1a",      slider and seekbar tracks
  *   "thumb":      "#2a2a2a",      scrollbar thumbs
@@ -60,6 +61,7 @@ public final class AmoledRules {
     int background = 0xff000000;
     int floating = 0xff000000;
     int outline = 0xff1f1f1f;
+    int hairline = 0xff303030;
     int blur = 0xff000000;
     int slider = 0xff1a1a1a;
     int thumb = 0xff2a2a2a;
@@ -201,6 +203,7 @@ public final class AmoledRules {
         if (o.has("background")) r.background = AmoledPalette.parseColor(o.getString("background"));
         if (o.has("floating")) r.floating = AmoledPalette.parseColor(o.getString("floating"));
         if (o.has("outline")) r.outline = AmoledPalette.parseColor(o.getString("outline"));
+        if (o.has("hairline")) r.hairline = AmoledPalette.parseColor(o.getString("hairline"));
         if (o.has("blur")) r.blur = AmoledPalette.parseColor(o.getString("blur"));
         if (o.has("slider")) r.slider = AmoledPalette.parseColor(o.getString("slider"));
         if (o.has("thumb")) r.thumb = AmoledPalette.parseColor(o.getString("thumb"));
@@ -342,6 +345,60 @@ public final class AmoledRules {
         return rampStep(Math.max(2, AmoledPalette.tier(stock)));
     }
 
+    /**
+     * The page: what the darkest surfaces become
+     */
+    int pageColor() {
+        return level == AmoledLevel.PURE ? background : rampStep(0);
+    }
+
+    /**
+     * Everything that decides the colors compute() writes, as one stable text: the colors, the
+     * look, the packages covered, the theme's named colors and the user's rules. Kept with each
+     * app's cached colors ({@link AmoledCache}): any change here reads the app again.
+     */
+    public String fingerprint() {
+        StringBuilder s = new StringBuilder();
+        s.append(String.format(java.util.Locale.ROOT, "b%08x f%08x o%08x h%08x u%08x s%08x t%08x",
+                background, floating, outline, hairline, blur, slider, thumb));
+        s.append(" level=").append(level.key());
+        s.append(" ramp=");
+        for (int step : ramp()) s.append(String.format(java.util.Locale.ROOT, "%08x,", step));
+        s.append(" accent=").append(accent == null ? "-" : Integer.toHexString(accent));
+        s.append(" light=").append(accentLight).append(" tile=").append(accentTile);
+        s.append(" tint=").append(tint);
+        s.append(" include=");
+        for (Pattern p : include) s.append(p.pattern()).append('\u0001');
+        s.append(" exclude=");
+        for (Pattern p : exclude) s.append(p.pattern()).append('\u0001');
+        s.append(" exact=");
+        for (Map.Entry<String, Map<String, Integer>> pkg : new java.util.TreeMap<>(exact).entrySet()) {
+            s.append(pkg.getKey()).append('{');
+            for (Map.Entry<String, Integer> e : new java.util.TreeMap<>(pkg.getValue()).entrySet()) {
+                s.append(e.getKey()).append('=').append(Integer.toHexString(e.getValue()))
+                        .append(',');
+            }
+            s.append('}');
+        }
+        s.append(" patterns=");
+        for (Map.Entry<String, List<Object[]>> pkg :
+                new java.util.TreeMap<>(patterns).entrySet()) {
+            s.append(pkg.getKey()).append('{');
+            for (Object[] e : pkg.getValue()) {
+                s.append(((Pattern) e[0]).pattern()).append('=')
+                        .append(Integer.toHexString((Integer) e[1])).append(',');
+            }
+            s.append('}');
+        }
+        s.append(" user=");
+        try {
+            s.append(user == null ? "-" : user.toJson());
+        } catch (Exception e) {
+            s.append("?");
+        }
+        return s.toString();
+    }
+
     private int rampStep(int step) {
         if (effectiveRamp == null) ramp();
         return effectiveRamp[step];
@@ -444,7 +501,7 @@ public final class AmoledRules {
         return !("android".equals(packageName) && name.startsWith("system_"));
     }
 
-    boolean covers(String packageName) {
+    public boolean covers(String packageName) {
         for (Pattern p : exclude) if (p.matcher(packageName).matches()) return false;
         for (Pattern p : include) if (p.matcher(packageName).matches()) return true;
         return false;

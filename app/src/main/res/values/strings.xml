@@ -645,6 +645,7 @@
     <string name="system_amoled_removing">Removing…</string>
     <string name="system_amoled_progress">%1$d of %2$d: %3$s</string>
     <string name="system_amoled_done">AMOLED applied to %1$d apps (%2$d colors)</string>
+    <string name="system_amoled_done_timed">AMOLED applied to %1$d apps (%2$d colors) in %3$s s</string>
     <string name="system_amoled_removed">AMOLED removed from every app</string>
     <string name="system_amoled_needs_root">AMOLED for every app needs root</string>
     <string name="system_amoled_background">Run in background</string>

@@ -99,5 +99,12 @@ public final class RebornInit {
         } catch (Throwable t) {
             Log.e(TAG, "Setup did not finish", t);
         }
+        // Apps updated since AMOLED read them are re-themed now, and from now on every hour
+        try {
+            projekt.substratum.services.system.AmoledWatchJob.schedule(context);
+            projekt.substratum.services.system.AmoledWatchJob.check(context, "open");
+        } catch (Throwable t) {
+            Log.e(TAG, "AMOLED update check failed", t);
+        }
     }
 }

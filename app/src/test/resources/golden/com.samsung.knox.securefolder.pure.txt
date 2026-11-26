@@ -17,8 +17,8 @@ basic_token_sys_background #ff010102 -> #ff000000 surface
 basic_token_sys_background_dark #ff010102 -> #ff000000 surface
 basic_token_sys_background_variant #ff010102 -> #ff000000 surface
 basic_token_sys_background_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface #ff17171a -> #ff000000 surface
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
 basic_token_sys_surface_brightest_dark #ff3a3a3d -> #ff000000 surface
@@ -34,13 +34,13 @@ button_list_background_color #ff17171a -> #ff000000 surface
 cardview_dark_background #ff424242 -> #ff000000 surface
 customize_bg_color #ff010102 -> #ff000000 surface
 customize_color_chip_stroke_color #ff000000 -> #ff1f1f1f outline
-customize_grid_line_color #ff3a3a3d -> #ff000000 surface
+customize_grid_line_color #ff3a3a3d -> #ff303030 hairline
 design_dark_default_color_background #ff121212 -> #ff000000 surface
 design_dark_default_color_surface #ff121212 -> #ff000000 surface
 design_snackbar_background_color #ff4d4d52 -> #ff000000 floating
 encrypt_help_image_background_color #ff17171a -> #ff000000 surface
 folder_default_color #ff474747 -> #ff000000 surface
-folder_line #ff3a3a3d -> #ff000000 surface
+folder_line #ff3a3a3d -> #ff303030 hairline
 home_activity_background_color #ff010102 -> #ff000000 surface
 home_contents_background_color #ff17171a -> #ff000000 surface
 icon_list_item_bg #ff4d4d52 -> #ff000000 surface
@@ -82,7 +82,7 @@ sesl_gray_D1 #ff010102 -> #ff000000 surface
 sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating

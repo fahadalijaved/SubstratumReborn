@@ -64,6 +64,12 @@ public class BootCompletedDetector extends BroadcastReceiver {
             } catch (Exception e) {
                 Substratum.log(TAG, "Could not restore fabricated overlays: " + e);
             }
+            // The periodic check for updated apps (the restore runs it once too)
+            try {
+                AmoledWatchJob.schedule(context);
+            } catch (Exception e) {
+                Substratum.log(TAG, "Could not schedule the AMOLED update check: " + e);
+            }
             if (prefs.getBoolean(SCHEDULED_PROFILE_ENABLED, false)) {
                 ProfileManager.updateScheduledProfile(context);
             }

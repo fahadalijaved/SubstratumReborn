@@ -36,7 +36,7 @@ m3_ref_palette_secondary20 #ff332d41 -> #ff000000 surface
 m3_ref_palette_yellow10 #ff2f1400 -> #ff000000 surface
 m3_sys_color_dark_background #ff141218 -> #ff000000 surface
 m3_sys_color_dark_inverse_on_surface #ff322f35 -> #ff000000 surface
-m3_sys_color_dark_outline_variant #ff49454f -> #ff000000 surface
+m3_sys_color_dark_outline_variant #ff49454f -> #ff303030 hairline
 m3_sys_color_dark_surface #ff141218 -> #ff000000 surface
 m3_sys_color_dark_surface_bright #ff3b383e -> #ff000000 surface
 m3_sys_color_dark_surface_container #ff211f26 -> #ff000000 surface

@@ -39,6 +39,14 @@ public final class AmoledPalette {
     public static final String SURFACE = "surface";
     public static final String FLOATING = "floating";
     /**
+     * A line, stroke, divider or outline that would vanish into the page: a dim hairline instead
+     */
+    public static final String HAIRLINE = "hairline";
+    /**
+     * A line already as dim as a hairline: it keeps its stock color
+     */
+    public static final String LINE_KEPT = "line-kept";
+    /**
      * Labels of colors a theme names in its rules: an exact resource name, or a regex
      */
     public static final String EXPLICIT = "explicit";
@@ -281,10 +289,70 @@ public final class AmoledPalette {
         // Pure black: the rules' background and floating colors; other levels: a step of the ramp
         Decision surface = floating ? new Decision(rules.floatingFor(color), FLOATING) :
                 new Decision(rules.surfaceFor(color), SURFACE);
-        if (hi <= 0x30) return surface;
         // dark greys (cards, containers, lines); mid greys are secondary text and stay
-        if (hi - lo <= 0x18 && hi <= 0x52) return surface;
-        return keep(KEPT);
+        boolean dark = hi <= 0x30 || hi - lo <= 0x18 && hi <= 0x52;
+        if (!dark) return keep(KEPT);
+        if (line && lineRole(name) || outlineValue(name, color)) {
+            Decision hairline = hairline(color, surface, rules);
+            if (hairline != null) return hairline;
+        }
+        return surface;
+    }
+
+    /**
+     * Outlines, strokes and dividers never take the page color, where they would vanish (chip
+     * and button outlines, list dividers): a line the stock page already hid (a near-black one)
+     * goes with the page as before, a dim one keeps its stock color and a brighter one becomes
+     * the rules' hairline. A line whose surface step is not the page (the levels other than pure)
+     * stays visible as it is.
+     *
+     * @return The decision, or null to keep the surface decision
+     */
+    private static Decision hairline(int color, Decision surface, AmoledRules rules) {
+        if (surface.color == null || surface.color != rules.pageColor()) return null;
+        if (tier(color) == 0) return null;
+        int hi = Math.max((color >> 16) & 0xff, Math.max((color >> 8) & 0xff, color & 0xff));
+        int line = rules.hairline;
+        int lineHi = Math.max((line >> 16) & 0xff, Math.max((line >> 8) & 0xff, line & 0xff));
+        if (hi <= lineHi) return keep(LINE_KEPT);
+        return new Decision(rules.hairline, HAIRLINE);
+    }
+
+    /**
+     * A name whose last role word is a line (divider, outline, stroke...), not a background: the
+     * background of a bordered thing ({@code bordered_button_bg}) stays a surface, the stroke of
+     * a background ({@code key_background_stroke}) is a line.
+     */
+    static boolean lineRole(String name) {
+        int line = lastMatch(LINE, name);
+        return line >= 0 && line > lastMatch(BG_STRICT, name);
+    }
+
+    private static int lastMatch(Pattern pattern, String name) {
+        java.util.regex.Matcher m = pattern.matcher(name);
+        int last = -1;
+        while (m.find()) last = m.start();
+        return last;
+    }
+
+    /**
+     * An obfuscated resource (no name to go by: Play Store and other Google apps) whose stock dark
+     * value is Material's outline variant (#444746, or a wallpaper-tinted tone 30 grey near it):
+     * chip and outlined button borders, which must not turn into the page.
+     */
+    static boolean outlineValue(String name, int color) {
+        if (!obfuscated(name) || color >>> 24 != 0xff) return false;
+        int r = (color >> 16) & 0xff, g = (color >> 8) & 0xff, b = color & 0xff;
+        return Math.abs(r - 0x44) <= 0x0c && Math.abs(g - 0x47) <= 0x0c &&
+                Math.abs(b - 0x46) <= 0x0c;
+    }
+
+    /**
+     * Whether a resource name carries no meaning: shrunk ({@code 0_resource_name_obfuscated}) or
+     * a few letters.
+     */
+    static boolean obfuscated(String name) {
+        return name.contains("obfuscated") || name.length() <= 3 && name.indexOf('_') < 0;
     }
 
     private static Decision keep(String rule) {

@@ -6,8 +6,8 @@ basic_token_gray_80 #ff3a3a3d -> #ff000000 surface
 basic_token_gray_90 #ff252528 -> #ff000000 surface
 basic_token_gray_95 #ff17171a -> #ff000000 surface
 basic_token_sys_background_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
 basic_token_sys_surface_brightest_dark #ff3a3a3d -> #ff000000 surface
 basic_token_sys_surface_container_dark #ff3a3a3d -> #ff000000 surface
@@ -18,7 +18,7 @@ basic_token_sys_surface_fixed_dark #ff4d4d52 -> #ff000000 surface
 design_dark_default_color_background #ff121212 -> #ff000000 surface
 design_dark_default_color_surface #ff121212 -> #ff000000 surface
 design_snackbar_background_color #ff4d4d52 -> #ff000000 floating
-divider_color #ff3a3a3d -> #ff000000 surface
+divider_color #ff3a3a3d -> #ff303030 hairline
 material_grey_800 #ff424242 -> #ff000000 surface
 material_grey_850 #ff303030 -> #ff000000 surface
 material_grey_900 #ff212121 -> #ff000000 surface
@@ -48,7 +48,7 @@ sesl_gray_D1 #ff010102 -> #ff000000 surface
 sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating

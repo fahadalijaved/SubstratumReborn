@@ -38,8 +38,8 @@ basic_token_sys_color_inverse_on_surface_container #ff010102 -> #ff000000 surfac
 basic_token_sys_color_inverse_on_surface_container_dark #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant #ff010102 -> #ff000000 surface
 basic_token_sys_on_surface_container_fixed_variant_dark #ff010102 -> #ff000000 surface
-basic_token_sys_outline_low #ff3a3a3d -> #ff000000 surface
-basic_token_sys_outline_low_dark #ff3a3a3d -> #ff000000 surface
+basic_token_sys_outline_low #ff3a3a3d -> #ff303030 hairline
+basic_token_sys_outline_low_dark #ff3a3a3d -> #ff303030 hairline
 basic_token_sys_surface #ff17171a -> #ff000000 surface
 basic_token_sys_surface_bright #ff252528 -> #ff000000 surface
 basic_token_sys_surface_bright_dark #ff252528 -> #ff000000 surface
@@ -119,8 +119,8 @@ edit_style_title_button_bg_color #33000000 -> #ff000000 blur
 edit_switch_preview_button_bg_color #80000000 -> #ff000000 blur
 editor_base_bg_color #b3000000 -> #ff000000 blur
 frame_panel_color_chip_stroke_color #4d252528 -> #ff1f1f1f outline
-frame_panel_design_item_stroke_color #ff3a3a3d -> #ff000000 surface
-frame_panel_erase_background_button_background_color_stroke #ff47474a -> #ff000000 surface
+frame_panel_design_item_stroke_color #ff3a3a3d -> #ff303030 hairline
+frame_panel_erase_background_button_background_color_stroke #ff47474a -> #ff303030 hairline
 gen_ai_option_dialog_background_color #ff262626 -> #ff000000 floating
 gen_ai_terms_dialog_item_text_container_blur #33000000 -> #ff000000 blur
 guide_box_black #ff252525 -> #ff000000 surface
@@ -144,7 +144,7 @@ m3_ref_palette_secondary10 #ff1d192b -> #ff000000 surface
 m3_ref_palette_secondary20 #ff332d41 -> #ff000000 surface
 m3_sys_color_dark_background #ff141218 -> #ff000000 surface
 m3_sys_color_dark_inverse_on_surface #ff322f35 -> #ff000000 surface
-m3_sys_color_dark_outline_variant #ff49454f -> #ff000000 surface
+m3_sys_color_dark_outline_variant #ff49454f -> #ff303030 hairline
 m3_sys_color_dark_surface #ff141218 -> #ff000000 surface
 m3_sys_color_dark_surface_bright #ff3b383e -> #ff000000 surface
 m3_sys_color_dark_surface_container #ff211f26 -> #ff000000 surface
@@ -169,7 +169,7 @@ notification_preview_background_color #38000000 -> #ff000000 blur
 notification_preview_background_color_dimmed #ff3b3b3b -> #ff000000 surface
 object_capture_popup_bg_color #ff3a3a3d -> #ff000000 floating
 object_capture_popup_divider_color #ff757575 -> #ff1f1f1f outline
-panel_color_picker_divider_color #ff47474a -> #ff000000 surface
+panel_color_picker_divider_color #ff47474a -> #ff303030 hairline
 panel_view_background_color #ff252528 -> #ff000000 surface
 picker_app_fading_edge_color #ff010102 -> #ff000000 surface
 picker_app_grid_item_background_color #33ffffff -> #00000000 clear
@@ -217,7 +217,7 @@ sesl_gray_D3 #ff17171a -> #ff000000 surface
 sesl_gray_D4 #ff2d2d30 -> #ff000000 surface
 sesl_gray_D5 #ff3a3a3d -> #ff000000 surface
 sesl_gray_D6 #ff47474a -> #ff000000 surface
-sesl_list_divider_color_dark #ff3a3a3d -> #ff000000 surface
+sesl_list_divider_color_dark #ff3a3a3d -> #ff303030 hairline
 sesl_list_go_to_top_arrow_bottom_light_v35 #ff010102 -> #ff000000 surface
 sesl_list_go_to_top_inner_round_dark_v26 #ff3a3a3d -> #ff000000 surface
 sesl_menu_popup_background_color_dark #ff252528 -> #ff000000 floating
