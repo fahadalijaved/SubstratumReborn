@@ -21,6 +21,8 @@ data class JobUi(
     val done: Int,
     val total: Int,
     val queued: Int,
+    /** The rules theme an apply uses (null: the built-in rules, or a job without one) */
+    val theme: String? = null,
 ) {
     /** Progress has been reported */
     val started: Boolean get() = total > 0
@@ -46,12 +48,12 @@ object JobsFlow {
 
     private val listener = object : AmoledJobs.Listener {
         override fun onJobStarted(job: AmoledJobs.Job) {
-            _job.value = JobUi(job.id, job.kind, null, 0, 0, AmoledJobs.snapshot().queued)
+            _job.value = JobUi(job.id, job.kind, null, 0, 0, AmoledJobs.snapshot().queued, job.theme)
         }
 
         override fun onProgress(job: AmoledJobs.Job, pkg: String?, done: Int, total: Int) {
             _job.value = JobUi(job.id, job.kind, pkg?.let { AmoledJobs.labelOf(it) }, done, total,
-                AmoledJobs.snapshot().queued)
+                AmoledJobs.snapshot().queued, job.theme)
         }
 
         override fun onJobFinished(job: AmoledJobs.Job, ok: Boolean, message: String?) {
@@ -84,7 +86,7 @@ object JobsFlow {
         val current = snapshot.current
         when {
             current != null -> if (_job.value?.id != current.id) {
-                _job.value = JobUi(current.id, current.kind, null, 0, 0, snapshot.queued)
+                _job.value = JobUi(current.id, current.kind, null, 0, 0, snapshot.queued, current.theme)
             }
             snapshot.queued == 0 && _job.value?.id != PENDING_JOB -> _job.value = null
         }

@@ -214,6 +214,14 @@ public final class AmoledUserRules {
         return new File(new File(context.getFilesDir(), AmoledState.FOLDER), FILE);
     }
 
+    /**
+     * When the rules were last written (0 when there are none): a cache of previews made with
+     * them is stale once this changes.
+     */
+    public static long lastWritten(Context context) {
+        return file(context).lastModified();
+    }
+
     private static AmoledUserRules load(Context context) {
         File file = file(context);
         if (!file.exists()) return new AmoledUserRules();

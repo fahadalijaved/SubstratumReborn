@@ -80,6 +80,7 @@ import projekt.substratum.reborn.components.design.RebornNavBar
 import projekt.substratum.reborn.components.design.RebornNavBarDefaults
 import projekt.substratum.reborn.components.design.fadeThrough
 import projekt.substratum.reborn.create.CreateScreen
+import projekt.substratum.reborn.engine.EngineScreen
 import projekt.substratum.reborn.create.InspectScreen
 import projekt.substratum.reborn.home.AboutScreen
 import projekt.substratum.reborn.home.HomeScreen
@@ -254,8 +255,8 @@ fun RebornApp(link: MutableState<RebornLink?>) {
                                     route = route,
                                     navigator = navigator,
                                     homeActive = !showAbout && !showWhatsNew,
-                                    onOpenSetup = { showSetup = true },
                                     onOpenAbout = { showAbout = true },
+                                    onOpenWhatsNew = { showWhatsNew = true },
                                     onOpenStudioInUse = ::openStudioInUse,
                                 )
                             }
@@ -426,22 +427,31 @@ private fun RouteContent(
     route: Route,
     navigator: RebornNavigator,
     homeActive: Boolean,
-    onOpenSetup: () -> Unit,
     onOpenAbout: () -> Unit,
+    onOpenWhatsNew: () -> Unit,
     onOpenStudioInUse: () -> Unit,
 ) {
     val reselect = navigator.reselectSignal(tab)
     when (route) {
         Route.Home -> HomeScreen(
-            onOpenSetup = onOpenSetup,
+            onOpenEngine = { navigator.push(Route.Engine) },
+            onOpenSetup = { navigator.push(Route.Setup) },
             onOpenStudio = onOpenStudioInUse,
             onOpenTheme = { navigator.push(Route.Theme(it)) },
             onOpenThemes = { navigator.select(RebornTab.Themes) },
+            onOpenCreate = { navigator.select(RebornTab.Create) },
             onOpenApplied = { navigator.select(RebornTab.Applied) },
             onOpenAbout = onOpenAbout,
+            onOpenWhatsNew = onOpenWhatsNew,
             active = homeActive && navigator.tab == RebornTab.Home,
             reselect = reselect,
         )
+        Route.Engine -> EngineScreen(
+            onBack = { navigator.pop() },
+            onOpenSetup = { navigator.push(Route.Setup) },
+        )
+        // The checklist as a page: Done and back return to where it was opened
+        Route.Setup -> SetupScreen(onDone = { navigator.pop() })
         Route.Themes -> ThemesScreen(
             onOpenTheme = { navigator.push(Route.Theme(it)) },
             onOpenCreate = { navigator.select(RebornTab.Create) },

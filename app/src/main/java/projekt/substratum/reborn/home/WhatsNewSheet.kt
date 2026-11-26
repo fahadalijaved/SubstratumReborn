@@ -49,6 +49,7 @@ import projekt.substratum.BuildConfig
 import projekt.substratum.R
 import projekt.substratum.Substratum
 import projekt.substratum.reborn.components.HeroShape
+import projekt.substratum.reborn.components.BrandDeck
 import projekt.substratum.reborn.components.MorphingShape
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.design.overline
@@ -133,13 +134,9 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onExploreThemes: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(76.dp), contentAlignment = Alignment.Center) {
-                    MorphingShape(HeroShape.Calm, scheme.primary, Modifier.fillMaxSize())
-                    Icon(
-                        painterResource(R.drawable.ic_reborn_themes),
-                        contentDescription = null,
-                        tint = scheme.onPrimary,
-                        modifier = Modifier.size(32.dp),
-                    )
+                    MorphingShape(HeroShape.Calm, scheme.surfaceContainerHighest, Modifier.fillMaxSize())
+                    // The Substratum swatch deck, in the app's colours
+                    BrandDeck(size = 50.dp)
                 }
                 Spacer(Modifier.width(18.dp))
                 Column(Modifier.weight(1f)) {

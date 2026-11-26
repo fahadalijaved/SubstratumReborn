@@ -36,8 +36,22 @@ class MockRoles(private val roles: Map<String, IntArray>) {
 
     fun raw(role: String): IntArray? = roles[role]
 
+    /** The "after" colour of [role] as ARGB (stock when there is none), for palettes and their names. */
+    fun after(role: String): Int =
+        roles[role]?.getOrNull(MockSide.Amoled.index) ?: FALLBACK[role] ?: 0xff000000.toInt()
+
     companion object {
         val Empty = MockRoles(emptyMap())
+
+        /**
+         * Stock colours against a theme's own ([themed], by role): a role the theme gives no colour
+         * keeps its stock one on both sides.
+         */
+        fun of(stock: Map<String, Int>, themed: Map<String, Int>): MockRoles =
+            MockRoles((stock.keys + themed.keys).associateWith { role ->
+                val before = stock[role] ?: themed.getValue(role)
+                intArrayOf(before, themed[role] ?: before)
+            })
 
         /** One UI 9's dark mode (assets/reborn/preview_stock.json) */
         private val FALLBACK: Map<String, Int> = mapOf(

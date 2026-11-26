@@ -7,8 +7,9 @@ package projekt.substratum.reborn
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.amoled.AmoledSummary
 import projekt.substratum.reborn.applied.AppliedSnapshot
-import projekt.substratum.reborn.showcase.ShowcaseLooks
+import projekt.substratum.reborn.themes.ThemeLooks
 import projekt.substratum.reborn.themes.ThemesSnapshot
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The last reads, kept for the process: a screen shown again starts from them while it reads
@@ -27,6 +28,9 @@ object RebornCache {
     @Volatile
     var themes: ThemesSnapshot? = null
 
-    @Volatile
-    var showcase: ShowcaseLooks? = null
+    /**
+     * Each theme's previews ([projekt.substratum.reborn.themes.ThemePreviews]), keyed by its id,
+     * its last update and the look they were drawn with
+     */
+    val looks: MutableMap<String, ThemeLooks> = ConcurrentHashMap()
 }

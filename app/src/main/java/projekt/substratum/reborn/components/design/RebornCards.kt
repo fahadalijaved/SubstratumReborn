@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.RoundedPolygon
 import projekt.substratum.R
+import projekt.substratum.reborn.components.PaletteDots
 import projekt.substratum.reborn.theme.LocalRebornColors
 
 /** The hero card: 32 dp (extraLargeIncreased) corners, heroCard colour, hairline on black. */
@@ -79,33 +80,6 @@ fun HeroCard(
         border = if (colors.dark) BorderStroke(1.dp, colors.cardBorder) else null,
     ) {
         Column(Modifier.padding(contentPadding), content = content)
-    }
-}
-
-/** A theme's colours as overlapping dots with a ring in the card colour. */
-@Composable
-fun PaletteStrip(
-    colors: List<Color>,
-    modifier: Modifier = Modifier,
-    dot: Dp = 16.dp,
-    overlap: Dp = 4.dp,
-    ring: Color = LocalRebornColors.current.card,
-    description: String? = null,
-) {
-    Row(
-        modifier.semantics { if (description != null) contentDescription = description },
-        horizontalArrangement = Arrangement.spacedBy(-overlap),
-    ) {
-        colors.forEach { c ->
-            Box(
-                Modifier
-                    .size(dot)
-                    .border(2.dp, ring, CircleShape)
-                    .padding(1.dp)
-                    .clip(CircleShape)
-                    .background(c),
-            )
-        }
     }
 }
 
@@ -229,7 +203,7 @@ fun ThemeCard(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         content = chips,
                     )
-                    if (palette.isNotEmpty()) PaletteStrip(palette)
+                    if (palette.isNotEmpty()) PaletteDots(palette)
                 }
             }
         }

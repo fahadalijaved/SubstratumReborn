@@ -87,6 +87,16 @@ sealed interface Route {
         override val key: String get() = STUDIO + id.key + (section?.let { "#" + it.name } ?: "")
     }
 
+    /** Home › Engine: the engine's status, what it can do here, quick actions and rescue. */
+    data object Engine : Route {
+        override val key: String = "engine"
+    }
+
+    /** Home › Engine › Setup: the setup checklist as a page (the first launch shows it over the tabs). */
+    data object Setup : Route {
+        override val key: String = "setup"
+    }
+
     /** Create › Inspect an app: the app list to pick from, or [pkg]'s colours. */
     data class Inspect(val pkg: String? = null) : Route {
         override val key: String get() = if (pkg == null) INSPECT else "$INSPECT/$pkg"
@@ -105,6 +115,8 @@ sealed interface Route {
                 key == Themes.key -> Themes
                 key == Create.key -> Create
                 key == Applied.key -> Applied
+                key == Engine.key -> Engine
+                key == Setup.key -> Setup
                 key.startsWith(THEME) -> ThemeId.parse(key.substring(THEME.length))?.let(::Theme)
                 key.startsWith(STUDIO) -> {
                     val rest = key.substring(STUDIO.length)

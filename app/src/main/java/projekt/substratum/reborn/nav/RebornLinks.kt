@@ -18,6 +18,8 @@ package projekt.substratum.reborn.nav
  * | amoled / studio    | pkg   | detail                     | Themes › Theme(pkg)                        |
  * | create             | –     | –                          | Create                                     |
  * | applied            | –     | –                          | Applied                                    |
+ * | engine             | –     | –                          | Home › Engine                              |
+ * | setup              | –     | –                          | Home › Engine › Setup                      |
  *
  * "amoled" is the tab of earlier versions (old shortcuts and notifications still send it).
  */
@@ -28,6 +30,8 @@ object RebornLinks {
 
     private const val TAB_AMOLED = "amoled"
     private const val TAB_STUDIO = "studio"
+    private const val TAB_ENGINE = "engine"
+    private const val TAB_SETUP = "setup"
 
     /**
      * @param engineThemeInUse The package the engine theme in use applies with (null: none or the
@@ -55,6 +59,8 @@ object RebornLinks {
             }
             RebornTab.Create.key -> RebornTab.Create to emptyList()
             RebornTab.Applied.key -> RebornTab.Applied to emptyList()
+            TAB_ENGINE -> RebornTab.Home to listOf(Route.Engine)
+            TAB_SETUP -> RebornTab.Home to listOf(Route.Engine, Route.Setup)
             null, "" -> if (named != null) {
                 // A theme without a tab: its page
                 RebornTab.Themes to listOf(Route.Theme(ThemeId.ofPackage(named)))

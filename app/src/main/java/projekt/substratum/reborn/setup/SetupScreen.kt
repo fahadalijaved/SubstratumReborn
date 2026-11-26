@@ -180,6 +180,10 @@ private fun steps(context: android.content.Context, s: RebornStatus.Snapshot): L
     return list
 }
 
+/** How many required setup steps are not done yet (Home's engine strip says "Finish setup" meanwhile). */
+internal fun openSetupSteps(context: android.content.Context, s: RebornStatus.Snapshot): Int =
+    steps(context, s).count { it.required && it.state != ChipState.OK }
+
 /**
  * The first-run checklist, also reachable from Home: root, the LSPosed module, its scope and the
  * System UI heartbeat, each checked live with a Fix. Replaces the old splash, intro slides and

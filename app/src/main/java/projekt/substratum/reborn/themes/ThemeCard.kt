@@ -66,7 +66,10 @@ import projekt.substratum.Substratum
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.components.AppIcon
+import projekt.substratum.reborn.components.PaletteStrip
 import projekt.substratum.reborn.components.TagChip
+import projekt.substratum.reborn.components.mock.MockRoles
+import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.components.design.ThemeAvatar
 import projekt.substratum.reborn.components.design.pressScale
 import projekt.substratum.reborn.components.design.pressShape
@@ -105,6 +108,7 @@ fun ThemeTile(
     val shape = pressShape(interaction, rest = 24.dp, pressed = 18.dp)
     val scale = pressScale(interaction, pressed = 0.96f)
     val inUse = stringResource(R.string.reborn_theme_in_use)
+    val looks by rememberThemeLooks(theme)
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -153,6 +157,18 @@ fun ThemeTile(
                             .padding(8.dp),
                     )
                 }
+                // The saved look's palette, once the theme has enough colours of its own
+                val shown = looks?.takeIf { it.previewable }?.shown
+                if (shown != null) {
+                    PalettePill(
+                        shown.roles,
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                            .themeShared(SharedKeys.palette(theme.id)),
+                        ring = scheme.surfaceContainerLow,
+                    )
+                }
             }
             Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 6.dp)) {
                 Text(
@@ -171,6 +187,22 @@ fun ThemeTile(
                 )
             }
         }
+    }
+}
+
+/** A theme look's [PaletteStrip] on a pill of the card colour, so it reads over any art. */
+@Composable
+fun PalettePill(
+    roles: MockRoles,
+    modifier: Modifier = Modifier,
+    ring: Color = LocalRebornColors.current.card,
+) {
+    Box(
+        modifier
+            .background(ring, CircleShape)
+            .padding(horizontal = 3.dp, vertical = 2.dp),
+    ) {
+        PaletteStrip(roles, ring = ring)
     }
 }
 

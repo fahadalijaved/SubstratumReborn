@@ -164,7 +164,7 @@
 
     <!-- Home: the showcase carousel -->
     <string name="reborn_showcase_title">See the difference</string>
-    <string name="reborn_showcase_subtitle">Reborn AMOLED, a built-in theme, in your look\'s real colours</string>
+    <string name="reborn_showcase_subtitle">Stock against a theme, in its real colours</string>
     <string name="reborn_showcase_open">Explore themes</string>
     <string name="reborn_showcase_page_description">%1$s, stock and %2$s side by side. Opens the theme\'s page.</string>
     <string name="reborn_showcase_page_of">Page %1$d of %2$d</string>
@@ -696,4 +696,107 @@
     <string name="reborn_mock_menu_select">Select</string>
     <string name="reborn_mock_menu_share">Share</string>
     <string name="reborn_mock_menu_settings">Settings</string>
+
+    <!-- Home (2.3): the theme in use first, the engine strip, your themes -->
+    <string name="reborn_home_your_themes">Your themes</string>
+    <string name="reborn_home_more_themes">Install or create</string>
+    <string name="reborn_home_more_themes_text">From a file, or your own</string>
+    <string name="reborn_home_create_title">Create a theme</string>
+    <string name="reborn_home_create_text">Start from your look, test it live, share it as a Reborn engine theme</string>
+    <string name="reborn_home_tile_apps">apps themed</string>
+    <string name="reborn_home_tile_overlays">overlays on</string>
+    <string name="reborn_home_tile_qs">Quick Settings tweaks</string>
+    <string name="reborn_home_pause_module">Pause module</string>
+    <string name="reborn_home_resume_module">Resume module</string>
+    <string name="reborn_home_engine_ready">Engine ready</string>
+    <string name="reborn_home_engine_lsposed">LSPosed</string>
+    <plurals name="reborn_home_finish_setup">
+        <item quantity="one">Finish setup · %1$d step left</item>
+        <item quantity="other">Finish setup · %1$d steps left</item>
+    </plurals>
+
+    <!-- The Now card: the theme in use -->
+    <string name="reborn_now_overline">Now</string>
+    <string name="reborn_now_stock_title">Your phone is stock</string>
+    <string name="reborn_now_stock_text">Pick a theme to start</string>
+    <string name="reborn_now_explore">Explore themes</string>
+    <string name="reborn_now_customize">Customize</string>
+    <string name="reborn_now_change">Change theme</string>
+    <string name="reborn_now_options">Options</string>
+    <string name="reborn_now_reapply">Re-apply</string>
+    <string name="reborn_now_open_studio">Open Studio</string>
+    <string name="reborn_now_applying">Applying %1$s</string>
+    <string name="reborn_now_removing">Removing %1$s</string>
+    <string name="reborn_now_restoring">Restoring %1$s</string>
+    <string name="reborn_now_apps_themed">apps themed</string>
+    <string name="reborn_now_overlays_on">overlays on</string>
+    <string name="reborn_now_applied_at">Applied %1$s</string>
+    <string name="reborn_now_applied_unknown">Applied, time unknown</string>
+    <string name="reborn_now_classic">Classic overlays</string>
+    <string name="reborn_now_classic_text">Compiled on this phone, applied natively</string>
+    <string name="reborn_now_accent_monet">Monet accent</string>
+    <string name="reborn_now_accent_oneui">One UI blue</string>
+    <string name="reborn_now_accent_white">White accent</string>
+    <string name="reborn_now_accent_custom">Custom accent</string>
+    <plurals name="reborn_now_apps">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <plurals name="reborn_now_overlays">
+        <item quantity="one">%1$d overlay</item>
+        <item quantity="other">%1$d overlays</item>
+    </plurals>
+    <plurals name="reborn_now_plus_overlays">
+        <item quantity="one">+ %1$d overlay from %2$s</item>
+        <item quantity="other">+ %1$d overlays from %2$s</item>
+    </plurals>
+
+    <!-- The Engine screen -->
+    <string name="reborn_engine_title">Engine</string>
+    <string name="reborn_engine_can">What the engine can do here</string>
+    <string name="reborn_engine_can_fabricated">Fabricated overlays</string>
+    <string name="reborn_engine_can_fabricated_yes">Yes: colours, integers and bools</string>
+    <string name="reborn_engine_can_fabricated_no">Needs Android 14 and root</string>
+    <string name="reborn_engine_can_signers">Overlay APKs from other signers</string>
+    <string name="reborn_engine_can_signers_oneui">Rejected on %1$s</string>
+    <string name="reborn_engine_can_signers_rom">Depends on the ROM (not checked here)</string>
+    <string name="reborn_engine_can_module">LSPosed module</string>
+    <plurals name="reborn_engine_can_module_scope">
+        <item quantity="one">%1$d app in scope</item>
+        <item quantity="other">%1$d apps in scope</item>
+    </plurals>
+    <string name="reborn_engine_open_lsposed">Open LSPosed</string>
+    <string name="reborn_engine_rescue">Rescue</string>
+    <string name="reborn_engine_rescue_text">\"Rescue Me!\" on the app icon pauses the module and puts things back.</string>
+    <string name="reborn_engine_rescue_add">Add to home screen</string>
+    <string name="reborn_engine_rescue_unsupported">This launcher cannot add shortcuts: long-press the app icon for Rescue Me!</string>
+
+    <!-- The showcase, on Home and on a theme's page -->
+    <string name="reborn_showcase_try_theme">Try a theme</string>
+    <string name="reborn_showcase_looks">Looks</string>
+    <string name="reborn_showcase_page_description_still">%1$s, stock and %2$s side by side.</string>
+    <string name="reborn_showcase_drawn_from">Drawn from the theme\'s own colours (%1$d of %2$d)</string>
+
+    <!-- A palette's description, so colour is never the only signal -->
+    <string name="reborn_palette_description">Palette: %1$s</string>
+    <string name="reborn_palette_parts">%1$s page, %2$s cards, %3$s accent</string>
+    <string name="reborn_palette_preview">Palette preview</string>
+    <string name="reborn_colour_black">black</string>
+    <string name="reborn_colour_near_black">near-black</string>
+    <string name="reborn_colour_dark_grey">dark grey</string>
+    <string name="reborn_colour_grey">grey</string>
+    <string name="reborn_colour_light_grey">light grey</string>
+    <string name="reborn_colour_white">white</string>
+    <string name="reborn_colour_red">red</string>
+    <string name="reborn_colour_orange">orange</string>
+    <string name="reborn_colour_amber">amber</string>
+    <string name="reborn_colour_yellow">yellow</string>
+    <string name="reborn_colour_lime">lime</string>
+    <string name="reborn_colour_green">green</string>
+    <string name="reborn_colour_teal">teal</string>
+    <string name="reborn_colour_cyan">cyan</string>
+    <string name="reborn_colour_blue">blue</string>
+    <string name="reborn_colour_indigo">indigo</string>
+    <string name="reborn_colour_violet">violet</string>
+    <string name="reborn_colour_pink">pink</string>
 </resources>

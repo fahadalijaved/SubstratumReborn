@@ -119,6 +119,22 @@ class RebornLinksTest {
         assertEquals(lands(RebornTab.Applied), RebornLinks.resolve("applied", null, null, null))
     }
 
+    // | engine | – | – | Home › Engine |
+
+    @Test
+    fun engineOpensOnHomesStack() {
+        assertEquals(lands(RebornTab.Home, Route.Engine), RebornLinks.resolve("engine", null, null, null))
+        assertEquals(lands(RebornTab.Home, Route.Engine), RebornLinks.resolve("Engine", classic, "detail", engine))
+    }
+
+    // | setup | – | – | Home › Engine › Setup |
+
+    @Test
+    fun setupOpensOverTheEngineScreen() {
+        assertEquals(lands(RebornTab.Home, Route.Engine, Route.Setup), RebornLinks.resolve("setup", null, null, null))
+        assertEquals(lands(RebornTab.Home, Route.Engine, Route.Setup), RebornLinks.resolve(" SETUP ", "", null, engine))
+    }
+
     // Package to ThemeId
 
     @Test
@@ -140,11 +156,14 @@ class RebornLinksTest {
             Route.Theme(builtIn), Route.Theme(ThemeId.Apk(classic)),
             Route.Studio(builtIn), Route.Studio(ThemeId.Apk(engine), StudioSection.QuickSettings),
             Route.Studio(builtIn, StudioSection.Apps), Route.Inspect(), Route.Inspect("com.android.settings"),
+            Route.Engine, Route.Setup,
         )
         routes.forEach { assertEquals(it, Route.parse(it.key)) }
         assertEquals("theme/builtin:reborn.amoled", Route.Theme(builtIn).key)
         assertEquals("studio/apk:$engine#Look", Route.Studio(ThemeId.Apk(engine), StudioSection.Look).key)
         assertEquals("inspect/com.android.settings", Route.Inspect("com.android.settings").key)
+        assertEquals("engine", Route.Engine.key)
+        assertEquals("setup", Route.Setup.key)
         assertNull(Route.parse("theme/nothing"))
         assertNull(Route.parse("elsewhere"))
         assertEquals(builtIn, ThemeId.parse("builtin:reborn.amoled"))

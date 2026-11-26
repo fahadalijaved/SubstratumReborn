@@ -11,7 +11,9 @@ import android.text.format.DateUtils
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -40,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +56,7 @@ import projekt.substratum.R
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.RebornCache
 import projekt.substratum.reborn.components.AppIcon
+import projekt.substratum.reborn.components.BrandDeck
 import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.SectionHeader
 import projekt.substratum.reborn.components.ShapedIcon
@@ -107,7 +111,16 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
             item(key = "identity") {
                 HeroCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AppIcon(context.packageName, size = 64.dp, shape = MaterialTheme.shapes.largeIncreased)
+                        // The Substratum swatch deck, in the app's colours
+                        Box(
+                            Modifier
+                                .size(64.dp)
+                                .clip(MaterialShapes.Cookie12Sided.toShape())
+                                .background(scheme.surfaceContainerHigh),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            BrandDeck(size = 48.dp)
+                        }
                         Spacer(Modifier.width(18.dp))
                         Column(Modifier.weight(1f)) {
                             Text(

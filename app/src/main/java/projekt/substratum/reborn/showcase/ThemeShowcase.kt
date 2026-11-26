@@ -4,7 +4,6 @@
  */
 package projekt.substratum.reborn.showcase
 
-import android.content.Context
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.StringRes
@@ -43,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,8 +63,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -72,10 +73,7 @@ import androidx.lifecycle.compose.currentStateAsState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import projekt.substratum.R
-import projekt.substratum.Substratum
-import projekt.substratum.common.platform.AmoledPresets
-import projekt.substratum.common.platform.AmoledRules
-import projekt.substratum.reborn.RebornCache
+import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.mock.BeforeAfter
@@ -84,10 +82,10 @@ import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.reborn.components.mock.PopupMock
 import projekt.substratum.reborn.components.mock.QsMock
 import projekt.substratum.reborn.components.mock.SettingsMock
-import projekt.substratum.reborn.components.rememberResumeCount
-import projekt.substratum.reborn.components.rememberRoot
+import projekt.substratum.reborn.nav.ThemeId
+import projekt.substratum.reborn.themes.ThemeLooks
 
-/** What the carousel shows, one page each. */
+/** What the showcase pages through, one page each. */
 private enum class ShowcasePage(@StringRes val title: Int, @StringRes val detail: Int) {
     QuickSettings(R.string.reborn_showcase_qs, R.string.reborn_showcase_qs_text),
     Settings(R.string.reborn_showcase_settings, R.string.reborn_showcase_settings_text),
@@ -95,64 +93,94 @@ private enum class ShowcasePage(@StringRes val title: Int, @StringRes val detail
     Popups(R.string.reborn_showcase_popups, R.string.reborn_showcase_popups_text),
 }
 
-/** The previews and which preset the saved look is (or [AmoledPresets.CUSTOM]). */
-class ShowcaseLooks(val previews: StudioState.Previews, val savedPreset: String)
-
-/** The looks "Try a look" offers: the built-in presets, never one named after a third-party theme */
-private val SHOWN_PRESETS = AmoledPresets.PRESETS.filter { it.id != AmoledPresets.SPRITE }
-
-/** Every page is this tall, so paging never moves Home below it; taller mocks fade out. */
+/** Every page is this tall, so paging never moves the page below it; taller mocks fade out. */
 private val PageHeight = 344.dp
 private const val ADVANCE_MILLIS = 5600L
 
-/** Blocking (files): the saved look and the presets, as the Studio computes them. */
-private fun loadLooks(context: Context, theme: String?): ShowcaseLooks {
-    val previews = StudioState.showcasePreviews(context, theme)
-    val prefs = Substratum.getPreferences()
-    val tile = prefs.getString(AmoledRules.PREF_ACTIVE_TILE, AmoledRules.TILE_WHITE) ?: AmoledRules.TILE_WHITE
-    val saved = AmoledPresets.look(prefs).preset?.takeIf { it == AmoledPresets.CUSTOM || AmoledPresets.preset(it) != null }
-        ?: AmoledPresets.matching(previews.level, previews.accent, tile)
-    return ShowcaseLooks(previews, saved)
+/** What the showcase previews: the same component on Home and on a theme's page. */
+sealed interface ShowcaseMode {
+
+    /**
+     * Home's "See the difference": the theme in use ([inUse]; Reborn AMOLED when the phone is
+     * stock) and "Try a theme" over every theme in [themes] (each with enough of its own colours,
+     * the one in use first). A tap opens the shown theme's page.
+     */
+    @Immutable
+    class Themes(
+        val themes: List<ThemeLooks>?,
+        val inUse: ThemeId?,
+        val onOpenTheme: (ThemeId) -> Unit,
+        val onExplore: () -> Unit,
+    ) : ShowcaseMode
+
+    /** A theme's page: its looks, the saved one checked; Quick Settings drawn with [qs] when given. */
+    @Immutable
+    class Looks(val looks: ThemeLooks?, val qs: StudioState.QsSaved? = null) : ShowcaseMode
 }
 
+/** A chip under the pager: a theme or a look; [checked] marks the one in use or saved. */
+@Immutable
+private class ShowcaseChip(val key: String, val label: String, val checked: Boolean)
+
 /**
- * Home's "See the difference": a before/after carousel of Quick Settings, Settings, an app and
- * notifications with a popup, drawn with the engine's own colours for the saved look. It pages on
- * its own (paused while touched, while the app is in the background, and with animations off);
- * the divider drags from its handle, and a tap opens the theme's page. "Try a look" previews a
- * preset in place: nothing is saved or applied.
- *
- * @param theme The rules theme AMOLED uses (null: the built-in rules)
- * @param active Home is in front: false while something covers it (About, a sheet), which pauses
- *   the auto-advance
+ * A before/after carousel of Quick Settings, Settings, an app and notifications with a popup,
+ * stock against a theme, in the colours the engine (or the theme's own overlays) give them. It
+ * pages on its own (paused while touched, while the app is in the background, with animations off
+ * and while [active] is false: something covers the screen); the divider drags from its handle.
+ * Nothing is saved or applied: the chips only change what is previewed.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ShowcaseCarousel(
-    theme: String?,
-    themeName: String,
-    onOpen: () -> Unit,
-    onExplore: () -> Unit,
-    modifier: Modifier = Modifier,
-    active: Boolean = true,
-) {
+fun ThemeShowcase(mode: ShowcaseMode, modifier: Modifier = Modifier, active: Boolean = true) {
+    val builtInName = stringResource(R.string.reborn_builtin_amoled_name)
+    val tryLabel: String
+    val chips: List<ShowcaseChip>
+    val selected: String?
+    val onChip: (String) -> Unit
+    val roles: MockRoles
+    val afterLabel: String
+    val onOpen: (() -> Unit)?
+    val coverage: ThemeLooks?
+    when (mode) {
+        is ShowcaseMode.Themes -> {
+            // A theme tried here (its id key), or null for the one in use
+            var chosen by rememberSaveable { mutableStateOf<String?>(null) }
+            val themes = mode.themes.orEmpty()
+            val wanted = chosen ?: (mode.inUse ?: ThemeId.RebornAmoled).key
+            val subject = themes.firstOrNull { it.id.key == wanted }
+                ?: themes.firstOrNull { it.id == ThemeId.RebornAmoled }
+                ?: themes.firstOrNull()
+            tryLabel = stringResource(R.string.reborn_showcase_try_theme)
+            chips = themes.map { ShowcaseChip(it.id.key, it.name, checked = it.id == mode.inUse) }
+            selected = subject?.id?.key
+            onChip = { key -> chosen = key }
+            roles = subject?.shown?.roles ?: MockRoles.Empty
+            afterLabel = subject?.name ?: builtInName
+            onOpen = { mode.onOpenTheme(subject?.id ?: ThemeId.RebornAmoled) }
+            coverage = null
+        }
+        is ShowcaseMode.Looks -> {
+            val looks = mode.looks
+            // A look tried here (its key), or null for the saved one
+            var trying by rememberSaveable(looks?.id?.key) { mutableStateOf<String?>(null) }
+            val shown = looks?.look(trying ?: looks.current) ?: looks?.shown
+            tryLabel = stringResource(R.string.reborn_showcase_looks)
+            chips = if ((looks?.looks?.size ?: 0) > 1) {
+                looks!!.looks.map { ShowcaseChip(it.key, it.label, checked = it.key == looks.current) }
+            } else emptyList()
+            selected = shown?.key
+            onChip = { key -> trying = if (key == looks?.current) null else key }
+            roles = shown?.roles ?: MockRoles.Empty
+            afterLabel = looks?.name ?: builtInName
+            onOpen = null
+            coverage = looks?.takeIf { it.drawnFromTheme }
+        }
+    }
+    val qs = (mode as? ShowcaseMode.Looks)?.qs
+
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-    val resume = rememberResumeCount()
-    val looks by rememberRoot(theme, resume, initial = RebornCache.showcase) {
-        loadLooks(context, theme).also { RebornCache.showcase = it }
-    }
-    val current = looks
-    // A preset tried here (its id), or null for the saved look
-    var trying by rememberSaveable { mutableStateOf<String?>(null) }
-    val shown = trying ?: current?.savedPreset
-    val roles = when {
-        current == null -> MockRoles.Empty
-        trying != null -> current.previews.presets[trying] ?: current.previews.look
-        else -> current.previews.look
-    }
-
     val pages = ShowcasePage.entries
     val pager = rememberPagerState { pages.size }
     // Animations off in the system settings, or a screen reader on: no auto-advance and no sweeps
@@ -191,26 +219,28 @@ fun ShowcaseCarousel(
         },
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(start = 8.dp, end = 2.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(R.string.reborn_showcase_title),
-                    style = MaterialTheme.typography.titleLargeEmphasized,
-                )
-                Text(
-                    stringResource(R.string.reborn_showcase_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            FilledTonalIconButton(onClick = onExplore) {
-                Icon(
-                    painterResource(R.drawable.ic_reborn_chevron),
-                    contentDescription = stringResource(R.string.reborn_showcase_open),
-                )
+        if (mode is ShowcaseMode.Themes) {
+            Row(
+                modifier = Modifier.padding(start = 8.dp, end = 2.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.reborn_showcase_title),
+                        style = MaterialTheme.typography.titleLargeEmphasized,
+                    )
+                    Text(
+                        stringResource(R.string.reborn_showcase_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                FilledTonalIconButton(onClick = mode.onExplore) {
+                    Icon(
+                        painterResource(R.drawable.ic_reborn_chevron),
+                        contentDescription = stringResource(R.string.reborn_showcase_open),
+                    )
+                }
             }
         }
 
@@ -224,8 +254,11 @@ fun ShowcaseCarousel(
             val page = pages[index]
             BeforeAfter(
                 beforeLabel = stringResource(R.string.reborn_studio_stock),
-                afterLabel = themeName,
-                description = stringResource(R.string.reborn_showcase_page_description, stringResource(page.title), themeName),
+                afterLabel = afterLabel,
+                description = stringResource(
+                    if (onOpen != null) R.string.reborn_showcase_page_description else R.string.reborn_showcase_page_description_still,
+                    stringResource(page.title), afterLabel,
+                ),
                 frameShape = RoundedCornerShape(22.dp),
                 onClick = onOpen,
                 handleOnly = true,
@@ -246,7 +279,12 @@ fun ShowcaseCarousel(
                     ) {
                         val fill = Modifier.fillMaxWidth()
                         when (page) {
-                            ShowcasePage.QuickSettings -> QsMock(roles, side, fill)
+                            ShowcasePage.QuickSettings -> QsMock(
+                                roles, side, fill,
+                                aspect = qs?.aspect ?: QsOptions.STOCK_ASPECT,
+                                opaqueShade = qs?.shade ?: true,
+                                darkTracks = qs?.track ?: true,
+                            )
                             ShowcasePage.Settings -> SettingsMock(roles, side, fill)
                             ShowcasePage.Apps -> ListMock(roles, side, fill)
                             ShowcasePage.Popups -> PopupMock(roles, side, fill)
@@ -265,14 +303,14 @@ fun ShowcaseCarousel(
         }
 
         Spacer(Modifier.height(14.dp))
-        val motion = MaterialTheme.motionScheme
+        val motionScheme = MaterialTheme.motionScheme
         Row(
             modifier = Modifier.padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedContent(
                 targetState = pages[pager.currentPage],
-                transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
+                transitionSpec = { fadeIn(motionScheme.defaultEffectsSpec()) togetherWith fadeOut(motionScheme.fastEffectsSpec()) },
                 label = "showcasePage",
                 modifier = Modifier.weight(1f),
             ) { page ->
@@ -299,86 +337,73 @@ fun ShowcaseCarousel(
             )
         }
 
-        Spacer(Modifier.height(18.dp))
-        Text(
-            stringResource(R.string.reborn_showcase_try),
-            style = MaterialTheme.typography.labelLargeEmphasized,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 8.dp),
-        )
-        Spacer(Modifier.height(6.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // The saved look when it has no chip of its own here (custom, or a look this row
-            // leaves out)
-            val saved = current?.savedPreset
-            if (saved != null && SHOWN_PRESETS.none { it.id == saved }) {
-                LookChip(
-                    label = stringResource(R.string.reborn_showcase_yours),
-                    selected = trying == null,
-                    onClick = { trying = null },
-                )
-            }
-            SHOWN_PRESETS.forEach { preset ->
-                LookChip(
-                    label = stringResource(presetName(preset.id)),
-                    selected = shown == preset.id,
-                    saved = current?.savedPreset == preset.id,
-                    enabled = current != null,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                        trying = if (preset.id == current?.savedPreset) null else preset.id
-                    },
-                )
+        if (chips.isNotEmpty()) {
+            Spacer(Modifier.height(18.dp))
+            Text(
+                tryLabel,
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                chips.forEach { chip ->
+                    ShowcaseChipView(
+                        label = chip.label,
+                        selected = chip.key == selected,
+                        checked = chip.checked,
+                        checkedDescription = stringResource(
+                            if (mode is ShowcaseMode.Themes) R.string.reborn_theme_in_use else R.string.reborn_showcase_saved,
+                        ),
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            onChip(chip.key)
+                        },
+                    )
+                }
             }
         }
-        Spacer(Modifier.height(8.dp))
-        AnimatedContent(
-            targetState = trying != null && trying != current?.savedPreset,
-            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
-            label = "tryCaption",
-            modifier = Modifier.padding(horizontal = 8.dp),
-        ) { previewing ->
+        Spacer(Modifier.height(10.dp))
+        Column(Modifier.padding(horizontal = 8.dp)) {
             Text(
-                stringResource(if (previewing) R.string.reborn_showcase_try_preview else R.string.reborn_showcase_try_saved),
+                stringResource(R.string.reborn_theme_preview_caption),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (coverage != null) {
+                Text(
+                    stringResource(R.string.reborn_showcase_drawn_from, coverage.coverage, coverage.total),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
 
-@StringRes
-private fun presetName(id: String): Int = when (id) {
-    AmoledPresets.PURE_BLACK -> R.string.amoled_preset_pure
-    AmoledPresets.ELEVATED_CARDS -> R.string.amoled_preset_elevated
-    AmoledPresets.DIM -> R.string.amoled_preset_dim
-    else -> R.string.amoled_preset_custom
-}
-
 @Composable
-private fun LookChip(
+private fun ShowcaseChipView(
     label: String,
     selected: Boolean,
+    checked: Boolean,
+    checkedDescription: String,
     onClick: () -> Unit,
-    saved: Boolean = false,
-    enabled: Boolean = true,
 ) {
     FilterChip(
         selected = selected,
         onClick = onClick,
-        enabled = enabled,
-        label = { Text(label, maxLines = 1) },
-        leadingIcon = if (saved) {
+        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = if (checked) {
             {
                 Icon(
                     painterResource(R.drawable.ic_reborn_check),
-                    contentDescription = stringResource(R.string.reborn_showcase_saved),
+                    contentDescription = checkedDescription,
                     modifier = Modifier.size(18.dp),
                 )
             }

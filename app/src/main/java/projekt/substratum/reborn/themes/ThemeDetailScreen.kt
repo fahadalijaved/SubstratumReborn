@@ -145,6 +145,8 @@ import projekt.substratum.reborn.nav.StudioSection
 import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.reborn.nav.enginePackage
 import projekt.substratum.reborn.nav.themeShared
+import projekt.substratum.reborn.showcase.ShowcaseMode
+import projekt.substratum.reborn.showcase.ThemeShowcase
 import projekt.substratum.reborn.theme.LocalRebornColors
 import java.util.concurrent.ConcurrentHashMap
 
@@ -288,6 +290,9 @@ private fun ThemePage(
         if (replacing != null) replaceAsk = keepLook else apply(keepLook)
     }
 
+    val looks by rememberThemeLooks(theme)
+    val qs by StudioState.qs.collectAsStateWithLifecycle()
+
     val list = rememberLazyListState()
     val toolbarScroll = FloatingToolbarDefaults.exitAlwaysScrollBehavior(FloatingToolbarExitDirection.Bottom)
     var heroHeight by remember { mutableIntStateOf(1) }
@@ -340,11 +345,18 @@ private fun ThemePage(
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item(key = "hero") {
-                DetailHero(theme, inUse, Modifier.onSizeChanged { heroHeight = it.height.coerceAtLeast(1) })
+                DetailHero(theme, inUse, looks, Modifier.onSizeChanged { heroHeight = it.height.coerceAtLeast(1) })
             }
-            if (engine) {
+            // Engine themes always; classic ones when their overlays name enough of the preview's colours
+            if (engine || looks?.previewable == true) {
                 item(key = "preview_header") { SectionLabel(stringResource(R.string.reborn_theme_preview), Modifier.padding(horizontal = 20.dp)) }
-                item(key = "preview") { PreviewSection(theme, Modifier.padding(horizontal = 16.dp)) }
+                item(key = "preview") {
+                    ThemeShowcase(
+                        mode = ShowcaseMode.Looks(looks, qs = if (engine) qs else null),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        active = replaceAsk == null && !confirmRemove,
+                    )
+                }
             }
             item(key = "changes_header") { SectionLabel(stringResource(R.string.reborn_theme_changes), Modifier.padding(horizontal = 20.dp)) }
             item(key = "changes") {
@@ -464,7 +476,7 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 /** The 4:3 hero: the theme's art under a scrim, its avatar, name, kind chips and "In use". */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DetailHero(theme: ThemeItem, inUse: Boolean, modifier: Modifier = Modifier) {
+private fun DetailHero(theme: ThemeItem, inUse: Boolean, looks: ThemeLooks?, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     Box(
         modifier
@@ -493,6 +505,12 @@ private fun DetailHero(theme: ThemeItem, inUse: Boolean, modifier: Modifier = Mo
             Row(verticalAlignment = Alignment.CenterVertically) {
                 KindAvatar(theme, Modifier.themeShared(SharedKeys.avatar(theme.id)), size = 56.dp)
                 Spacer(Modifier.weight(1f))
+                // The saved look's palette (classic: as soon as the theme gives one colour of it)
+                val shown = looks?.shown
+                if (looks != null && shown != null && looks.coverage > 0) {
+                    PalettePill(shown.roles, Modifier.themeShared(SharedKeys.palette(theme.id)))
+                    if (inUse) Spacer(Modifier.width(8.dp))
+                }
                 if (inUse) StatusChip(stringResource(R.string.reborn_theme_in_use), ChipState.OK)
             }
             Spacer(Modifier.height(12.dp))
@@ -557,51 +575,6 @@ private fun DetailOverflow(theme: ThemeItem, onShortcutDone: (String, String?, (
                 ),
             )
         }
-    }
-}
-
-/** The theme's saved look against stock, drawn with the engine's own colours: nothing is applied. */
-@Composable
-private fun PreviewSection(theme: ThemeItem, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val look by StudioState.look.collectAsStateWithLifecycle()
-    val previews by rememberRoot(theme.id.key, theme.updated, look) {
-        StudioState.showcasePreviews(context, theme.id.enginePackage)
-    }
-    val qs by StudioState.qs.collectAsStateWithLifecycle()
-    val roles = previews?.look ?: MockRoles.Empty
-    SectionCard(modifier = modifier, contentPadding = PaddingValues(12.dp)) {
-        BeforeAfter(
-            beforeLabel = stringResource(R.string.reborn_studio_stock),
-            afterLabel = theme.name,
-            description = stringResource(R.string.reborn_theme_preview_description, theme.name),
-            modifier = Modifier.fillMaxWidth(),
-            frameShape = RoundedCornerShape(22.dp),
-        ) { side ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black)
-                    .padding(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                QsMock(
-                    roles = roles,
-                    side = side,
-                    modifier = Modifier.fillMaxWidth(),
-                    aspect = qs?.aspect ?: QsOptions.STOCK_ASPECT,
-                    opaqueShade = qs?.shade ?: true,
-                    darkTracks = qs?.track ?: true,
-                )
-                SettingsMock(roles, side, Modifier.fillMaxWidth())
-            }
-        }
-        Text(
-            stringResource(R.string.reborn_theme_preview_caption),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
-        )
     }
 }
 

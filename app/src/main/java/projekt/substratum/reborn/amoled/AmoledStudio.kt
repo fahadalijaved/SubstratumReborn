@@ -751,9 +751,10 @@ private fun ApplyButtons(
     }
 }
 
+/** A running job: the Cookie9 percentage (indeterminate until the first app), its wording and a wavy bar. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun JobProgress(job: JobUi) {
+internal fun JobProgress(job: JobUi) {
     val scheme = MaterialTheme.colorScheme
     val motion = MaterialTheme.motionScheme
     val progress by animateFloatAsState(
