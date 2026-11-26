@@ -491,7 +491,8 @@ final class OverlaysManager {
 
                         new FinishUpdateTask(overlays, state).execute();
                         if (overlays.currentInstance.hasFailed) {
-                            overlays.failedFunction(context);
+                            // One-tap Apply shows the log from its summary dialog
+                            overlays.failedFunction(context, !isOneTapApply(context, state));
                         } else if (!isOneTapApply(context, state)) {
                             // Restart SystemUI if an enabled SystemUI overlay is updated (one-tap
                             // Apply restarts every rebuilt target itself, once)

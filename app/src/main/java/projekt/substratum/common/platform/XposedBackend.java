@@ -57,6 +57,10 @@ public class XposedBackend {
      */
     public static final String KEEP = "keep:";
     /**
+     * Suffix of a file being stored, renamed into place once complete
+     */
+    private static final String PART = ".part";
+    /**
      * AMOLED colors for one app, applied by resource id. The first line is
      * {@code # key=<versionKey>} of the app version the ids were read from; the module ignores
      * a file whose key does not match the installed app. Then one line per color:
@@ -205,11 +209,20 @@ public class XposedBackend {
             return false;
         }
         String base = DIR + '/' + name;
+        // Copied next to the old files, then renamed over them: an enabled overlay's APK is
+        // mapped by running processes (every scoped app for the framework, System UI, the
+        // target), and rewriting it in place would pull the pages from under them (SIGBUS). A
+        // rename leaves them on the old file until they restart.
+        String apkNew = base + APK + PART;
+        String indexNew = base + INDEX + PART;
         Root.runCommand("mkdir -p " + DIR + " && chmod 755 " + DIR +
-                " && cp -f '" + apkPath + "' '" + base + APK + "'" +
-                " && cp -f '" + index.getAbsolutePath() + "' '" + base + INDEX + "'" +
-                " && chmod 644 '" + base + APK + "' '" + base + INDEX + "'" +
-                " && restorecon -R " + DIR);
+                " && cp -f '" + apkPath + "' '" + apkNew + "'" +
+                " && cp -f '" + index.getAbsolutePath() + "' '" + indexNew + "'" +
+                " && chmod 644 '" + apkNew + "' '" + indexNew + "'" +
+                " && mv -f '" + apkNew + "' '" + base + APK + "'" +
+                " && mv -f '" + indexNew + "' '" + base + INDEX + "'" +
+                " ; rm -f '" + apkNew + "' '" + indexNew + "'" +
+                " ; restorecon -R " + DIR);
         //noinspection ResultOfMethodCallIgnored
         index.delete();
         return new File(base + APK).exists() && new File(base + INDEX).exists();

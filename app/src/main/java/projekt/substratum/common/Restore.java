@@ -238,8 +238,10 @@ public class Restore {
                                     Snackbar.LENGTH_LONG)
                                     .show();
                         }
+                        // A dialog needs the activity (the application context has no window
+                        // token and no Material theme)
                         AlertDialog.Builder alertDialogBuilder =
-                                new MaterialAlertDialogBuilder(context);
+                                new MaterialAlertDialogBuilder(activity);
                         alertDialogBuilder
                                 .setTitle(context.getString(R.string
                                         .legacy_dialog_soft_reboot_title));

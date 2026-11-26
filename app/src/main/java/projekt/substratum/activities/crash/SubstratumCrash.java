@@ -14,6 +14,7 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -52,6 +53,14 @@ public class SubstratumCrash extends Activity {
 
     private Button rescueMeButton;
     private boolean shouldPulsate;
+
+    /**
+     * This screen runs on a plain device default theme (DoNotThemeThisStyle), which the Material
+     * builder cannot style and throws on: give its dialogs the app's Material 3 theme.
+     */
+    private MaterialAlertDialogBuilder materialDialog() {
+        return new MaterialAlertDialogBuilder(new ContextThemeWrapper(this, R.style.AppTheme));
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -129,7 +138,7 @@ public class SubstratumCrash extends Activity {
             }
         } else if (isSubstratumOverlayFault) {
             rescueMeButton.setVisibility(View.GONE);
-            new MaterialAlertDialogBuilder(this)
+            materialDialog()
                     .setTitle(R.string.error_dialog_samsung)
                     .setMessage(R.string.error_dialog_samsung_text)
                     .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
@@ -146,7 +155,7 @@ public class SubstratumCrash extends Activity {
             showText.setText(stacktrace);
             showText.setTextIsSelectable(true);
 
-            new MaterialAlertDialogBuilder(this)
+            materialDialog()
                     .setTitle(R.string.error_activity_log_dialog_title)
                     .setView(showText)
                     .setPositiveButton(R.string

@@ -566,6 +566,13 @@ public class Overlays extends Fragment {
      * @param context Self explanatory, bud.
      */
     void failedFunction(Context context) {
+        failedFunction(context, true);
+    }
+
+    /**
+     * @param logBar Offer the error log in a bar; one-tap Apply offers it in its summary instead
+     */
+    void failedFunction(Context context, boolean logBar) {
         // Add dummy intent to be able to close the notification on click
         Intent notificationIntent = new Intent(context, getClass());
         notificationIntent.putExtra(Internal.THEME_NAME, themeName);
@@ -606,7 +613,7 @@ public class Overlays extends Fragment {
             ).execute();
         }
 
-        invokeLogCharLunchBar(context);
+        if (logBar) invokeLogCharLunchBar(context);
     }
 
     /**
