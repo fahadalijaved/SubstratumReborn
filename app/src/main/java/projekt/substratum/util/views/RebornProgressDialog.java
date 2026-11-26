@@ -105,7 +105,8 @@ public final class RebornProgressDialog {
     }
 
     public void dismiss() {
-        if (dialog != null) dialog.dismiss();
+        // Safe after the owning screen was recreated or closed (see SafeDialogs)
+        SafeDialogs.dismiss(dialog);
     }
 
     public void cancel() {

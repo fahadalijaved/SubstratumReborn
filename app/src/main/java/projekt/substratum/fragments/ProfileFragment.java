@@ -134,6 +134,7 @@ import static projekt.substratum.common.systems.ProfileManager.NIGHT_PROFILE;
 import static projekt.substratum.common.systems.ProfileManager.NIGHT_PROFILE_HOUR;
 import static projekt.substratum.common.systems.ProfileManager.NIGHT_PROFILE_MINUTE;
 import static projekt.substratum.common.systems.ProfileManager.SCHEDULED_PROFILE_ENABLED;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class ProfileFragment extends Fragment {
 
@@ -1376,7 +1377,7 @@ public class ProfileFragment extends Fragment {
         protected void onPostExecute(Void result) {
             ProfileFragment profileFragment = ref.get();
             if (profileFragment.isAdded()) {
-                progressDialog.dismiss();
+                SafeDialogs.dismiss(progressDialog);
             }
         }
 

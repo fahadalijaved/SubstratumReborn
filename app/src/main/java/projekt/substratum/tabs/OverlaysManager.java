@@ -91,6 +91,7 @@ import static projekt.substratum.common.Systems.checkThemeInterfacer;
 import static projekt.substratum.common.Systems.isNewSamsungDevice;
 import static projekt.substratum.common.Systems.isNewSamsungDeviceAndromeda;
 import static projekt.substratum.common.Systems.isSystemSecurityPatchNewer;
+import projekt.substratum.util.views.SafeDialogs;
 
 final class OverlaysManager {
 
@@ -1289,7 +1290,7 @@ final class OverlaysManager {
             Overlays overlays = ref.get();
             Context context = refContext.get();
             if ((context != null) && (overlays != null)) {
-                if (overlays.compileDialog != null) overlays.compileDialog.dismiss();
+                SafeDialogs.dismiss(overlays.compileDialog);
                 // Enabling and restarting the targets takes a moment
                 if (oneTap) overlays.progressBar.setVisibility(View.VISIBLE);
 
@@ -1325,6 +1326,10 @@ final class OverlaysManager {
                     if (oneTap) {
                         // The summary dialog says it all; until then, the tab's progress bar
                         Substratum.log(SUBSTRATUM_BUILDER, "One-tap Apply: enabling...");
+                    } else if (!overlays.isAdded() || overlays.getActivityView() == null) {
+                        // The screen was recreated or closed while compiling: the
+                        // notification above says it is done
+                        Substratum.log(SUBSTRATUM_BUILDER, "Compiled; the screen is gone");
                     } else if (overlays.currentInstance.missingType3) {
                         currentShownLunchBar = Lunchbar.make(
                                 overlays.getActivityView(),
@@ -1372,7 +1377,8 @@ final class OverlaysManager {
                     summary.show(overlays.getActivity(), summary.errorLog.length() == 0 ? null :
                             () -> overlays.showErrorLog(summary.errorLog));
                 }
-                if (Systems.IS_OREO &&
+                if (Systems.IS_OREO && overlays.isAdded() &&
+                        SafeDialogs.canShow(overlays.getActivity()) &&
                         isSystemSecurityPatchNewer(SECURITY_UPDATE_WARN_AFTER) &&
                         !checkSubstratumService(context)) {
                     if (!overlays.prefs.getBoolean("new_stock_dismissal", false)) {

@@ -76,6 +76,7 @@ import static projekt.substratum.common.Internal.START_JOB_ACTION;
 import static projekt.substratum.common.Internal.THEME_PID;
 import static projekt.substratum.common.References.getThemeAssetManager;
 import static projekt.substratum.common.References.setThemeExtraLists;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class BootAnimations extends Fragment {
 
@@ -324,7 +325,7 @@ public class BootAnimations extends Fragment {
         protected void onPostExecute(final String result) {
             final BootAnimations bootAnimations = ref.get();
             if (bootAnimations != null) {
-                bootAnimations.mBusyDialog.dismiss();
+                SafeDialogs.dismiss(bootAnimations.mBusyDialog);
                 final SharedPreferences.Editor editor = bootAnimations.prefs.edit();
                 if (bootAnimations.shutdownBootAnimation) {
                     editor.remove(SHUTDOWN_ANIMATION_APPLIED);

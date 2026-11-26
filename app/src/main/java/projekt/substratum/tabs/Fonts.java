@@ -70,6 +70,7 @@ import static projekt.substratum.common.Internal.START_JOB_ACTION;
 import static projekt.substratum.common.Internal.THEME_PID;
 import static projekt.substratum.common.References.getThemeAssetManager;
 import static projekt.substratum.common.References.setThemeExtraLists;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class Fonts extends Fragment {
 
@@ -268,7 +269,7 @@ public class Fonts extends Fragment {
             if (fragment.isAdded()) {
                 final Context context = fragment.context;
                 if (References.ENABLE_EXTRAS_DIALOG) {
-                    fragment.progressDialog.dismiss();
+                    SafeDialogs.dismiss(fragment.progressDialog);
                 }
                 final SharedPreferences.Editor editor = fragment.prefs.edit();
                 editor.remove(FONTS_APPLIED);

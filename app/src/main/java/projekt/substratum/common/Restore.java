@@ -55,6 +55,7 @@ import static projekt.substratum.common.References.getPieDir;
 import static projekt.substratum.common.Resources.isBootAnimationSupported;
 import static projekt.substratum.common.Resources.isFontsSupported;
 import static projekt.substratum.common.Resources.isSoundsSupported;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class Restore {
 
@@ -209,7 +210,7 @@ public class Restore {
             if (activity != null) {
                 Context context = activity.getApplicationContext();
                 View view = activity.findViewById(R.id.drawer_container);
-                if (alertDialog != null) alertDialog.dismiss();
+                SafeDialogs.dismiss(alertDialog);
                 if (withUninstall) {
                     if (Systems.checkOMS(context)) {
                         try {
@@ -339,7 +340,7 @@ public class Restore {
             Activity activity = ref.get();
             if (activity != null) {
                 View view = activity.findViewById(R.id.drawer_container);
-                if (alertDialog != null) alertDialog.dismiss();
+                SafeDialogs.dismiss(alertDialog);
 
                 editor.remove(BOOT_ANIMATION_APPLIED).apply();
 
@@ -394,7 +395,7 @@ public class Restore {
             Activity activity = ref.get();
             if (activity != null) {
                 Context context = activity.getApplicationContext();
-                if (References.ENABLE_EXTRAS_DIALOG && alertDialog != null) alertDialog.dismiss();
+                if (References.ENABLE_EXTRAS_DIALOG) SafeDialogs.dismiss(alertDialog);
 
                 editor.remove(BOOT_ANIMATION_APPLIED).apply();
 
@@ -449,7 +450,7 @@ public class Restore {
             Activity activity = ref.get();
             if (activity != null) {
                 View view = activity.findViewById(R.id.drawer_container);
-                if (alertDialog != null) alertDialog.dismiss();
+                SafeDialogs.dismiss(alertDialog);
 
                 editor.remove(SOUNDS_APPLIED).apply();
 

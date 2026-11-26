@@ -38,6 +38,7 @@ import projekt.substratum.databinding.TabWallpaperItemBinding;
 import projekt.substratum.util.helpers.FileDownloader;
 
 import static projekt.substratum.common.References.setRecyclerViewAnimations;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.ViewHolder> {
     private final List<WallpaperItem> information;
@@ -172,7 +173,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
             WallpaperAdapter wallpaperAdapter = this.ref.get();
             if ((wallpaperAdapter != null) && (this.activity != null)) {
                 wallpaperAdapter.mWakeLock.release();
-                wallpaperAdapter.mBusyDialog.dismiss();
+                SafeDialogs.dismiss(wallpaperAdapter.mBusyDialog);
 
                 // Crop the image, and send the request back to
                 // InformationActivity

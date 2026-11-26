@@ -152,6 +152,7 @@ import static projekt.substratum.tabs.OverlaysManager.legacyDisable;
 import static projekt.substratum.tabs.OverlaysManager.selectEnabledDisabled;
 import static projekt.substratum.tabs.OverlaysManager.selectStateMode;
 import static projekt.substratum.util.helpers.MapUtils.sortMapByValues;
+import projekt.substratum.util.views.SafeDialogs;
 
 public class Overlays extends Fragment {
 
@@ -613,7 +614,9 @@ public class Overlays extends Fragment {
             ).execute();
         }
 
-        if (logBar) invokeLogCharLunchBar(context);
+        // The screen may have been recreated or closed while compiling: the notification
+        // above still reports the errors
+        if (logBar && isAdded() && getActivityView() != null) invokeLogCharLunchBar(context);
     }
 
     /**
@@ -1068,7 +1071,7 @@ public class Overlays extends Fragment {
             Context context = ref.get();
             if (context != null) {
                 if (!autosaveInstance && (result != null)) {
-                    if (progressDialog != null) progressDialog.dismiss();
+                    SafeDialogs.dismiss(progressDialog);
 
                     Intent i = new Intent(Intent.ACTION_SEND);
                     i.setType(MAIL_TYPE);
