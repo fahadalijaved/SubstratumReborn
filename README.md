@@ -67,7 +67,7 @@ ROMs are a target, but nobody has tested one yet.
 | **Theme engine** | Classic Substratum themes compile on the phone and apply as fabricated overlays and through the module. Reborn engine themes (rules in `assets/amoled/rules.json`) read each app's own colours on the phone. One engine theme is on at a time; classic overlays stay on top of it. |
 | **Themes** | Built-in themes first, then every installed theme in one grid, with filters and search. Install a theme APK from a file. Long-press a theme for App info, a home-screen shortcut, Turn off and Uninstall. |
 | **Theme pages** | A before and after preview drawn from the theme's own colours, the apps it changes on this phone, Apply with progress you can watch, Customize and Remove. Classic themes list their parts, each with its own switch. |
-| **Studio** | An engine theme's look: presets (Pure black, Elevated cards, Dim), surfaces (Pure, Dim, Elevated, Tinted) and an accent (Monet, One UI blue, white or any colour, optionally in light mode too), over a live before and after preview of Quick Settings and Settings. |
+| **Studio** | An engine theme's look: presets such as Pure black, Elevated cards and Dim, surfaces (Pure, Dim, Elevated, Tinted) and an accent (the app's own, Monet, One UI blue, white and more, or any colour; optionally in light mode too), over a live before and after preview of Quick Settings and Settings. |
 | **Per-app inspector** | Every app the theme covers, with search, filters, its route (native or module) and a *Restart needed* state. Each colour it changed, stock to themed, and the rule that decided it. Long-press a colour to keep it stock, pin your own or copy its name. |
 | **Quick Settings designer** (One UI only) | Opaque shade, near-black slider tracks, the active tile colour and a compact row height, carried out in One UI 9's System UI by the module. |
 | **Create** | Tools for themers: inspect any app's colours, the preview roles, and the theming guide. |
@@ -101,7 +101,8 @@ flowchart LR
 
 - **Compute.** For every app an engine theme covers, the engine reads the dark-mode value each
   colour actually resolves to and decides what it becomes: surfaces go black (or to the look's
-  step), while text, icons, accents and light mode stay untouched.
+  step), while text, icons and light mode stay untouched, and accents too unless the look picks
+  one.
 - **Compile.** A classic theme is built on the phone, as Substratum always did. When a line
   refers to something this system no longer has, only that line goes.
 - **Fabricated overlays.** Colours, bools and integers are registered with root as fabricated
@@ -179,11 +180,19 @@ them needs a reinstall.
 
 1. **Pause hooks** (Engine screen, Quick actions). The kill switch: the module installs no hooks
    anywhere and System UI restarts stock. **Resume hooks** brings everything back. From a root
-   shell, if the app cannot open: `touch /data/resource-cache/substratum/hooks.off`, then restart
-   System UI.
+   shell, if the app cannot open:
+
+   ```
+   touch /data/resource-cache/substratum/hooks.off
+   chmod 644 /data/resource-cache/substratum/hooks.off
+   restorecon /data/resource-cache/substratum/hooks.off
+   kill $(pidof com.android.systemui)
+   ```
+
 2. **The crash-loop guard.** Three starts within 90 seconds and the module leaves System UI (or
    that app) stock; the Engine screen shows *Guard tripped*, and its Fix clears the guard and
-   restarts System UI. By hand: `rm -f /data/user_de/0/com.android.systemui/reborn_guard_*`.
+   restarts System UI. By hand: `rm -f /data/user_de/0/com.android.systemui/reborn_guard_*`,
+   then `kill $(pidof com.android.systemui)`.
 3. **Rescue.** The *Rescue Me!* shortcut (long-press the app icon, or add it to the home screen
    from the Engine screen) pauses the module, restarts System UI and turns off theme overlays on
    the Android framework.
@@ -233,9 +242,11 @@ natively without an APK; the module covers what they cannot carry.
 
 ### Does it change light mode?
 
-No. Engine theme colours are night-only: where an app's light value is a fixed colour, the stock
-light value is registered next to it, and the wallpaper (Monet) colours are never touched.
-Classic themes apply in dark mode only by default too.
+Not unless you ask it to. Engine theme colours are night-only: where an app's light value is a
+fixed colour, the stock light value is registered next to it, and the wallpaper (Monet) colours
+are never touched. The one exception is the Studio's *Also in light mode* switch for the accent,
+which is off by default. Classic themes apply in dark mode only by default too; a switch on a
+classic theme's page lets it apply in light mode as well.
 
 ### What happens when an app updates?
 

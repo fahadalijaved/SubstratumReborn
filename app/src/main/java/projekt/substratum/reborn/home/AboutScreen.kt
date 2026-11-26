@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -396,11 +397,13 @@ private fun CreditRow(credit: Credit, shapes: ListItemShapes) {
             if (credit.icon != null) {
                 ShapedIcon(credit.icon, credit.container, credit.content, size = 44.dp, shape = credit.shape)
             } else {
+                // A sample of the face, not text to read out: the row's title names it
                 Box(
                     Modifier
                         .size(44.dp)
                         .clip(credit.shape)
-                        .background(credit.container),
+                        .background(credit.container)
+                        .clearAndSetSemantics { },
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(

@@ -97,14 +97,18 @@ fun BrandMark(
     var greeted by rememberSaveable { mutableStateOf(false) }
     val spring = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     val settle = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
-    LaunchedEffect(Unit) {
-        if (greeted) return@LaunchedEffect
-        greeted = true
-        fan.animateTo(1f, spring)
-        fan.animateTo(0f, settle)
-    }
+    // One effect drives the fan: a second one on the same Animatable would cancel the greeting
+    // (its animateTo(0) on the first frame interrupts the greeting's animateTo(1))
     LaunchedEffect(pressed) {
-        if (pressed) fan.animateTo(1f, spring) else fan.animateTo(0f, settle)
+        when {
+            pressed -> fan.animateTo(1f, spring)
+            !greeted -> {
+                greeted = true
+                fan.animateTo(1f, spring)
+                fan.animateTo(0f, settle)
+            }
+            else -> fan.animateTo(0f, settle)
+        }
     }
     Box(
         modifier

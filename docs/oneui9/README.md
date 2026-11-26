@@ -18,14 +18,14 @@ Sections marked *One UI only* (the design tokens, the One UI 9 quick settings an
 Settings designer) need a Samsung build.
 
 One UI 9 (Android 17) skips overlay APKs that Samsung did not preinstall, and Android limits
-what an overlay signed with another key may change. SubstratumReborn therefore applies themes in
+what an overlay signed with another key may change. Reborn therefore applies themes in
 two layers:
 
 - **Colors, booleans and integers** become a *fabricated overlay* in the system Overlay Manager
   (root). They are resolved natively, so they also reach colors the app only uses through
   references or inside its own drawables, they follow qualifiers such as `values-night`, apply
   live without restarting the app, and framework values apply system-wide.
-- **Everything else** (dimensions, drawables, layouts) is applied by SubstratumReborn's LSPosed
+- **Everything else** (dimensions, drawables, layouts) is applied by Reborn's LSPosed
   module, which swaps the matching resources inside each target app as it starts.
 
 Themes are still ordinary Substratum themes; the split happens when Substratum builds them.
@@ -118,7 +118,7 @@ Every value in the samples is the stock One UI 9 value.
 ## Reborn engine themes (rules)
 
 A theme can also be a set of **rules** instead of a list of overlays: a *Reborn engine theme*.
-SubstratumReborn then looks at every installed app that the rules cover, reads the app's own
+Reborn then looks at every installed app that the rules cover, reads the app's own
 dark-mode colors on the device, and turns them into a night-only fabricated overlay. It works
 for whatever apps each user has and on any One UI release, with nothing to regenerate. Reborn
 engine themes open their page in **Themes** (a preview, the apps they change on this phone,
