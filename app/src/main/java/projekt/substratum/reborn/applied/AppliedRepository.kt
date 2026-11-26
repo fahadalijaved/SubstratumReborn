@@ -107,7 +107,9 @@ data class AppliedSnapshot(
 @Immutable
 data class UndoPlan(val amoledOn: Boolean, val amoledApps: Int, val overlays: Int, val qs: Int)
 
-enum class UndoStep { Amoled, Overlays, QuickSettings, SystemUi }
+// In the order they run: AMOLED's removal goes last because its job ends with the one System UI
+// restart (several restarts in a row count towards LSPosed's safe mode)
+enum class UndoStep { Overlays, QuickSettings, Amoled, SystemUi }
 
 @Immutable
 data class UndoResult(
@@ -442,7 +444,7 @@ object AppliedRepository {
         if (_undo.value is UndoStage.Running) return
         val app = context.applicationContext
         scope.launch {
-            _undo.value = UndoStage.Running(plan, UndoStep.Amoled)
+            _undo.value = UndoStage.Running(plan, UndoStep.Overlays)
             val root = withContext(Dispatchers.IO) { Root.checkRootAccess() }
             if (!root) {
                 _undo.value = UndoStage.Done(UndoResult(noRoot = true))
@@ -460,12 +462,7 @@ object AppliedRepository {
                 }
             }
 
-            // 1. AMOLED, always: a removal also cleans up what a lost state file no longer knows
-            val amoled = step(UndoStep.Amoled, false) {
-                AmoledJobs.remove(app)
-                true
-            }
-            // 2. Theme overlays (the legacy "Disable all"), then compiled overlays without a theme
+            // 1. Theme overlays (the legacy "Disable all"), then compiled overlays without a theme
             val overlays = step(UndoStep.Overlays, 0 to -1) {
                 val before = XposedBackend.listAll().count { XposedBackend.isEnabled(it) }
                 ThemeManager.disableAllThemeOverlays(app)
@@ -474,7 +471,8 @@ object AppliedRepository {
                 val after = XposedBackend.listAll().count { XposedBackend.isEnabled(it) }
                 (before - after).coerceAtLeast(0) to after
             }
-            // 3. Quick Settings back to stock: stock rows, see-through shade, stock tracks
+            // 2. Quick Settings back to stock: stock rows, see-through shade, stock tracks. Written
+            // before AMOLED's removal is queued, so it never waits behind that job for the root shell
             val qs = step(UndoStep.QuickSettings, false) {
                 val options = QsOptions.read()
                 // 0 is how the options file says "stock rows" (the stock aspect, STOCK_ASPECT)
@@ -484,8 +482,15 @@ object AppliedRepository {
                 options.write(app)
             }
             if (!qs && UndoStep.QuickSettings !in failed) failed += UndoStep.QuickSettings
-            // 4. System UI, so it starts without any of it
-            val restarted = step(UndoStep.SystemUi, false) {
+            // 3. AMOLED, always: a removal also cleans up what a lost state file no longer knows.
+            // The removal job restarts System UI once when it is done, which also loads the
+            // stock Quick Settings options written above
+            val amoled = step(UndoStep.Amoled, false) {
+                AmoledJobs.remove(app)
+                true
+            }
+            // 4. System UI: only when AMOLED's removal could not be queued (it restarts it itself)
+            val restarted = if (amoled) true else step(UndoStep.SystemUi, false) {
                 QsOptions.restartSystemUi()
                 true
             }
