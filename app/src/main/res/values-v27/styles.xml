@@ -10,14 +10,24 @@
     <!-- Same as values/styles.xml, plus the navigation bar attributes added in API 27 -->
     <style name="AppTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/window_bg</item>
-        <item name="android:navigationBarColor">?attr/colorSurfaceContainer</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
         <item name="android:navigationBarDividerColor">@android:color/transparent</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">@bool/windowLightStatusBar</item>
         <item name="android:windowLightNavigationBar">@bool/windowLightNavigationBar</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="materialCardViewStyle">@style/AppTheme.Card</item>
-        <item name="alertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Material3Expressive.MaterialAlertDialog</item>
+        <!-- Platform dialogs still left (and android.app.AlertDialog) in the expressive theme, not One UI's -->
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.Material3Expressive.Dialog.Alert.Framework</item>
+        <!-- Rounded M3E popups for overflow menus, list popups and Spinner dropdowns -->
+        <item name="popupMenuStyle">@style/Widget.Reborn.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Reborn.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Reborn.PopupMenu.Overflow</item>
+        <item name="listPopupWindowStyle">@style/Widget.Reborn.PopupMenu.ListPopupWindow</item>
+        <item name="spinnerStyle">@style/Widget.Reborn.Spinner</item>
+        <item name="android:spinnerStyle">@style/Widget.Reborn.Spinner</item>
+        <item name="materialSwitchStyle">@style/Widget.Reborn.MaterialSwitch</item>
     </style>
 
     <style name="AppTheme.InformationActivity" parent="AppTheme">

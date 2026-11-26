@@ -13,7 +13,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -68,7 +67,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -267,21 +265,21 @@ fun ShowcaseCarousel(
         }
 
         Spacer(Modifier.height(14.dp))
+        val motion = MaterialTheme.motionScheme
         Row(
             modifier = Modifier.padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedContent(
                 targetState = pages[pager.currentPage],
-                transitionSpec = { fadeIn(tween(240, delayMillis = 60)) togetherWith fadeOut(tween(120)) },
+                transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
                 label = "showcasePage",
                 modifier = Modifier.weight(1f),
             ) { page ->
                 Column {
                     Text(
                         stringResource(page.title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleSmallEmphasized,
                     )
                     Text(
                         stringResource(page.detail),
@@ -304,8 +302,7 @@ fun ShowcaseCarousel(
         Spacer(Modifier.height(18.dp))
         Text(
             stringResource(R.string.reborn_showcase_try),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelLargeEmphasized,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(horizontal = 8.dp),
         )
@@ -343,7 +340,7 @@ fun ShowcaseCarousel(
         Spacer(Modifier.height(8.dp))
         AnimatedContent(
             targetState = trying != null && trying != current?.savedPreset,
-            transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(120)) },
+            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
             label = "tryCaption",
             modifier = Modifier.padding(horizontal = 8.dp),
         ) { previewing ->

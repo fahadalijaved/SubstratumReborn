@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledPreview
 import projekt.substratum.common.platform.QsOptions
+import projekt.substratum.reborn.components.design.SystemFont
 
 /** A wallpaper behind the panel, so a see-through shade reads as see-through. */
 internal val Wallpaper = Brush.linearGradient(
@@ -68,7 +69,7 @@ internal fun Color.nearBlack(): Boolean = alpha < 0.35f || luminance() < 0.02f
 
 private val TileIcons = intArrayOf(
     R.drawable.ic_reborn_wifi, R.drawable.ic_reborn_bluetooth, R.drawable.ic_reborn_volume,
-    R.drawable.ic_reborn_flashlight, R.drawable.ic_reborn_amoled, R.drawable.ic_reborn_airplane,
+    R.drawable.ic_reborn_flashlight, R.drawable.ic_mock_amoled, R.drawable.ic_reborn_airplane,
     R.drawable.ic_reborn_rotate, R.drawable.ic_reborn_location,
 )
 private val TilesOn = setOf(0, 1, 4, 6)
@@ -84,6 +85,18 @@ private val TilesOn = setOf(0, 1, 4, 6)
  */
 @Composable
 fun QsMock(
+    roles: MockRoles,
+    side: MockSide,
+    modifier: Modifier = Modifier,
+    aspect: Float = QsOptions.STOCK_ASPECT,
+    opaqueShade: Boolean = true,
+    darkTracks: Boolean = true,
+    compact: Boolean = false,
+) = SystemFont { QsMockBody(roles, side, modifier, aspect, opaqueShade, darkTracks, compact) }
+
+/** The mock itself, in the system font (see [SystemFont]). */
+@Composable
+private fun QsMockBody(
     roles: MockRoles,
     side: MockSide,
     modifier: Modifier = Modifier,
@@ -149,9 +162,9 @@ fun QsMock(
                             maxLines = 1,
                         )
                     }
-                    RoundIcon(R.drawable.ic_reborn_settings, tileOff, iconOff, 28.dp, edge = amoled)
+                    RoundIcon(R.drawable.ic_mock_settings, tileOff, iconOff, 28.dp, edge = amoled)
                     Spacer(Modifier.width(6.dp))
-                    RoundIcon(R.drawable.ic_reborn_power, tileOff, iconOff, 28.dp, edge = amoled)
+                    RoundIcon(R.drawable.ic_mock_power, tileOff, iconOff, 28.dp, edge = amoled)
                 }
             }
             // The tile container: black with its hairline in the AMOLED look, invisible in stock
@@ -259,7 +272,7 @@ fun QsMock(
                 ) {
                     if (!compact) {
                         Icon(
-                            painterResource(R.drawable.ic_reborn_play),
+                            painterResource(R.drawable.ic_mock_play),
                             contentDescription = null,
                             tint = Color(0xFF252528),
                             modifier = Modifier.size(18.dp),

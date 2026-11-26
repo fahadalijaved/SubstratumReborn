@@ -29,9 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.toShape
@@ -54,7 +52,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledRules
@@ -64,6 +61,8 @@ import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.isOneUi
 import projekt.substratum.reborn.components.stockLookName
+import projekt.substratum.reborn.components.design.RebornSlider
+import projekt.substratum.reborn.components.design.RebornSwitch
 import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.reborn.components.mock.MockSide
 import projekt.substratum.reborn.components.mock.QsMock
@@ -241,12 +240,11 @@ fun QsDesigner(
             Text(
                 if (stop != null) stringResource(stop.label)
                 else stringResource(R.string.reborn_studio_qs_percent, (aspect / QsOptions.STOCK_ASPECT * 100).roundToInt()),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.labelLargeEmphasized,
                 color = scheme.primary,
             )
         }
-        Slider(
+        RebornSlider(
             value = aspect,
             onValueChange = { value ->
                 val snapped = Stops.firstOrNull { abs(it.aspect - value) < SNAP }?.aspect ?: value
@@ -265,12 +263,11 @@ fun QsDesigner(
                 val chosen = abs(stop.aspect - aspect) < 0.002f
                 Text(
                     stringResource(stop.label),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = if (chosen) FontWeight.Bold else FontWeight.Normal,
+                    style = if (chosen) MaterialTheme.typography.labelMediumEmphasized else MaterialTheme.typography.labelMedium,
                     color = if (chosen) scheme.primary else scheme.onSurfaceVariant,
                     modifier = Modifier
                         .align(BiasAlignment(fraction * 2f - 1f, 0f))
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(MaterialTheme.shapes.small)
                         .clickable {
                             haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
                             aspect = stop.aspect
@@ -325,8 +322,7 @@ private fun QsDesignerHeader() {
         Column(Modifier.weight(1f)) {
             Text(
                 stringResource(R.string.reborn_studio_qs_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMediumEmphasized,
             )
             Text(
                 stringResource(R.string.reborn_studio_qs_text),
@@ -373,7 +369,7 @@ private fun SwitchRow(title: String, text: String, checked: Boolean, enabled: Bo
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
             .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
             .padding(vertical = 8.dp),
     ) {
@@ -386,6 +382,7 @@ private fun SwitchRow(title: String, text: String, checked: Boolean, enabled: Bo
             Text(text, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
         }
         Spacer(Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
+        // Display only: the row is the toggle (its caller gives the haptic)
+        RebornSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }

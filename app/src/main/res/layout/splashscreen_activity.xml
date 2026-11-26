@@ -35,14 +35,14 @@
             app:animatedSvgTraceTime="2000"
             app:animatedSvgTraceTimePerGlyph="1000" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progress_bar_loader"
-            style="?android:progressBarStyleHorizontal"
+            style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
             android:layout_width="@dimen/app_splash_icon_width"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"
             android:indeterminate="true"
-            android:indeterminateTint="@color/splashscreen_progress"
+            app:indicatorColor="@color/splashscreen_progress"
             android:padding="15dp"
             android:visibility="invisible" />
 

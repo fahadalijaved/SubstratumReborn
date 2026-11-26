@@ -8,7 +8,7 @@
 package projekt.substratum.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,7 +35,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -222,7 +222,7 @@ public class ProfileFragment extends Fragment {
         Button restoreButton = viewBinding.restoreCardActionButton;
         CardView scheduledProfileCard = viewBinding.scheduledProfilesCard;
         scheduledProfileLayout = viewBinding.scheduledProfileCardContentContainer;
-        Switch dayNightSwitch = viewBinding.scheduledProfilesEnableSwitch;
+        CompoundButton dayNightSwitch = viewBinding.scheduledProfilesEnableSwitch;
         startTime = viewBinding.nightStartTime;
         endTime = viewBinding.nightEndTime;
         dayProfile = viewBinding.daySpinner;
@@ -1042,7 +1042,7 @@ public class ProfileFragment extends Fragment {
         private String profileName;
         private List<List<String>> toBeCompiled;
         private ArrayList<String> toBeRun;
-        private ProgressDialog progressDialog;
+        private RebornProgressDialog progressDialog;
         private LocalBroadcastManager localBroadcastManager;
         private KeyRetrieval keyRetrieval;
         private Intent securityIntent;
@@ -1099,7 +1099,7 @@ public class ProfileFragment extends Fragment {
         protected void onPreExecute() {
             ProfileFragment profileFragment = ref.get();
             if (profileFragment.isAdded()) {
-                progressDialog = new ProgressDialog(profileFragment.context);
+                progressDialog = new RebornProgressDialog(profileFragment.context);
                 progressDialog.setIndeterminate(true);
                 progressDialog.setCancelable(false);
                 progressDialog.setMessage(

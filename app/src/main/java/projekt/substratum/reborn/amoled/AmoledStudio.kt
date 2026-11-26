@@ -11,13 +11,11 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -63,33 +61,25 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SplitButtonDefaults
 import androidx.compose.material3.SplitButtonLayout
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -109,7 +99,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -119,11 +108,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import projekt.substratum.R
@@ -150,6 +137,17 @@ import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.reborn.components.mock.MockSide
 import projekt.substratum.reborn.components.mock.QsMock
 import projekt.substratum.reborn.components.mock.SettingsMock
+import projekt.substratum.reborn.components.design.HeroCard
+import projekt.substratum.reborn.components.design.HueTrack
+import projekt.substratum.reborn.components.design.MenuAction
+import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.MenuToggle
+import projekt.substratum.reborn.components.design.ProgressShape
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
+import projekt.substratum.reborn.components.design.RebornMenu
+import projekt.substratum.reborn.components.design.RebornSlider
+import projekt.substratum.reborn.components.design.RebornSwitch
+import projekt.substratum.reborn.components.design.overline
 import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.theme.StatusColors
 import java.util.Locale
@@ -191,15 +189,16 @@ fun AmoledStudio() {
     var entered by rememberSaveable { mutableStateOf(false) }
     val animate = remember { !entered }
     LaunchedEffect(Unit) { entered = true }
+    val motion = MaterialTheme.motionScheme
     AnimatedContent(
         targetState = appsPage,
         transitionSpec = {
             if (targetState != null) {
-                (slideInHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 3 } + fadeIn(tween(220))) togetherWith
-                    fadeOut(tween(120))
+                (slideInHorizontally(motion.defaultSpatialSpec()) { it / 3 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
+                    fadeOut(motion.fastEffectsSpec())
             } else {
-                fadeIn(tween(220, delayMillis = 60)) togetherWith
-                    (slideOutHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 3 } + fadeOut(tween(160)))
+                fadeIn(motion.defaultEffectsSpec()) togetherWith
+                    (slideOutHorizontally(motion.defaultSpatialSpec()) { it / 3 } + fadeOut(motion.fastEffectsSpec()))
             }
         },
         contentKey = { it != null },
@@ -287,24 +286,11 @@ private fun StudioMain(
     val on = summary?.enabled == true
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
-    val background = MaterialTheme.colorScheme.background
     val gutter = Modifier.padding(horizontal = 16.dp)
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = background,
-        topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.reborn_tab_amoled), fontWeight = FontWeight.Bold) },
-                subtitle = { Text(stringResource(R.string.reborn_studio_subtitle)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = background,
-                    scrolledContainerColor = background,
-                ),
-                scrollBehavior = scrollBehavior,
-            )
-        },
+    RebornFlexibleScaffold(
+        title = stringResource(R.string.reborn_tab_amoled),
+        subtitle = stringResource(R.string.reborn_studio_subtitle),
+        scrollBehavior = scrollBehavior,
     ) { padding ->
         LazyColumn(
             state = listState,
@@ -317,7 +303,7 @@ private fun StudioMain(
         ) {
             item(key = "hero") {
                 Entrance(0, animate) {
-                    HeroCard(
+                    StudioHeroCard(
                         summary = summary,
                         apps = apps,
                         job = job,
@@ -345,10 +331,11 @@ private fun StudioMain(
                 Entrance(1, animate) {
                     Row(gutter, verticalAlignment = Alignment.CenterVertically) {
                         SectionHeader(stringResource(R.string.reborn_studio_look), Modifier.weight(1f))
+                        val motion = MaterialTheme.motionScheme
                         AnimatedVisibility(
                             visible = pending,
-                            enter = fadeIn() + scaleIn(spring(dampingRatio = 0.6f)),
-                            exit = fadeOut() + scaleOut(),
+                            enter = fadeIn(motion.fastEffectsSpec()) + scaleIn(motion.fastSpatialSpec()),
+                            exit = fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec()),
                         ) {
                             StatusChip(stringResource(R.string.reborn_studio_pending), ChipState.Warn, Modifier.padding(top = 12.dp))
                         }
@@ -397,7 +384,7 @@ private fun StudioMain(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
-private fun HeroCard(
+private fun StudioHeroCard(
     summary: StudioState.Summary?,
     apps: List<StudioState.AppRow>?,
     job: StudioState.JobUi?,
@@ -422,7 +409,8 @@ private fun HeroCard(
     val total = rows?.size ?: summary?.total ?: 0
     val restartNeeded = rows?.count { it.enabled && it.restartNeeded } ?: summary?.restartNeeded ?: 0
     val lit = on || running
-    SectionCard(modifier = modifier, container = colors.heroCard, contentPadding = PaddingValues(24.dp)) {
+    val motion = MaterialTheme.motionScheme
+    HeroCard(modifier.animateContentSize(motion.defaultSpatialSpec())) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(112.dp), contentAlignment = Alignment.Center) {
                 if (summary == null) {
@@ -448,23 +436,23 @@ private fun HeroCard(
             Spacer(Modifier.width(20.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.reborn_studio_overline).uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelLarge,
+                    text = stringResource(R.string.reborn_studio_overline),
+                    style = MaterialTheme.typography.overline,
                     color = scheme.primary,
-                    letterSpacing = 1.2.sp,
-                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 AnimatedContent(
                     targetState = on,
-                    transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith fadeOut() },
+                    transitionSpec = {
+                        (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.9f)) togetherWith
+                            fadeOut(motion.fastEffectsSpec())
+                    },
                     label = "heroState",
                 ) { isOn ->
                     Text(
                         text = stringResource(if (isOn) R.string.reborn_on else R.string.reborn_off),
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.displayMediumEmphasized,
                         color = if (isOn) scheme.primary else scheme.onSurface,
                     )
                 }
@@ -516,8 +504,8 @@ private fun HeroCard(
         AnimatedContent(
             targetState = running,
             transitionSpec = {
-                (fadeIn(tween(260)) + scaleIn(initialScale = 0.96f)) togetherWith fadeOut(tween(160)) using
-                    SizeTransform(clip = false)
+                (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.96f)) togetherWith
+                    fadeOut(motion.fastEffectsSpec()) using SizeTransform(clip = false)
             },
             label = "heroAction",
         ) { busy ->
@@ -657,7 +645,11 @@ private fun ApplyButtons(
                     shapes = SplitButtonDefaults.trailingButtonShapesFor(height),
                     contentPadding = SplitButtonDefaults.trailingButtonContentPaddingFor(height),
                 ) {
-                    val rotation by animateFloatAsState(if (menu) 180f else 0f, label = "menuArrow")
+                    val rotation by animateFloatAsState(
+                        if (menu) 180f else 0f,
+                        MaterialTheme.motionScheme.fastSpatialSpec(),
+                        label = "menuArrow",
+                    )
                     Icon(
                         painterResource(R.drawable.ic_reborn_expand),
                         contentDescription = null,
@@ -666,50 +658,48 @@ private fun ApplyButtons(
                             .graphicsLayer { rotationZ = rotation },
                     )
                 }
-                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_reapply_changed)) },
-                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_refresh), null) },
-                        enabled = on,
-                        onClick = {
-                            menu = false
-                            onReapplyChanged()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_remove)) },
-                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_delete), null) },
-                        enabled = on,
-                        onClick = {
-                            menu = false
-                            confirmRemove = true
-                        },
-                    )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_auto_theme)) },
-                        trailingIcon = { Switch(checked = options.autoTheme, onCheckedChange = null) },
-                        onClick = {
-                            menu = false
-                            options.onAutoTheme(!options.autoTheme)
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_engine_classic)) },
-                        trailingIcon = { Switch(checked = options.classic, onCheckedChange = null) },
-                        onClick = {
-                            menu = false
-                            options.onClassic(!options.classic)
-                        },
-                    )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_classic)) },
-                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
-                        onClick = {
-                            menu = false
-                            onClassic()
-                        },
+                // The vibrant first group is the split button's own; toggles keep the menu open
+                RebornMenu(expanded = menu, onDismiss = { menu = false }) {
+                    listOf(
+                        MenuGroup(
+                            vibrant = true,
+                            entries = listOf(
+                                MenuAction(
+                                    stringResource(R.string.reborn_studio_reapply_changed),
+                                    R.drawable.ic_reborn_refresh,
+                                    enabled = on,
+                                    onClick = onReapplyChanged,
+                                ),
+                            ),
+                        ),
+                        MenuGroup(
+                            listOf(
+                                MenuToggle(
+                                    stringResource(R.string.reborn_studio_auto_theme),
+                                    options.autoTheme,
+                                    onCheckedChange = options.onAutoTheme,
+                                ),
+                                MenuToggle(
+                                    stringResource(R.string.reborn_studio_engine_classic),
+                                    options.classic,
+                                    onCheckedChange = options.onClassic,
+                                ),
+                            ),
+                        ),
+                        MenuGroup(
+                            listOf(MenuAction(stringResource(R.string.reborn_studio_classic), R.drawable.ic_reborn_open, onClick = onClassic)),
+                        ),
+                        MenuGroup(
+                            listOf(
+                                MenuAction(
+                                    stringResource(R.string.reborn_studio_remove),
+                                    R.drawable.ic_reborn_delete,
+                                    enabled = on,
+                                    danger = true,
+                                    onClick = { confirmRemove = true },
+                                ),
+                            ),
+                        ),
                     )
                 }
             }
@@ -721,6 +711,7 @@ private fun ApplyButtons(
             text = stringResource(R.string.system_amoled_remove_message),
             confirmLabel = stringResource(R.string.system_amoled_remove),
             icon = R.drawable.ic_reborn_delete,
+            destructive = true,
             onConfirm = onRemove,
             onDismiss = { confirmRemove = false },
         )
@@ -731,32 +722,18 @@ private fun ApplyButtons(
 @Composable
 private fun JobProgress(job: StudioState.JobUi) {
     val scheme = MaterialTheme.colorScheme
+    val motion = MaterialTheme.motionScheme
     val progress by animateFloatAsState(
         targetValue = job.fraction,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessVeryLow),
+        animationSpec = motion.slowEffectsSpec(),
         label = "jobProgress",
     )
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Crossfade(job.started, label = "jobStarted") { started ->
-                if (!started) {
-                    ContainedLoadingIndicator(Modifier.size(56.dp))
-                } else {
-                    Box(
-                        Modifier
-                            .size(56.dp)
-                            .clip(MaterialShapes.Cookie9Sided.toShape())
-                            .background(scheme.primaryContainer),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            "${(progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = scheme.onPrimaryContainer,
-                        )
-                    }
-                }
+            Crossfade(job.started, animationSpec = motion.defaultEffectsSpec(), label = "jobStarted") { started ->
+                // Indeterminate until the first app, then the shape morphs as the job advances
+                if (!started) ContainedLoadingIndicator(Modifier.size(56.dp))
+                else ProgressShape(job.fraction)
             }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
@@ -771,8 +748,7 @@ private fun JobProgress(job: StudioState.JobUi) {
                             AmoledJobs.Kind.SET_ENABLED -> R.string.reborn_studio_job_switch
                         }
                     ),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                 )
                 Text(
                     text = when {
@@ -784,6 +760,14 @@ private fun JobProgress(job: StudioState.JobUi) {
                     color = scheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (job.started) {
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelLargeEmphasized.copy(fontFeatureSettings = "tnum"),
+                    color = scheme.primary,
                 )
             }
         }
@@ -874,7 +858,7 @@ private fun PresetCard(
     )
     val scale by animateFloatAsState(
         if (selected) 1f else 0.97f,
-        spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow),
+        MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "presetScale",
     )
     val mock = roles ?: MockRoles.Empty
@@ -899,7 +883,7 @@ private fun PresetCard(
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
                 Column(Modifier.weight(1f)) {
-                    Text(name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                    Text(name, style = MaterialTheme.typography.titleSmallEmphasized, maxLines = 1)
                     Text(
                         detail,
                         style = MaterialTheme.typography.bodySmall,
@@ -910,8 +894,8 @@ private fun PresetCard(
                 }
                 AnimatedVisibility(
                     visible = selected,
-                    enter = scaleIn(spring(dampingRatio = 0.5f)) + fadeIn(),
-                    exit = scaleOut() + fadeOut(),
+                    enter = scaleIn(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
+                    exit = scaleOut(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
                 ) {
                     Box(
                         Modifier
@@ -948,16 +932,14 @@ private fun PreviewCard(
         ) {
             Text(
                 stringResource(R.string.reborn_studio_preview),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.weight(1f),
             )
             if (look != null) {
                 AnimatedContent(look.level, label = "previewLevel") { level ->
                     Text(
                         stringResource(levelLabel(level)),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.labelLargeEmphasized,
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -1004,8 +986,7 @@ private fun SurfacesCard(look: StudioState.Look?, modifier: Modifier, onLevel: (
     SectionCard(modifier = modifier) {
         Text(
             stringResource(R.string.reborn_studio_surfaces),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleMediumEmphasized,
         )
         Spacer(Modifier.height(14.dp))
         Row(
@@ -1037,9 +1018,10 @@ private fun SurfacesCard(look: StudioState.Look?, modifier: Modifier, onLevel: (
             }
         }
         Spacer(Modifier.height(12.dp))
+        val motion = MaterialTheme.motionScheme
         AnimatedContent(
             targetState = look?.level ?: AmoledLevel.PURE,
-            transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
             label = "levelSummary",
         ) { level ->
             Text(
@@ -1088,8 +1070,7 @@ private fun AccentCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(R.string.reborn_studio_accent),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.weight(1f),
             )
             Text(
@@ -1126,7 +1107,7 @@ private fun AccentCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(MaterialTheme.shapes.large)
                 .toggleable(
                     value = look?.accentLight == true,
                     enabled = lightEnabled && look != null,
@@ -1152,7 +1133,8 @@ private fun AccentCard(
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Switch(checked = look?.accentLight == true, onCheckedChange = null, enabled = lightEnabled && look != null)
+            // Display only: the row is the toggle (and gives the haptic)
+            RebornSwitch(checked = look?.accentLight == true, onCheckedChange = null, enabled = lightEnabled && look != null)
         }
     }
     if (picking) {
@@ -1169,7 +1151,7 @@ private fun AccentSwatch(option: AccentOption, selected: Boolean, label: String,
     val scheme = MaterialTheme.colorScheme
     val scale by animateFloatAsState(
         if (selected) 1.08f else 1f,
-        spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium),
+        MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "swatchScale",
     )
     val ring by animateColorAsState(if (selected) scheme.primary else Color.Transparent, label = "swatchRing")
@@ -1243,7 +1225,7 @@ private fun CustomAccentDialog(initial: Int?, onDismiss: () -> Unit, onPick: (St
                     Modifier
                         .fillMaxWidth()
                         .height(64.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(MaterialTheme.shapes.largeIncreased)
                         .background(preview),
                 )
                 Spacer(Modifier.height(16.dp))
@@ -1264,20 +1246,14 @@ private fun CustomAccentDialog(initial: Int?, onDismiss: () -> Unit, onPick: (St
                     } else null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(stringResource(R.string.reborn_studio_custom_hue), style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(8.dp))
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(CircleShape)
-                        .background(Brush.horizontalGradient(Rainbow)),
-                )
-                Slider(
+                // The track is the rainbow
+                RebornSlider(
                     value = hue,
                     onValueChange = { value ->
                         hue = value
@@ -1288,6 +1264,7 @@ private fun CustomAccentDialog(initial: Int?, onDismiss: () -> Unit, onPick: (St
                         text = hexOf(android.graphics.Color.HSVToColor(hsv))
                     },
                     valueRange = 0f..360f,
+                    track = { HueTrack(it) },
                 )
             }
         },
@@ -1298,10 +1275,11 @@ private fun CustomAccentDialog(initial: Int?, onDismiss: () -> Unit, onPick: (St
                     parsed?.let { onPick(hexOf(it)) }
                     onDismiss()
                 },
+                shapes = ButtonDefaults.shapes(),
             ) { Text(stringResource(R.string.reborn_studio_use)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.reborn_cancel)) }
+            TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.reborn_cancel)) }
         },
     )
 }
@@ -1331,8 +1309,7 @@ private fun AppsCard(
                 Text(
                     if (apps == null) stringResource(R.string.reborn_studio_apps)
                     else stringResource(R.string.reborn_studio_manage_apps, apps.size),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                 )
                 Text(
                     stringResource(R.string.reborn_studio_apps_text),
@@ -1383,7 +1360,6 @@ internal fun MiniChip(text: String, @DrawableRes icon: Int, status: StatusColors
         Text(
             text,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
             color = status.onContainer,
             maxLines = 1,
         )

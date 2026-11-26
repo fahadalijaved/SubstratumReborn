@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MaterialSwitch thumb icon: a check when on, nothing when off (as RebornSwitch in Compose) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_reborn_check" android:state_checked="true" />
+    <item android:drawable="@android:color/transparent" />
+</selector>

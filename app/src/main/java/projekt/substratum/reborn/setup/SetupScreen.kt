@@ -23,21 +23,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,11 +45,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -72,6 +68,9 @@ import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.rememberSnackbar
 import projekt.substratum.reborn.components.statusColors
+import projekt.substratum.reborn.components.design.ActionIcon
+import projekt.substratum.reborn.components.design.PageLoading
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
 
 private enum class StepFix { RootManager, Lsposed, RestartSystemUi, ResetGuard, ResumeHooks, Battery }
 
@@ -254,35 +253,13 @@ fun SetupScreen(onDone: () -> Unit) {
             }
         }
 
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val background = MaterialTheme.colorScheme.background
-        Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            containerColor = background,
+        RebornFlexibleScaffold(
+            title = stringResource(R.string.reborn_setup_title),
+            subtitle = stringResource(R.string.reborn_setup_subtitle, done),
+            navigationIcon = { ActionIcon(R.drawable.ic_reborn_close, stringResource(R.string.reborn_close), onDone) },
+            actions = { ActionIcon(R.drawable.ic_reborn_refresh, stringResource(R.string.reborn_recheck), { refresh++ }) },
             snackbarHost = { RebornSnackbarHost(snackbarState) },
-            topBar = {
-                LargeFlexibleTopAppBar(
-                    title = { Text(stringResource(R.string.reborn_setup_title), fontWeight = FontWeight.Bold) },
-                    subtitle = { Text(stringResource(R.string.reborn_setup_subtitle, done)) },
-                    navigationIcon = {
-                        IconButton(onClick = onDone) {
-                            Icon(painterResource(R.drawable.ic_reborn_close), stringResource(R.string.reborn_close))
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { refresh++ }) {
-                            Icon(painterResource(R.drawable.ic_reborn_refresh), stringResource(R.string.reborn_recheck))
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = background,
-                        scrolledContainerColor = background,
-                    ),
-                    scrollBehavior = scrollBehavior,
-                )
-            },
             bottomBar = {
                 Surface(color = background) {
                     Box(
@@ -292,11 +269,19 @@ fun SetupScreen(onDone: () -> Unit) {
                             .padding(horizontal = 20.dp, vertical = 14.dp),
                     ) {
                         if (done == 4) {
-                            Button(onClick = onDone, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                            Button(
+                                onClick = onDone,
+                                modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MediumContainerHeight),
+                                shapes = ButtonDefaults.shapesFor(ButtonDefaults.MediumContainerHeight),
+                            ) {
                                 Text(stringResource(R.string.reborn_setup_done), style = MaterialTheme.typography.titleMedium)
                             }
                         } else {
-                            OutlinedButton(onClick = onDone, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                            OutlinedButton(
+                                onClick = onDone,
+                                modifier = Modifier.fillMaxWidth().height(ButtonDefaults.MediumContainerHeight),
+                                shapes = ButtonDefaults.shapesFor(ButtonDefaults.MediumContainerHeight),
+                            ) {
                                 Text(stringResource(R.string.reborn_setup_skip), style = MaterialTheme.typography.titleMedium)
                             }
                         }
@@ -330,8 +315,16 @@ fun SetupScreen(onDone: () -> Unit) {
                 }
                 if (list == null) {
                     item(key = "loading") {
-                        SectionCard {
-                            Text(stringResource(R.string.reborn_checking_text), style = MaterialTheme.typography.bodyLarge)
+                        // The first read: the contained indicator, and what it is doing under it
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            PageLoading(height = 200.dp)
+                            Text(
+                                stringResource(R.string.reborn_checking_text),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 24.dp),
+                            )
                         }
                     }
                 } else {
@@ -367,14 +360,12 @@ private fun StepCard(number: Int, step: Step, busy: Boolean, onFix: () -> Unit) 
                 Text(
                     text = if (step.required) stringResource(R.string.reborn_step_number, number)
                     else stringResource(R.string.reborn_step_recommended),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelMediumEmphasized,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = stringResource(step.title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                 )
             }
         }
@@ -389,7 +380,7 @@ private fun StepCard(number: Int, step: Step, busy: Boolean, onFix: () -> Unit) 
             StatusChip(step.value, step.state, Modifier.weight(1f, fill = false))
             Spacer(Modifier.weight(1f))
             if (step.fix != null) {
-                FilledTonalButton(onClick = onFix, enabled = !busy) {
+                FilledTonalButton(onClick = onFix, enabled = !busy, shapes = ButtonDefaults.shapes()) {
                     Icon(painterResource(R.drawable.ic_reborn_open), null, Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.reborn_fix))

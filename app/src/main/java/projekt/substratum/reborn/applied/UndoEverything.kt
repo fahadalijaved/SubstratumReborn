@@ -19,10 +19,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -40,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -66,6 +66,7 @@ fun UndoEverythingHost() {
             text = stringResource(R.string.reborn_undo_text),
             confirmLabel = stringResource(R.string.reborn_undo_confirm),
             icon = R.drawable.ic_reborn_undo,
+            destructive = true,
             onDismiss = AppliedRepository::closeUndo,
             onConfirm = { AppliedRepository.runUndo(context, s.plan) },
         ) { PlanRows(s.plan) }
@@ -123,8 +124,7 @@ private fun PlanRow(
         ShapedIcon(icon, container, content, size = 36.dp, shape = MaterialShapes.Cookie6Sided.toShape())
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(title, style = MaterialTheme.typography.bodyLargeEmphasized, color = MaterialTheme.colorScheme.onSurface)
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -134,15 +134,15 @@ private fun PlanRow(
 @Composable
 private fun Progress(step: UndoStep) {
     val scheme = MaterialTheme.colorScheme
-    Surface(shape = RoundedCornerShape(28.dp), color = scheme.surfaceContainerHigh) {
+    val motion = MaterialTheme.motionScheme
+    Surface(shape = AlertDialogDefaults.shape, color = AlertDialogDefaults.containerColor) {
         Column(Modifier.padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 LoadingIndicator(Modifier.size(48.dp))
                 Spacer(Modifier.width(16.dp))
                 Text(
                     stringResource(R.string.reborn_undo_running),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.headlineSmallEmphasized,
                 )
             }
             Spacer(Modifier.height(20.dp))
@@ -162,7 +162,7 @@ private fun Progress(step: UndoStep) {
                                 now -> 1
                                 else -> 0
                             },
-                            transitionSpec = { fadeIn() togetherWith fadeOut() },
+                            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
                             label = "undoStep",
                         ) { phase ->
                             when (phase) {
@@ -177,8 +177,7 @@ private fun Progress(step: UndoStep) {
                     Spacer(Modifier.width(14.dp))
                     Text(
                         stringResource(stepLabel(s)),
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (now) FontWeight.SemiBold else FontWeight.Normal,
+                        style = if (now) MaterialTheme.typography.bodyLargeEmphasized else MaterialTheme.typography.bodyLarge,
                         color = if (done || now) scheme.onSurface else scheme.onSurfaceVariant,
                     )
                 }
@@ -250,7 +249,7 @@ private fun ResultDialog(result: UndoResult, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss) { Text(stringResource(R.string.reborn_done)) }
+            Button(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.reborn_done)) }
         },
     )
 }

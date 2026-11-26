@@ -8,6 +8,7 @@
 <resources>
     <string name="reborn_classic_title">Reborn Classic</string>
     <string name="reborn_classic">Classic Substratum</string>
+    <string name="reborn_classic_supporting">The original Substratum screens</string>
     <string name="reborn_settings_title">Settings</string>
     <string name="reborn_back">Back</string>
     <string name="reborn_more">More options</string>
@@ -184,6 +185,8 @@
     <string name="reborn_new_overline">What\'s new</string>
     <string name="reborn_new_headline">A theme engine rebuilt for One UI 9 and AOSP</string>
     <string name="reborn_new_lead">Substratum\'s engine, rebuilt on fabricated overlays and an LSPosed module, for themers to build on. Reborn AMOLED, a built-in theme, shows what it can do.</string>
+    <string name="reborn_new_design">A new look</string>
+    <string name="reborn_new_design_text">Material 3 Expressive throughout: Google Sans Flex, a shorter navigation bar, grouped menus, pull to refresh and the shape-morphing loading indicators of Google\'s own apps.</string>
     <string name="reborn_new_engine">The engine</string>
     <string name="reborn_new_engine_text">Fabricated overlays + LSPosed instead of overlay APKs. Rules themes read each app\'s own colours on the phone, so one theme fits every app. Compatible legacy Substratum themes still apply.</string>
     <string name="reborn_new_builtin">Built-in theme: Reborn AMOLED</string>
@@ -311,6 +314,7 @@
     <string name="reborn_discover_file_action">Choose APK…</string>
     <string name="reborn_install_file">Install theme from file…</string>
     <string name="reborn_installing">Installing…</string>
+    <string name="reborn_add_theme">Add a theme</string>
     <string name="reborn_install_done">%1$s installed</string>
     <string name="reborn_install_not_theme">That APK is not a Substratum theme: nothing was installed</string>
     <string name="reborn_install_failed">Install failed: %1$s</string>

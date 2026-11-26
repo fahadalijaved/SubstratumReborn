@@ -15,16 +15,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,7 +29,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,13 +39,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
@@ -59,21 +53,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -92,15 +91,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -114,7 +112,6 @@ import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.RebornCache
 import projekt.substratum.reborn.amoled.rememberActionSnackbar
 import projekt.substratum.reborn.components.AppIcon
-import projekt.substratum.reborn.components.CardShape
 import projekt.substratum.reborn.components.Entrance
 import projekt.substratum.reborn.components.HeroShape
 import projekt.substratum.reborn.components.MorphingShape
@@ -122,10 +119,23 @@ import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.SectionHeader
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.TagChip
+import projekt.substratum.reborn.components.design.ActionIcon
+import projekt.substratum.reborn.components.design.BusyLabel
+import projekt.substratum.reborn.components.design.FabMenuItem
+import projekt.substratum.reborn.components.design.HeroCard
+import projekt.substratum.reborn.components.design.MenuAction
+import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.PageLoading
+import projekt.substratum.reborn.components.design.RebornFabMenu
+import projekt.substratum.reborn.components.design.RebornOverflow
+import projekt.substratum.reborn.components.design.RebornPullToRefresh
+import projekt.substratum.reborn.components.design.SegmentedGroup
+import projekt.substratum.reborn.components.design.ThemeCard
+import projekt.substratum.reborn.components.design.rebornSegmentColors
+import projekt.substratum.reborn.components.design.rebornTopBarColors
+import projekt.substratum.reborn.components.design.rememberRefreshableRoot
 import projekt.substratum.reborn.components.onIo
 import projekt.substratum.reborn.components.rememberResumeCount
-import projekt.substratum.reborn.components.rememberRoot
-import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.util.helpers.Root
 import projekt.substratum.util.helpers.StarterTheme
 
@@ -146,16 +156,19 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
     val activity = LocalActivity.current
     val resume = rememberResumeCount()
     var refresh by remember { mutableIntStateOf(0) }
-    val snapshot by rememberRoot(resume, refresh, initial = RebornCache.themes) {
+    val themes = rememberRefreshableRoot(resume, refresh, initial = RebornCache.themes) {
         loadThemes(context).also { RebornCache.themes = it }
     }
+    val snapshot = themes.value
     val snackbar = rememberActionSnackbar()
     val scope = rememberCoroutineScope()
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var sheetFor by rememberSaveable { mutableStateOf<String?>(null) }
     var installing by remember { mutableStateOf<Installing?>(null) }
-    var menu by remember { mutableStateOf(false) }
+    val list = rememberLazyListState()
+    // The Add FAB shows while the list is at its top, like Google's apps
+    val fabVisible by remember { derivedStateOf { list.firstVisibleItemIndex == 0 } }
     BackHandler(enabled = searching) {
         searching = false
         query = ""
@@ -248,16 +261,30 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val background = MaterialTheme.colorScheme.background
-    val barColors = TopAppBarDefaults.topAppBarColors(containerColor = background, scrolledContainerColor = background)
+    val barColors = rebornTopBarColors()
+    val motion = MaterialTheme.motionScheme
+    // The bar's nested scroll is the pull to refresh's (below), so a pull expands the bar first
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize(),
         containerColor = background,
+        floatingActionButton = {
+            val starterMissing = snapshot?.starterInstalled == false
+            RebornFabMenu(
+                items = buildList {
+                    add(FabMenuItem(stringResource(R.string.reborn_install_file), R.drawable.ic_reborn_file, ::pickFile))
+                    if (starterMissing) {
+                        add(FabMenuItem(stringResource(R.string.reborn_discover_starter_title), R.drawable.ic_reborn_download, ::installStarter))
+                    }
+                },
+                icon = R.drawable.ic_reborn_create,
+                contentDescription = stringResource(R.string.reborn_add_theme),
+                visible = fabVisible && !searching && installing == null,
+            )
+        },
         topBar = {
             AnimatedContent(
                 targetState = searching,
-                transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) },
+                transitionSpec = { fadeIn(motion.fastEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
                 label = "themesBar",
             ) { search ->
                 if (search) {
@@ -272,37 +299,35 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
                     )
                 } else {
                     LargeFlexibleTopAppBar(
-                        title = { Text(stringResource(R.string.reborn_tab_themes), fontWeight = FontWeight.Bold) },
+                        title = { Text(stringResource(R.string.reborn_tab_themes)) },
                         subtitle = {
                             snapshot?.let { Text(pluralThemes(it.themes.size)) }
                         },
                         actions = {
-                            IconButton(onClick = { searching = true }) {
-                                Icon(painterResource(R.drawable.ic_reborn_search), stringResource(R.string.reborn_themes_search))
-                            }
-                            Box {
-                                IconButton(onClick = { menu = true }) {
-                                    Icon(painterResource(R.drawable.ic_reborn_more), stringResource(R.string.reborn_more))
-                                }
-                                DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.reborn_install_file)) },
-                                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_file), null) },
-                                        enabled = installing == null,
-                                        onClick = {
-                                            menu = false
-                                            pickFile()
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.reborn_classic)) },
-                                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
-                                        onClick = {
-                                            menu = false
-                                            RebornActions.openClassic(context)
-                                        },
-                                    )
-                                }
+                            ActionIcon(R.drawable.ic_reborn_search, stringResource(R.string.reborn_themes_search), { searching = true })
+                            RebornOverflow {
+                                listOf(
+                                    MenuGroup(
+                                        listOf(
+                                            MenuAction(
+                                                stringResource(R.string.reborn_install_file),
+                                                R.drawable.ic_reborn_file,
+                                                enabled = installing == null,
+                                                onClick = ::pickFile,
+                                            ),
+                                        ),
+                                    ),
+                                    MenuGroup(
+                                        listOf(
+                                            MenuAction(
+                                                stringResource(R.string.reborn_classic),
+                                                R.drawable.ic_reborn_open,
+                                                supporting = stringResource(R.string.reborn_classic_supporting),
+                                                onClick = { RebornActions.openClassic(context) },
+                                            ),
+                                        ),
+                                    ),
+                                )
                             }
                         },
                         colors = barColors,
@@ -317,87 +342,89 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
         val visible = remember(data, q) {
             data?.themes.orEmpty().filter { q.isEmpty() || it.search.contains(q) }
         }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = padding.calculateTopPadding() + 4.dp,
-                bottom = padding.calculateBottomPadding() + 28.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        RebornPullToRefresh(
+            refreshing = themes.refreshing,
+            onRefresh = themes.refresh,
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+            scrollConnection = scrollBehavior.nestedScrollConnection,
         ) {
-            when {
-                data == null -> item(key = "loading") {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(320.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { LoadingIndicator(Modifier.size(64.dp)) }
-                }
-                data.themes.isEmpty() -> item(key = "empty") {
-                    Entrance(0, animate) {
-                        EmptyThemes(
-                            starterInstalled = data.starterInstalled,
-                            installing = installing,
-                            onStarter = ::installStarter,
-                            onFile = ::pickFile,
-                            onClassic = { RebornActions.openClassic(context) },
-                        )
+            LazyColumn(
+                state = list,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 4.dp,
+                    // Room for the Add FAB over the last card
+                    bottom = padding.calculateBottomPadding() + 96.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                when {
+                    data == null -> item(key = "loading") { PageLoading(height = 320.dp) }
+                    data.themes.isEmpty() -> item(key = "empty") {
+                        Entrance(0, animate) {
+                            EmptyThemes(
+                                starterInstalled = data.starterInstalled,
+                                installing = installing,
+                                onStarter = ::installStarter,
+                                onFile = ::pickFile,
+                                onClassic = { RebornActions.openClassic(context) },
+                            )
+                        }
+                    }
+                    visible.isEmpty() -> item(key = "no_match") {
+                        NoMatch(query.trim())
+                    }
+                    else -> items(visible, key = { it.pkg }, contentType = { "theme" }) { theme ->
+                        val index = data.themes.indexOf(theme)
+                        Entrance(index.coerceAtMost(4), animate) {
+                            InstalledThemeCard(
+                                theme = theme,
+                                onOpen = { open(theme) },
+                                onLongPress = { sheetFor = theme.pkg },
+                            )
+                        }
                     }
                 }
-                visible.isEmpty() -> item(key = "no_match") {
-                    NoMatch(query.trim())
-                }
-                else -> items(visible, key = { it.pkg }, contentType = { "theme" }) { theme ->
-                    val index = data.themes.indexOf(theme)
-                    Entrance(index.coerceAtMost(4), animate) {
-                        ThemeCard(
-                            theme = theme,
-                            onOpen = { open(theme) },
-                            onLongPress = { sheetFor = theme.pkg },
-                        )
+                if (data != null && !searching && data.themes.isNotEmpty()) {
+                    item(key = "discover_header") {
+                        SectionHeader(stringResource(R.string.reborn_discover))
                     }
-                }
-            }
-            if (data != null && !searching && data.themes.isNotEmpty()) {
-                item(key = "discover_header") {
-                    SectionHeader(stringResource(R.string.reborn_discover))
-                }
-                if (!data.starterInstalled) {
-                    item(key = "discover_starter") {
+                    if (!data.starterInstalled) {
+                        item(key = "discover_starter") {
+                            DiscoverCard(
+                                icon = R.drawable.ic_reborn_amoled,
+                                shape = MaterialShapes.Clover4Leaf.toShape(),
+                                container = MaterialTheme.colorScheme.primaryContainer,
+                                content = MaterialTheme.colorScheme.onPrimaryContainer,
+                                title = stringResource(R.string.reborn_discover_starter_title),
+                                text = stringResource(R.string.reborn_discover_starter_text),
+                                action = stringResource(R.string.reborn_discover_install),
+                                actionIcon = R.drawable.ic_reborn_download,
+                                busy = installing == Installing.Starter,
+                                enabled = installing == null,
+                                onClick = ::installStarter,
+                                modifier = Modifier.animateItem(),
+                            )
+                        }
+                    }
+                    item(key = "discover_file") {
                         DiscoverCard(
-                            icon = R.drawable.ic_reborn_amoled,
-                            shape = MaterialShapes.Clover4Leaf.toShape(),
-                            container = MaterialTheme.colorScheme.primaryContainer,
-                            content = MaterialTheme.colorScheme.onPrimaryContainer,
-                            title = stringResource(R.string.reborn_discover_starter_title),
-                            text = stringResource(R.string.reborn_discover_starter_text),
-                            action = stringResource(R.string.reborn_discover_install),
-                            actionIcon = R.drawable.ic_reborn_download,
-                            busy = installing == Installing.Starter,
+                            icon = R.drawable.ic_reborn_file,
+                            shape = MaterialShapes.Cookie6Sided.toShape(),
+                            container = MaterialTheme.colorScheme.tertiaryContainer,
+                            content = MaterialTheme.colorScheme.onTertiaryContainer,
+                            title = stringResource(R.string.reborn_discover_file_title),
+                            text = stringResource(R.string.reborn_discover_file_text),
+                            action = stringResource(R.string.reborn_discover_file_action),
+                            actionIcon = R.drawable.ic_reborn_file,
+                            busy = installing == Installing.File,
                             enabled = installing == null,
-                            onClick = ::installStarter,
+                            onClick = ::pickFile,
                             modifier = Modifier.animateItem(),
                         )
                     }
-                }
-                item(key = "discover_file") {
-                    DiscoverCard(
-                        icon = R.drawable.ic_reborn_file,
-                        shape = MaterialShapes.Cookie6Sided.toShape(),
-                        container = MaterialTheme.colorScheme.tertiaryContainer,
-                        content = MaterialTheme.colorScheme.onTertiaryContainer,
-                        title = stringResource(R.string.reborn_discover_file_title),
-                        text = stringResource(R.string.reborn_discover_file_text),
-                        action = stringResource(R.string.reborn_discover_file_action),
-                        actionIcon = R.drawable.ic_reborn_file,
-                        busy = installing == Installing.File,
-                        enabled = installing == null,
-                        onClick = ::pickFile,
-                        modifier = Modifier.animateItem(),
-                    )
                 }
             }
         }
@@ -510,102 +537,26 @@ private fun SearchBar(
     )
 }
 
-/** A full-width 16:9 card: the hero with a scrim, name, author and version, then the theme's chips. */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+/**
+ * A full-width 16:9 card: the hero with a scrim, name, author and version, then the theme's
+ * chips. The expressive [ThemeCard] (press morph, scale) with this theme's art and icon.
+ */
 @Composable
-private fun ThemeCard(theme: ThemeItem, onOpen: () -> Unit, onLongPress: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = LocalRebornColors.current
-    val scheme = MaterialTheme.colorScheme
-    val haptics = LocalHapticFeedback.current
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(CardShape)
-            .combinedClickable(
-                role = Role.Button,
-                onClick = onOpen,
-                onLongClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongPress()
-                },
-            ),
-        shape = CardShape,
-        color = colors.card,
-        border = if (colors.dark) BorderStroke(1.dp, colors.cardBorder) else null,
+private fun InstalledThemeCard(theme: ThemeItem, onOpen: () -> Unit, onLongPress: () -> Unit, modifier: Modifier = Modifier) {
+    ThemeCard(
+        name = theme.name,
+        byline = byline(theme),
+        onClick = onOpen,
+        onLongClick = onLongPress,
+        modifier = modifier,
+        // Same name as another installed theme: told apart by package and version
+        supporting = if (theme.namesake) {
+            stringResource(R.string.reborn_theme_package_version, theme.pkg, theme.version ?: "–")
+        } else null,
+        avatar = { AppIcon(theme.pkg, size = 48.dp, shape = RoundedCornerShape(14.dp)) },
+        chips = { ThemeChips(theme) },
     ) {
-        Column {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 9f),
-            ) {
-                HeroArt(theme, Modifier.fillMaxSize())
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                0f to Color.Transparent,
-                                0.38f to Color.Transparent,
-                                1f to Color.Black.copy(alpha = 0.86f),
-                            )
-                        ),
-                )
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 18.dp, end = 18.dp, bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    AppIcon(theme.pkg, size = 48.dp, shape = RoundedCornerShape(14.dp))
-                    Spacer(Modifier.width(14.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            theme.name,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            byline(theme),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.82f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
-            Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp)) {
-                if (theme.namesake) {
-                    // Same name as another installed theme: told apart by package and version
-                    Text(
-                        stringResource(R.string.reborn_theme_package_version, theme.pkg, theme.version ?: "–"),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = scheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    FlowRow(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        ThemeChips(theme)
-                    }
-                    Icon(
-                        painterResource(R.drawable.ic_reborn_chevron),
-                        contentDescription = null,
-                        tint = scheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
+        HeroArt(theme, Modifier.fillMaxSize())
     }
 }
 
@@ -639,7 +590,7 @@ private fun HeroArt(theme: ThemeItem, modifier: Modifier = Modifier) {
             // Also after an update of the theme or another width: the old hero stays meanwhile
             value = cachedHero(theme, width) ?: withContext(heroLoader) { loadHero(context, theme, width) }
         }
-        Crossfade(targetState = hero, animationSpec = tween(320), label = "hero") { h ->
+        Crossfade(targetState = hero, animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(), label = "hero") { h ->
             when {
                 h == null -> Box(
                     Modifier
@@ -713,12 +664,13 @@ private fun DiscoverCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val installingLabel = stringResource(R.string.reborn_installing)
     SectionCard(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ShapedIcon(icon, container, content, size = 56.dp, shape = shape, busy = busy)
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(title, style = MaterialTheme.typography.titleMediumEmphasized)
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text,
@@ -728,14 +680,27 @@ private fun DiscoverCard(
             }
         }
         Spacer(Modifier.height(16.dp))
+        val scheme = MaterialTheme.colorScheme
         FilledTonalButton(
             onClick = onClick,
             enabled = enabled,
-            modifier = Modifier.align(Alignment.End),
+            shapes = ButtonDefaults.shapes(),
+            // Busy keeps the tonal colours: the in-button indicator says it is installing
+            colors = if (busy) ButtonDefaults.filledTonalButtonColors(
+                disabledContainerColor = scheme.secondaryContainer,
+                disabledContentColor = scheme.onSecondaryContainer,
+            ) else ButtonDefaults.filledTonalButtonColors(),
+            modifier = Modifier
+                .align(Alignment.End)
+                .semantics { if (busy) stateDescription = installingLabel },
         ) {
-            Icon(painterResource(actionIcon), contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(if (busy) stringResource(R.string.reborn_installing) else action)
+            BusyLabel(busy) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(actionIcon), contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(action)
+                }
+            }
         }
     }
 }
@@ -749,9 +714,8 @@ private fun EmptyThemes(
     onFile: () -> Unit,
     onClassic: () -> Unit,
 ) {
-    val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
-    SectionCard(container = colors.heroCard, contentPadding = PaddingValues(24.dp)) {
+    HeroCard {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -773,8 +737,7 @@ private fun EmptyThemes(
         Spacer(Modifier.height(20.dp))
         Text(
             stringResource(R.string.reborn_themes_empty),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.headlineMediumEmphasized,
         )
         Spacer(Modifier.height(8.dp))
         Text(
@@ -785,18 +748,28 @@ private fun EmptyThemes(
         Spacer(Modifier.height(22.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (!starterInstalled) {
-                Button(onClick = onStarter, enabled = installing == null) {
-                    Icon(painterResource(R.drawable.ic_reborn_download), null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        if (installing == Installing.Starter) stringResource(R.string.reborn_installing)
-                        else stringResource(R.string.reborn_discover_starter_title),
-                    )
+                val busy = installing == Installing.Starter
+                Button(
+                    onClick = onStarter,
+                    enabled = installing == null,
+                    shapes = ButtonDefaults.shapes(),
+                    colors = if (busy) ButtonDefaults.buttonColors(
+                        disabledContainerColor = scheme.primary,
+                        disabledContentColor = scheme.onPrimary,
+                    ) else ButtonDefaults.buttonColors(),
+                ) {
+                    BusyLabel(busy) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.ic_reborn_download), null, Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.reborn_discover_starter_title))
+                        }
+                    }
                 }
             } else {
-                Button(onClick = onClassic) { Text(stringResource(R.string.reborn_classic)) }
+                Button(onClick = onClassic, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.reborn_classic)) }
             }
-            OutlinedButton(onClick = onFile, enabled = installing == null) {
+            OutlinedButton(onClick = onFile, enabled = installing == null, shapes = ButtonDefaults.shapes()) {
                 Icon(painterResource(R.drawable.ic_reborn_file), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.reborn_discover_file_action))
@@ -839,10 +812,13 @@ private fun ThemeSheet(
     onUninstall: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val colors = LocalRebornColors.current
+    val sheet = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        sheetState = sheet,
         containerColor = scheme.surfaceContainerLow,
     ) {
         Column(
@@ -855,13 +831,12 @@ private fun ThemeSheet(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 24.dp),
             ) {
-                AppIcon(theme.pkg, size = 56.dp, shape = RoundedCornerShape(16.dp))
+                AppIcon(theme.pkg, size = 56.dp, shape = MaterialTheme.shapes.large)
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         theme.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleLargeEmphasized,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -889,66 +864,71 @@ private fun ThemeSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) { ThemeChips(theme) }
             }
-            Spacer(Modifier.height(12.dp))
-            SheetAction(
-                R.drawable.ic_reborn_open,
-                stringResource(R.string.reborn_theme_open),
-                stringResource(if (theme.rules) R.string.reborn_theme_open_rules else R.string.reborn_theme_open_overlays),
-                onOpen,
+            Spacer(Modifier.height(16.dp))
+            val actions = listOf(
+                SheetActionRow(
+                    R.drawable.ic_reborn_open,
+                    stringResource(R.string.reborn_theme_open),
+                    stringResource(if (theme.rules) R.string.reborn_theme_open_rules else R.string.reborn_theme_open_overlays),
+                    onOpen,
+                ),
+                SheetActionRow(
+                    R.drawable.ic_reborn_info,
+                    stringResource(R.string.reborn_theme_app_info),
+                    stringResource(R.string.reborn_theme_app_info_text),
+                    onAppInfo,
+                ),
+                SheetActionRow(
+                    R.drawable.ic_reborn_shortcut,
+                    stringResource(R.string.reborn_theme_shortcut),
+                    stringResource(R.string.reborn_theme_shortcut_text),
+                    onShortcut,
+                ),
             )
-            SheetAction(
-                R.drawable.ic_reborn_info,
-                stringResource(R.string.reborn_theme_app_info),
-                stringResource(R.string.reborn_theme_app_info_text),
-                onAppInfo,
-            )
-            SheetAction(
-                R.drawable.ic_reborn_shortcut,
-                stringResource(R.string.reborn_theme_shortcut),
-                stringResource(R.string.reborn_theme_shortcut_text),
-                onShortcut,
-            )
+            SegmentedGroup(actions.size, Modifier.padding(horizontal = 16.dp)) { i, shapes ->
+                SheetAction(actions[i], shapes, rebornSegmentColors())
+            }
             if (theme.removable) {
-                SheetAction(
-                    R.drawable.ic_reborn_delete,
-                    stringResource(R.string.reborn_theme_uninstall),
-                    stringResource(R.string.reborn_theme_uninstall_text),
-                    onUninstall,
-                    tint = colors.error.accent,
-                )
+                // Destructive, so in its own group, in the error colours
+                Spacer(Modifier.height(12.dp))
+                SegmentedGroup(1, Modifier.padding(horizontal = 16.dp)) { _, shapes ->
+                    SheetAction(
+                        SheetActionRow(
+                            R.drawable.ic_reborn_delete,
+                            stringResource(R.string.reborn_theme_uninstall),
+                            stringResource(R.string.reborn_theme_uninstall_text),
+                            onUninstall,
+                        ),
+                        shapes,
+                        ListItemDefaults.segmentedColors(
+                            containerColor = scheme.errorContainer,
+                            contentColor = scheme.onErrorContainer,
+                            leadingContentColor = scheme.onErrorContainer,
+                            supportingContentColor = scheme.onErrorContainer.copy(alpha = 0.8f),
+                        ),
+                    )
+                }
             }
         }
     }
 }
 
+private class SheetActionRow(@DrawableRes val icon: Int, val title: String, val text: String, val onClick: () -> Unit)
+
+/** One segmented action row of the theme sheet. */
 @Composable
-private fun SheetAction(
-    @DrawableRes icon: Int,
-    title: String,
-    text: String,
-    onClick: () -> Unit,
-    tint: Color = MaterialTheme.colorScheme.onSurface,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+private fun SheetAction(row: SheetActionRow, shapes: ListItemShapes, colors: ListItemColors) {
+    val haptics = LocalHapticFeedback.current
+    SegmentedListItem(
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+            row.onClick()
+        },
+        shapes = shapes,
+        colors = colors,
+        leadingContent = { Icon(painterResource(row.icon), contentDescription = null) },
+        supportingContent = { Text(row.text) },
     ) {
-        Box(
-            Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
-        }
-        Spacer(Modifier.width(16.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, color = tint)
-            Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        Text(row.title, style = MaterialTheme.typography.bodyLargeEmphasized)
     }
 }

@@ -12,7 +12,7 @@ import android.app.ActivityManager;
 import androidx.appcompat.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -35,7 +35,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -177,7 +177,7 @@ public class Overlays extends Fragment {
     ProgressBar dialogProgress;
     AssetManager themeAssetManager;
     ActivityManager activityManager;
-    Switch toggleAll;
+    CompoundButton toggleAll;
     Spinner baseSpinner;
     Context context;
     private RecyclerView recyclerView;
@@ -980,7 +980,7 @@ public class Overlays extends Fragment {
         private final String emailBody;
         private final String failedPackages;
         private final boolean autosaveInstance;
-        private ProgressDialog progressDialog;
+        private RebornProgressDialog progressDialog;
 
         SendErrorReport(Context context,
                         String themePid,
@@ -1008,7 +1008,7 @@ public class Overlays extends Fragment {
         protected void onPreExecute() {
             Context context = ref.get();
             if ((context != null) && !autosaveInstance) {
-                progressDialog = new ProgressDialog(context);
+                progressDialog = new RebornProgressDialog(context);
                 progressDialog.setIndeterminate(true);
                 progressDialog.setCancelable(false);
                 progressDialog.setMessage(

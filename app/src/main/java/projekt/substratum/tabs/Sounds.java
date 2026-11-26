@@ -21,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
@@ -80,7 +79,8 @@ public class Sounds extends Fragment {
     private static final boolean encrypted = false;
     private final MediaPlayer mp = new MediaPlayer();
     private NestedScrollView nestedScrollView;
-    private ProgressBar progressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View progressBar;
     private RelativeLayout restoreToDefault;
     private RelativeLayout soundsPreview;
     private RelativeLayout errorLoadingPack;

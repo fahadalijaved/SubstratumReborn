@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -28,9 +27,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -44,14 +43,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import projekt.substratum.R
+import projekt.substratum.reborn.components.design.BusyLabel
+import projekt.substratum.reborn.components.design.RebornConfirmDialog
 import projekt.substratum.reborn.theme.LocalRebornColors
 
-val CardShape = RoundedCornerShape(28.dp)
+/** 28 dp, the M3E extraLarge step. */
+val CardShape = ShapeDefaults.ExtraLarge
 
 /**
  * The Reborn card: 28 dp corners on a container that reads on true black (with a hairline edge
@@ -99,8 +100,7 @@ fun SectionCard(
 fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.SemiBold,
+        style = MaterialTheme.typography.titleLargeEmphasized,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
             .padding(start = 8.dp, top = 12.dp, bottom = 2.dp)
@@ -170,8 +170,7 @@ fun ActionTile(
         Spacer(Modifier.height(16.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
@@ -228,7 +227,7 @@ fun FixBanner(
                     .padding(horizontal = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = onContainer)
+                Text(title, style = MaterialTheme.typography.titleSmallEmphasized, color = onContainer)
                 Text(text, style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.86f))
             }
             Button(
@@ -237,16 +236,26 @@ fun FixBanner(
                     onFix()
                 },
                 enabled = !busy,
-                colors = ButtonDefaults.buttonColors(containerColor = status.accent, contentColor = status.onAccent),
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = status.accent,
+                    contentColor = status.onAccent,
+                    // Busy keeps the accent: the in-button indicator says it is working
+                    disabledContainerColor = status.accent,
+                    disabledContentColor = status.onAccent,
+                ),
                 contentPadding = PaddingValues(horizontal = 18.dp),
             ) {
-                Text(fixLabel, maxLines = 1)
+                BusyLabel(busy) { Text(fixLabel, maxLines = 1) }
             }
         }
     }
 }
 
-/** A confirmation for actions that restart something. */
+/**
+ * A confirmation for actions that restart something. [destructive] (soft reboot, remove, undo
+ * everything) gives the confirm button the error colours.
+ */
 @Composable
 fun ConfirmDialog(
     title: String,
@@ -255,34 +264,18 @@ fun ConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     @DrawableRes icon: Int? = null,
+    destructive: Boolean = false,
     /** Shown under [text]: what the action covers, for instance */
     body: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
-    val haptics = LocalHapticFeedback.current
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = icon?.let { { Icon(painterResource(it), contentDescription = null) } },
-        title = { Text(title) },
-        text = {
-            if (body == null) {
-                Text(text)
-            } else {
-                Column {
-                    Text(text)
-                    Spacer(Modifier.height(16.dp))
-                    body()
-                }
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                onDismiss()
-                onConfirm()
-            }) { Text(confirmLabel) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.reborn_cancel)) }
-        },
+    RebornConfirmDialog(
+        title = title,
+        text = text,
+        confirmLabel = confirmLabel,
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+        icon = icon,
+        destructive = destructive,
+        body = body,
     )
 }

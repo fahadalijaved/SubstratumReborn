@@ -8,7 +8,7 @@
 package projekt.substratum.util.tabs;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -113,7 +113,7 @@ public class BootAnimationUtils {
         private final boolean encrypted;
         private final Cipher cipher;
         private final boolean shutdownAnimation;
-        private ProgressDialog progress;
+        private RebornProgressDialog progress;
         private boolean hasFailed;
 
         BootAnimationHandlerAsync(View view,
@@ -143,7 +143,7 @@ public class BootAnimationUtils {
 
         @Override
         protected void onPreExecute() {
-            progress = new ProgressDialog(context, R.style.AppTheme_DialogAlert);
+            progress = new RebornProgressDialog(context, R.style.AppTheme_DialogAlert);
             progress.setMessage(context.getString(shutdownAnimation ?
                     R.string.shutdownanimation_dialog_apply_text :
                     R.string.bootanimation_dialog_apply_text));

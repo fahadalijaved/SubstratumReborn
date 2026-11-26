@@ -16,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -50,7 +49,8 @@ public class ShowcaseTab extends Fragment {
 
     @SuppressLint("StaticFieldLeak")
     public static RecyclerView recyclerView;
-    private ProgressBar materialProgressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View materialProgressBar;
     private int currentTabPosition;
     private String currentTabAddress;
     private Context context;

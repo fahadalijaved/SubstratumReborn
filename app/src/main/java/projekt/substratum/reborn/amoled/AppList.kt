@@ -9,8 +9,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,32 +20,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumFlexibleTopAppBar
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -61,17 +52,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -83,6 +71,17 @@ import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.components.AppIcon
 import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.ShapedIcon
+import projekt.substratum.reborn.components.design.ActionIcon
+import projekt.substratum.reborn.components.design.BackIcon
+import projekt.substratum.reborn.components.design.MenuAction
+import projekt.substratum.reborn.components.design.MenuBusy
+import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.PageLoading
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
+import projekt.substratum.reborn.components.design.RebornMenu
+import projekt.substratum.reborn.components.design.RebornSwitch
+import projekt.substratum.reborn.components.design.rebornSegmentColors
+import projekt.substratum.reborn.components.design.segmentedItems
 import projekt.substratum.reborn.components.onIo
 import projekt.substratum.reborn.theme.LocalRebornColors
 
@@ -197,33 +196,12 @@ fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
         )
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val background = MaterialTheme.colorScheme.background
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = background,
-        topBar = {
-            MediumFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.reborn_studio_apps), fontWeight = FontWeight.Bold) },
-                subtitle = {
-                    apps?.let { list ->
-                        Text(stringResource(R.string.reborn_studio_themed, list.count { it.themed }, list.size))
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(painterResource(R.drawable.ic_reborn_back), stringResource(R.string.reborn_back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = background,
-                    scrolledContainerColor = background,
-                ),
-                scrollBehavior = scrollBehavior,
-            )
-        },
+    RebornFlexibleScaffold(
+        title = stringResource(R.string.reborn_studio_apps),
+        subtitle = apps?.let { list -> stringResource(R.string.reborn_studio_themed, list.count { it.themed }, list.size) },
+        large = false,
+        navigationIcon = { BackIcon(onBack) },
     ) { padding ->
         LazyColumn(
             state = listState,
@@ -292,26 +270,21 @@ fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
             }
             val list = apps
             when {
-                list == null -> item(key = "loading") {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(240.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { LoadingIndicator(Modifier.size(64.dp)) }
-                }
+                list == null -> item(key = "loading") { PageLoading(height = 240.dp) }
                 list.isEmpty() -> item(key = "empty") {
                     EmptyCard(R.string.reborn_studio_apps_empty, R.string.reborn_studio_apps_empty_text)
                 }
                 visible.isEmpty() -> item(key = "none") {
                     EmptyCard(R.string.reborn_studio_no_apps, R.string.reborn_studio_no_apps_text)
                 }
-                else -> items(visible, key = { it.pkg }, contentType = { "app" }) { row ->
+                // One segmented list: rows 2 dp apart, the first and last with the large corners
+                else -> segmentedItems(visible, key = { it.pkg }) { row, shapes, segment ->
                     AppRowItem(
                         row = row,
                         needsScope = needsScope(row, scope),
                         callbacks = callbacks,
-                        modifier = Modifier.animateItem(),
+                        shapes = shapes,
+                        modifier = segment.padding(horizontal = 16.dp),
                     )
                 }
             }
@@ -346,122 +319,103 @@ private fun EmptyCard(@StringRes title: Int, @StringRes text: Int) {
     }
 }
 
-private val RowShape = RoundedCornerShape(22.dp)
-
 @Composable
 private fun AppRowItem(
     row: StudioState.AppRow,
     needsScope: Boolean,
     callbacks: RowCallbacks,
+    shapes: ListItemShapes,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
-    val haptics = LocalHapticFeedback.current
+    // The row menu: from its 3-dot button, or a long press on the row
     var menu by remember { mutableStateOf(false) }
-    Row(
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .fillMaxWidth()
-            .clip(RowShape)
-            .background(colors.card)
-            .then(if (colors.dark) Modifier.border(1.dp, colors.cardBorder, RowShape) else Modifier)
-            .clickable { callbacks.onAction(row, RowAction.Inspect) }
-            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppIcon(row.pkg, size = 44.dp, shape = RoundedCornerShape(12.dp))
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                row.label,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                row.pkg,
-                style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                RouteChip(row.route)
-                when {
-                    needsScope -> MiniChip(stringResource(R.string.reborn_studio_needs_scope), R.drawable.ic_reborn_warning, colors.error)
-                    row.restartNeeded -> MiniChip(stringResource(R.string.reborn_studio_restart_needed), R.drawable.ic_reborn_restart, colors.warn)
-                    row.colors > 0 -> Text(
-                        pluralStringResource(R.plurals.reborn_studio_colours, row.colors, row.colors),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.width(6.dp))
-        Switch(
-            checked = row.enabled,
-            enabled = row.route != AmoledState.Route.UNSUPPORTED,
-            onCheckedChange = {
-                haptics.performHapticFeedback(if (it) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff)
-                callbacks.onToggle(row, it)
-            },
-        )
-        Box {
-            IconButton(onClick = { menu = true }) {
-                Icon(painterResource(R.drawable.ic_reborn_more), stringResource(R.string.reborn_more))
-            }
-            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                val act: (RowAction) -> Unit = {
-                    menu = false
-                    callbacks.onAction(row, it)
-                }
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.reborn_studio_inspect)) },
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_palette), null) },
-                    onClick = { act(RowAction.Inspect) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.reborn_studio_open_app)) },
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
-                    onClick = { act(RowAction.Open) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.reborn_studio_reapply_app)) },
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_refresh), null) },
-                    enabled = row.enabled && row.route != AmoledState.Route.UNSUPPORTED,
-                    onClick = { act(RowAction.Reapply) },
-                )
-                // Whether a force-stop is safe is read when the menu opens (PackageManager, settings)
-                val safe by produceState<Boolean?>(null, row.pkg) { value = StudioState.safeToRestart(row.pkg) }
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            stringResource(
-                                when (safe) {
-                                    null -> R.string.reborn_studio_restart_checking
-                                    true -> R.string.reborn_studio_restart_app
-                                    false -> R.string.reborn_studio_restart_unsafe
-                                }
-                            )
+    SegmentedListItem(
+        onClick = { callbacks.onAction(row, RowAction.Inspect) },
+        onLongClick = { menu = true },
+        onLongClickLabel = stringResource(R.string.reborn_more),
+        shapes = shapes,
+        colors = rebornSegmentColors(),
+        modifier = modifier,
+        leadingContent = { AppIcon(row.pkg, size = 40.dp, shape = MaterialTheme.shapes.medium) },
+        supportingContent = {
+            Column {
+                Text(row.pkg, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    RouteChip(row.route)
+                    when {
+                        needsScope -> MiniChip(stringResource(R.string.reborn_studio_needs_scope), R.drawable.ic_reborn_warning, colors.error)
+                        row.restartNeeded -> MiniChip(stringResource(R.string.reborn_studio_restart_needed), R.drawable.ic_reborn_restart, colors.warn)
+                        row.colors > 0 -> Text(
+                            pluralStringResource(R.plurals.reborn_studio_colours, row.colors, row.colors),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                            maxLines = 1,
                         )
-                    },
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_restart), null) },
-                    enabled = safe == true,
-                    onClick = { act(RowAction.Restart) },
-                )
-                if (row.route == AmoledState.Route.MODULE) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.reborn_studio_add_scope)) },
-                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_module), null) },
-                        onClick = { act(RowAction.Scope) },
-                    )
+                    }
                 }
             }
-        }
+        },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RebornSwitch(
+                    checked = row.enabled,
+                    enabled = row.route != AmoledState.Route.UNSUPPORTED,
+                    onCheckedChange = { callbacks.onToggle(row, it) },
+                )
+                Box {
+                    ActionIcon(R.drawable.ic_reborn_more, stringResource(R.string.reborn_more), { menu = true })
+                    RebornMenu(expanded = menu, onDismiss = { menu = false }) {
+                        // Whether a force-stop is safe is read only while the menu is open
+                        val safe by produceState<Boolean?>(null, row.pkg) { value = StudioState.safeToRestart(row.pkg) }
+                        listOf(
+                            MenuGroup(
+                                listOf(
+                                    MenuAction(stringResource(R.string.reborn_studio_inspect), R.drawable.ic_reborn_palette) {
+                                        callbacks.onAction(row, RowAction.Inspect)
+                                    },
+                                    MenuAction(stringResource(R.string.reborn_studio_open_app), R.drawable.ic_reborn_open) {
+                                        callbacks.onAction(row, RowAction.Open)
+                                    },
+                                ),
+                            ),
+                            MenuGroup(
+                                listOf(
+                                    MenuAction(
+                                        stringResource(R.string.reborn_studio_reapply_app),
+                                        R.drawable.ic_reborn_refresh,
+                                        enabled = row.enabled && row.route != AmoledState.Route.UNSUPPORTED,
+                                    ) { callbacks.onAction(row, RowAction.Reapply) },
+                                    when (safe) {
+                                        null -> MenuBusy(stringResource(R.string.reborn_studio_restart_checking), R.drawable.ic_reborn_restart)
+                                        true -> MenuAction(stringResource(R.string.reborn_studio_restart_app), R.drawable.ic_reborn_restart) {
+                                            callbacks.onAction(row, RowAction.Restart)
+                                        }
+                                        false -> MenuAction(
+                                            stringResource(R.string.reborn_studio_restart_unsafe),
+                                            R.drawable.ic_reborn_restart,
+                                            enabled = false,
+                                        ) {}
+                                    },
+                                ),
+                            ),
+                            MenuGroup(
+                                if (row.route == AmoledState.Route.MODULE) {
+                                    listOf(
+                                        MenuAction(stringResource(R.string.reborn_studio_add_scope), R.drawable.ic_reborn_module) {
+                                            callbacks.onAction(row, RowAction.Scope)
+                                        },
+                                    )
+                                } else emptyList(),
+                            ),
+                        )
+                    }
+                }
+            }
+        },
+    ) {
+        Text(row.label, style = MaterialTheme.typography.bodyLargeEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }

@@ -10,7 +10,7 @@ package projekt.substratum;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,7 +40,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -161,7 +161,7 @@ public class InformationActivity extends AppCompatActivity {
     private byte[] byteArray;
     private Bitmap heroImageBitmap;
     private SharedPreferences prefs = Substratum.getPreferences();
-    private ProgressDialog mProgressDialog;
+    private RebornProgressDialog mBusyDialog;
     private MenuItem favorite;
     private boolean shouldDarken;
     private MaterialSheetFab materialSheetFab;
@@ -442,7 +442,7 @@ public class InformationActivity extends AppCompatActivity {
         appBarLayout = binding.appbar;
         CardView sheetView = binding.fabSheet;
         DimOverlayFrameLayout overlay = binding.overlay;
-        Switch enableSwap = binding.enableSwap;
+        CompoundButton enableSwap = binding.enableSwap;
         TextView compileEnableSelected = binding.compileEnableSelected;
         TextView compileUpdateSelected = binding.compileUpdateSelected;
         TextView disableSelected = binding.disableSelected;
@@ -1406,11 +1406,11 @@ public class InformationActivity extends AppCompatActivity {
                         informationActivity.getString(R.string.adapter_uninstalling),
                         informationActivity.themeName);
 
-                informationActivity.mProgressDialog = new ProgressDialog(informationActivity);
-                informationActivity.mProgressDialog.setMessage(parseMe);
-                informationActivity.mProgressDialog.setIndeterminate(true);
-                informationActivity.mProgressDialog.setCancelable(false);
-                informationActivity.mProgressDialog.show();
+                informationActivity.mBusyDialog = new RebornProgressDialog(informationActivity);
+                informationActivity.mBusyDialog.setMessage(parseMe);
+                informationActivity.mBusyDialog.setIndeterminate(true);
+                informationActivity.mBusyDialog.setCancelable(false);
+                informationActivity.mBusyDialog.show();
                 // Clear the notification of building theme if shown
                 NotificationManager manager = (NotificationManager)
                         informationActivity.context
@@ -1425,7 +1425,7 @@ public class InformationActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             InformationActivity informationActivity = ref.get();
             if (informationActivity != null) {
-                informationActivity.mProgressDialog.cancel();
+                informationActivity.mBusyDialog.cancel();
                 informationActivity.uninstalled = true;
                 informationActivity.onBackPressed();
             }

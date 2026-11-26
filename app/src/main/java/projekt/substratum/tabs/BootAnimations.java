@@ -7,7 +7,7 @@
 
 package projekt.substratum.tabs;
 
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -89,12 +88,13 @@ public class BootAnimations extends Fragment {
     private final BitmapFactory.Options options = new BitmapFactory.Options();
     private NestedScrollView nestedScrollView;
     private ImageView bootAnimationPreview;
-    private ProgressBar progressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View progressBar;
     private RelativeLayout bootanimationPlaceholder;
     private RelativeLayout defaults;
     private Spinner bootAnimationSelector;
     private String themePid;
-    private ProgressDialog mProgressDialog;
+    private RebornProgressDialog mBusyDialog;
     private SharedPreferences prefs = Substratum.getPreferences();
     private AsyncTask current;
     private boolean paused;
@@ -310,13 +310,13 @@ public class BootAnimations extends Fragment {
         protected void onPreExecute() {
             final BootAnimations bootAnimations = ref.get();
             if (bootAnimations != null) {
-                bootAnimations.mProgressDialog = new ProgressDialog(
+                bootAnimations.mBusyDialog = new RebornProgressDialog(
                         bootAnimations.getActivity(), R.style.RestoreDialog);
-                bootAnimations.mProgressDialog.setMessage(
+                bootAnimations.mBusyDialog.setMessage(
                         bootAnimations.getString(R.string.manage_dialog_performing));
-                bootAnimations.mProgressDialog.setIndeterminate(true);
-                bootAnimations.mProgressDialog.setCancelable(false);
-                bootAnimations.mProgressDialog.show();
+                bootAnimations.mBusyDialog.setIndeterminate(true);
+                bootAnimations.mBusyDialog.setCancelable(false);
+                bootAnimations.mBusyDialog.show();
             }
         }
 
@@ -324,7 +324,7 @@ public class BootAnimations extends Fragment {
         protected void onPostExecute(final String result) {
             final BootAnimations bootAnimations = ref.get();
             if (bootAnimations != null) {
-                bootAnimations.mProgressDialog.dismiss();
+                bootAnimations.mBusyDialog.dismiss();
                 final SharedPreferences.Editor editor = bootAnimations.prefs.edit();
                 if (bootAnimations.shutdownBootAnimation) {
                     editor.remove(SHUTDOWN_ANIMATION_APPLIED);

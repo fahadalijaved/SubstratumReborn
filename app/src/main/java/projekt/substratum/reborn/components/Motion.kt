@@ -10,11 +10,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -34,6 +32,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.toPath
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
@@ -55,11 +54,12 @@ fun Entrance(index: Int, animate: Boolean = true, content: @Composable () -> Uni
             played = true
         }
     }
+    val motion = MaterialTheme.motionScheme
     AnimatedVisibility(
         visibleState = state,
-        enter = fadeIn(tween(360)) +
-            slideInVertically(spring(dampingRatio = 0.72f, stiffness = Spring.StiffnessLow)) { it / 5 } +
-            scaleIn(spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow), initialScale = 0.94f),
+        enter = fadeIn(motion.defaultEffectsSpec()) +
+            slideInVertically(motion.defaultSpatialSpec()) { it / 5 } +
+            scaleIn(motion.defaultSpatialSpec(), initialScale = 0.94f),
     ) {
         content()
     }
@@ -84,7 +84,7 @@ private fun shapesOf(shape: HeroShape): Pair<RoundedPolygon, RoundedPolygon> = w
 @Composable
 fun MorphingShape(shape: HeroShape, color: Color, modifier: Modifier = Modifier) {
     val morph = remember(shape) { shapesOf(shape).let { Morph(it.first, it.second) } }
-    val tint by animateColorAsState(color, tween(600), label = "heroTint")
+    val tint by animateColorAsState(color, MaterialTheme.motionScheme.slowEffectsSpec(), label = "heroTint")
     val transition = rememberInfiniteTransition(label = "hero")
     val progress by transition.animateFloat(
         initialValue = 0f,

@@ -10,27 +10,61 @@
     <!-- Material 3 Expressive; colors come from dynamic color (wallpaper) where available -->
     <style name="AppTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="android:windowBackground">@color/window_bg</item>
-        <item name="android:navigationBarColor">?attr/colorSurfaceContainer</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">@bool/windowLightStatusBar</item>
         <item name="android:windowLightNavigationBar">@bool/windowLightNavigationBar</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="materialCardViewStyle">@style/AppTheme.Card</item>
-        <item name="alertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Material3Expressive.MaterialAlertDialog</item>
+        <!-- Platform dialogs still left (and android.app.AlertDialog) in the expressive theme, not One UI's -->
+        <item name="android:alertDialogTheme">@style/ThemeOverlay.Material3Expressive.Dialog.Alert.Framework</item>
+        <!-- Rounded M3E popups for overflow menus, list popups and Spinner dropdowns -->
+        <item name="popupMenuStyle">@style/Widget.Reborn.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Reborn.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Reborn.PopupMenu.Overflow</item>
+        <item name="listPopupWindowStyle">@style/Widget.Reborn.PopupMenu.ListPopupWindow</item>
+        <item name="spinnerStyle">@style/Widget.Reborn.Spinner</item>
+        <item name="android:spinnerStyle">@style/Widget.Reborn.Spinner</item>
+        <item name="materialSwitchStyle">@style/Widget.Reborn.MaterialSwitch</item>
     </style>
 
-    <!-- Applied over the dynamic colors in dark mode: true black surfaces, accents unchanged -->
+    <!-- Applied over the dynamic colors in dark mode: true black surfaces, accents unchanged.
+         The same container ramp as the Compose screens (RebornTheme), so both halves match -->
     <style name="ThemeOverlay.Substratum.Amoled" parent="">
         <item name="android:colorBackground">#ff000000</item>
         <item name="colorSurface">#ff000000</item>
         <item name="colorSurfaceDim">#ff000000</item>
         <item name="colorSurfaceBright">#ff1a1a1a</item>
         <item name="colorSurfaceContainerLowest">#ff000000</item>
-        <item name="colorSurfaceContainerLow">#ff000000</item>
-        <item name="colorSurfaceContainer">#ff0a0a0a</item>
-        <item name="colorSurfaceContainerHigh">#ff121212</item>
-        <item name="colorSurfaceContainerHighest">#ff1a1a1a</item>
+        <item name="colorSurfaceContainerLow">#ff0a0a0a</item>
+        <item name="colorSurfaceContainer">#ff121212</item>
+        <item name="colorSurfaceContainerHigh">#ff1a1a1a</item>
+        <item name="colorSurfaceContainerHighest">#ff222222</item>
         <item name="colorSurfaceVariant">#ff121212</item>
+    </style>
+
+    <!-- Popups on the View screens: rounded M3E containers instead of MD2's 4 dp sheet -->
+    <style name="Widget.Reborn.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/reborn_popup_background</item>
+    </style>
+
+    <style name="Widget.Reborn.PopupMenu.Overflow" parent="Widget.Material3.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/reborn_popup_background</item>
+    </style>
+
+    <style name="Widget.Reborn.PopupMenu.ListPopupWindow" parent="Widget.Material3.PopupMenu.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/reborn_popup_background</item>
+    </style>
+
+    <style name="Widget.Reborn.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@drawable/reborn_popup_background</item>
+        <item name="android:popupElevation">3dp</item>
+    </style>
+
+    <!-- MaterialSwitch everywhere with the check thumb icon (as RebornSwitch in Compose) -->
+    <style name="Widget.Reborn.MaterialSwitch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="thumbIcon">@drawable/reborn_switch_thumb_icon</item>
     </style>
 
     <!-- Tonal filled cards with the large Expressive corner -->
@@ -156,10 +190,10 @@
         <item name="android:layout_marginBottom">@dimen/sheet_spacing</item>
         <item name="android:layout_marginStart">@dimen/sheet_spacing</item>
         <item name="android:layout_marginEnd">@dimen/sheet_spacing</item>
-        <item name="cardBackgroundColor">@color/fab_menu_background_card</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
         <item name="cardElevation">@dimen/fab_sheet_elevation</item>
         <item name="cardMaxElevation">@dimen/fab_sheet_elevation</item>
-        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="cardCornerRadius">28dp</item>
         <item name="contentPadding">8dp</item>
     </style>
 

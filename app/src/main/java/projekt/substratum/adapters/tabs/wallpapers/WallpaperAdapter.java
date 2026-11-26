@@ -8,7 +8,7 @@
 package projekt.substratum.adapters.tabs.wallpapers;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -41,7 +41,7 @@ import static projekt.substratum.common.References.setRecyclerViewAnimations;
 
 public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.ViewHolder> {
     private final List<WallpaperItem> information;
-    private ProgressDialog mProgressDialog;
+    private RebornProgressDialog mBusyDialog;
     private Context context;
     private PowerManager.WakeLock mWakeLock;
     private AsyncTask currentDownload;
@@ -133,11 +133,11 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
             WallpaperAdapter wallpaperAdapter = this.ref.get();
             if (wallpaperAdapter != null) {
                 // Instantiate Progress Dialog
-                wallpaperAdapter.mProgressDialog = new ProgressDialog(wallpaperAdapter.context);
-                wallpaperAdapter.mProgressDialog.setMessage(
+                wallpaperAdapter.mBusyDialog = new RebornProgressDialog(wallpaperAdapter.context);
+                wallpaperAdapter.mBusyDialog.setMessage(
                         wallpaperAdapter.context.getString(R.string.wallpaper_downloading));
-                wallpaperAdapter.mProgressDialog.setIndeterminate(false);
-                wallpaperAdapter.mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                wallpaperAdapter.mBusyDialog.setIndeterminate(false);
+                wallpaperAdapter.mBusyDialog.setProgressStyle(RebornProgressDialog.STYLE_HORIZONTAL);
 
                 // Take CPU lock to prevent CPU from going off if the user
                 // presses the power button during download
@@ -148,9 +148,9 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
                             this.getClass().getName());
                 }
                 wallpaperAdapter.mWakeLock.acquire(10L * 60L * 1000L /*10 minutes*/);
-                wallpaperAdapter.mProgressDialog.setOnCancelListener(
+                wallpaperAdapter.mBusyDialog.setOnCancelListener(
                         dialogInterface -> wallpaperAdapter.currentDownload.cancel(true));
-                wallpaperAdapter.mProgressDialog.show();
+                wallpaperAdapter.mBusyDialog.show();
             }
         }
 
@@ -160,9 +160,9 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
             // if we get here, length is known, now set indeterminate to false
             WallpaperAdapter wallpaperAdapter = this.ref.get();
             if (wallpaperAdapter != null) {
-                wallpaperAdapter.mProgressDialog.setIndeterminate(false);
-                wallpaperAdapter.mProgressDialog.setMax(100);
-                wallpaperAdapter.mProgressDialog.setProgress(progress[0]);
+                wallpaperAdapter.mBusyDialog.setIndeterminate(false);
+                wallpaperAdapter.mBusyDialog.setMax(100);
+                wallpaperAdapter.mBusyDialog.setProgress(progress[0]);
             }
         }
 
@@ -172,7 +172,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
             WallpaperAdapter wallpaperAdapter = this.ref.get();
             if ((wallpaperAdapter != null) && (this.activity != null)) {
                 wallpaperAdapter.mWakeLock.release();
-                wallpaperAdapter.mProgressDialog.dismiss();
+                wallpaperAdapter.mBusyDialog.dismiss();
 
                 // Crop the image, and send the request back to
                 // InformationActivity

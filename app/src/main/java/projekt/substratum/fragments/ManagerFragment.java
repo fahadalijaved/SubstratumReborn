@@ -31,7 +31,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -106,7 +106,7 @@ public class ManagerFragment extends Fragment {
     private ProgressBar loadingBar;
     private FloatingActionMenu floatingActionButton;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private Switch toggleAll;
+    private CompoundButton toggleAll;
     private TextView enableSelected;
     private TextView titleView;
     private TextView textView;

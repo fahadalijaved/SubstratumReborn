@@ -243,6 +243,7 @@
         <!-- Reborn: the Compose shell (Home, AMOLED, Themes, Applied), reached through LauncherActivity -->
         <activity
             android:name=".reborn.RebornActivity"
+            android:enableOnBackInvokedCallback="true"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme" />

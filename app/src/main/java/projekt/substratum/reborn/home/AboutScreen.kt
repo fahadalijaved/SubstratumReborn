@@ -24,20 +24,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,11 +42,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.LibsBuilder
@@ -63,6 +57,12 @@ import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.SectionHeader
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.StatusChip
+import projekt.substratum.reborn.components.design.BackIcon
+import projekt.substratum.reborn.components.design.HeroCard
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
+import projekt.substratum.reborn.components.design.SectionLabel
+import projekt.substratum.reborn.components.design.SegmentedGroup
+import projekt.substratum.reborn.components.design.rebornSegmentColors
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.theme.LocalRebornColors
 
@@ -89,29 +89,10 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
     val model = remember(status) { status?.let { describe(context, it) } }
     val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val background = scheme.background
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = background,
-        topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.reborn_about_title), fontWeight = FontWeight.Bold) },
-                subtitle = { Text(stringResource(R.string.reborn_about_subtitle)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(painterResource(R.drawable.ic_reborn_back), stringResource(R.string.reborn_back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = background,
-                    scrolledContainerColor = background,
-                ),
-                scrollBehavior = scrollBehavior,
-            )
-        },
+    RebornFlexibleScaffold(
+        title = stringResource(R.string.reborn_about_title),
+        subtitle = stringResource(R.string.reborn_about_subtitle),
+        navigationIcon = { BackIcon(onBack) },
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -124,9 +105,9 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item(key = "identity") {
-                SectionCard(container = colors.heroCard, contentPadding = PaddingValues(24.dp)) {
+                HeroCard {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        AppIcon(context.packageName, size = 64.dp, shape = RoundedCornerShape(20.dp))
+                        AppIcon(context.packageName, size = 64.dp, shape = MaterialTheme.shapes.largeIncreased)
                         Spacer(Modifier.width(18.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
@@ -135,8 +116,7 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                             )
                             Text(
                                 BuildConfig.VERSION_NAME,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.titleMediumEmphasized,
                                 color = scheme.primary,
                             )
                         }
@@ -189,8 +169,7 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                     } else {
                         Text(
                             stringResource(model.headline),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMediumEmphasized,
                         )
                         Text(
                             model.supporting,
@@ -224,62 +203,55 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                     }
                 }
             }
-            item(key = "more_header") { SectionHeader(stringResource(R.string.reborn_about_more)) }
             item(key = "links") {
-                SectionCard(contentPadding = PaddingValues(vertical = 8.dp)) {
-                    LinkRow(
-                        icon = R.drawable.ic_reborn_amoled,
-                        title = stringResource(R.string.reborn_about_whats_new),
-                        subtitle = stringResource(R.string.reborn_about_whats_new_text),
-                        container = scheme.primaryContainer,
-                        content = scheme.onPrimaryContainer,
-                        shape = MaterialShapes.Clover4Leaf.toShape(),
-                        onClick = onWhatsNew,
-                    )
-                    LinkRow(
-                        icon = R.drawable.ic_reborn_themes,
-                        title = stringResource(R.string.reborn_about_themers),
-                        subtitle = stringResource(R.string.reborn_about_themers_text),
-                        container = scheme.tertiaryContainer,
-                        content = scheme.onTertiaryContainer,
-                        shape = MaterialShapes.Sunny.toShape(),
+                // The Pixel-style segmented list: rows 2 dp apart under a section label
+                val links = listOf(
+                    Link(
+                        R.drawable.ic_reborn_amoled,
+                        stringResource(R.string.reborn_about_whats_new),
+                        stringResource(R.string.reborn_about_whats_new_text),
+                        scheme.primaryContainer, scheme.onPrimaryContainer, MaterialShapes.Clover4Leaf.toShape(),
+                        external = false, onClick = onWhatsNew,
+                    ),
+                    Link(
+                        R.drawable.ic_reborn_themes,
+                        stringResource(R.string.reborn_about_themers),
+                        stringResource(R.string.reborn_about_themers_text),
+                        scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Sunny.toShape(),
                         onClick = { openUrl(context, THEMERS_URL) },
-                    )
-                    LinkRow(
-                        icon = R.drawable.ic_reborn_open,
-                        title = stringResource(R.string.reborn_about_source),
-                        subtitle = SOURCE_URL.removePrefix("https://"),
-                        container = scheme.secondaryContainer,
-                        content = scheme.onSecondaryContainer,
-                        shape = MaterialShapes.Cookie6Sided.toShape(),
+                    ),
+                    Link(
+                        R.drawable.ic_reborn_open,
+                        stringResource(R.string.reborn_about_source),
+                        SOURCE_URL.removePrefix("https://"),
+                        scheme.secondaryContainer, scheme.onSecondaryContainer, MaterialShapes.Cookie6Sided.toShape(),
                         onClick = { openUrl(context, SOURCE_URL) },
-                    )
-                    LinkRow(
-                        icon = R.drawable.ic_reborn_file,
-                        title = stringResource(R.string.reborn_about_licences),
-                        subtitle = stringResource(R.string.reborn_about_licences_text),
-                        container = scheme.tertiaryContainer,
-                        content = scheme.onTertiaryContainer,
-                        shape = MaterialShapes.Pentagon.toShape(),
+                    ),
+                    Link(
+                        R.drawable.ic_reborn_file,
+                        stringResource(R.string.reborn_about_licences),
+                        stringResource(R.string.reborn_about_licences_text),
+                        scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Pentagon.toShape(),
                         onClick = { openLicences(context, colors.dark) },
-                    )
-                    LinkRow(
-                        icon = R.drawable.ic_reborn_layers,
-                        title = stringResource(R.string.reborn_about_upstream),
-                        subtitle = UPSTREAM_URL.removePrefix("https://"),
-                        container = scheme.surfaceContainerHighest,
-                        content = scheme.onSurfaceVariant,
-                        shape = MaterialShapes.Cookie4Sided.toShape(),
+                    ),
+                    Link(
+                        R.drawable.ic_reborn_layers,
+                        stringResource(R.string.reborn_about_upstream),
+                        UPSTREAM_URL.removePrefix("https://"),
+                        scheme.surfaceContainerHighest, scheme.onSurfaceVariant, MaterialShapes.Cookie4Sided.toShape(),
                         onClick = { openUrl(context, UPSTREAM_URL) },
-                    )
+                    ),
+                )
+                Column {
+                    SectionLabel(stringResource(R.string.reborn_about_more))
+                    SegmentedGroup(links.size) { i, shapes -> LinkRow(links[i], shapes) }
                 }
             }
             item(key = "credits") {
                 SectionCard {
                     Text(
                         stringResource(R.string.reborn_about_based_on),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleSmallEmphasized,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
@@ -316,44 +288,39 @@ private fun InfoLine(label: String, value: String) {
         Spacer(Modifier.width(12.dp))
         Text(
             value,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.bodyLargeEmphasized,
         )
     }
 }
 
+/** One row of About's links: [external] ones leave the app (a browser) and show it. */
+private class Link(
+    @DrawableRes val icon: Int,
+    val title: String,
+    val subtitle: String,
+    val container: Color,
+    val content: Color,
+    val shape: Shape,
+    val external: Boolean = true,
+    val onClick: () -> Unit,
+)
+
 @Composable
-private fun LinkRow(
-    @DrawableRes icon: Int,
-    title: String,
-    subtitle: String,
-    container: Color,
-    content: Color,
-    shape: Shape,
-    onClick: () -> Unit,
-) {
-    Surface(onClick = onClick, color = Color.Transparent, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ShapedIcon(icon, container, content, size = 44.dp, shape = shape)
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                )
-            }
+private fun LinkRow(link: Link, shapes: ListItemShapes) {
+    SegmentedListItem(
+        onClick = link.onClick,
+        shapes = shapes,
+        colors = rebornSegmentColors(),
+        leadingContent = { ShapedIcon(link.icon, link.container, link.content, size = 44.dp, shape = link.shape) },
+        supportingContent = { Text(link.subtitle, maxLines = 2) },
+        trailingContent = {
             Icon(
-                painterResource(R.drawable.ic_reborn_chevron),
+                painterResource(if (link.external) R.drawable.ic_reborn_open else R.drawable.ic_reborn_chevron),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
+        },
+    ) {
+        Text(link.title, style = MaterialTheme.typography.bodyLargeEmphasized)
     }
 }
 

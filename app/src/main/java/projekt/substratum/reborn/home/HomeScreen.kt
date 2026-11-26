@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -32,23 +32,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,14 +58,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -96,8 +88,19 @@ import projekt.substratum.reborn.components.SectionHeader
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.StatusChip
 import projekt.substratum.reborn.components.rememberResumeCount
-import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.components.rememberSnackbar
+import projekt.substratum.reborn.components.design.ActionIcon
+import projekt.substratum.reborn.components.design.BusyLabel
+import projekt.substratum.reborn.components.design.HeroCard
+import projekt.substratum.reborn.components.design.MenuAction
+import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
+import projekt.substratum.reborn.components.design.RebornOverflow
+import projekt.substratum.reborn.components.design.RebornPullToRefresh
+import projekt.substratum.reborn.components.design.heroNumber
+import projekt.substratum.reborn.components.design.overline
+import projekt.substratum.reborn.components.design.rememberRefreshableRoot
+import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.showcase.ShowcaseCarousel
 import projekt.substratum.reborn.theme.LocalRebornColors
 import java.util.Locale
@@ -119,9 +122,11 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val resume = rememberResumeCount()
     var refresh by remember { mutableIntStateOf(0) }
-    val status by rememberRoot(resume, refresh, initial = RebornCache.status) {
+    // Pull to refresh reads the status (and, through [refresh], what is applied) again
+    val home = rememberRefreshableRoot(resume, refresh, initial = RebornCache.status) {
         RebornStatus.read(context).also { RebornCache.status = it }
     }
+    val status = home.value
     // The same read as the Applied tab: one source of truth for what is applied
     val appliedVersion by AppliedRepository.version.collectAsStateWithLifecycle()
     val applied by rememberRoot(resume, refresh, appliedVersion, initial = RebornCache.applied) {
@@ -130,7 +135,6 @@ fun HomeScreen(
     val model = remember(status) { status?.let { describe(context, it) } }
     var busy by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf<Confirm?>(null) }
-    var menu by remember { mutableStateOf(false) }
 
     // The entrance plays once; coming back to the tab shows Home at once
     var entered by rememberSaveable { mutableStateOf(false) }
@@ -196,137 +200,125 @@ fun HomeScreen(
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val background = MaterialTheme.colorScheme.background
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = background,
-        topBar = {
-            LargeFlexibleTopAppBar(
-                title = {
-                    Text(stringResource(R.string.reborn_home_title), fontWeight = FontWeight.Bold)
-                },
-                subtitle = { Text(stringResource(R.string.reborn_home_subtitle)) },
-                actions = {
-                    IconButton(onClick = onOpenSetup) {
-                        Icon(painterResource(R.drawable.ic_reborn_setup), stringResource(R.string.reborn_setup_action))
-                    }
-                    IconButton(onClick = { RebornActions.openSettings(context) }) {
-                        Icon(painterResource(R.drawable.ic_reborn_settings), stringResource(R.string.reborn_settings_title))
-                    }
-                    Box {
-                        IconButton(onClick = { menu = true }) {
-                            Icon(painterResource(R.drawable.ic_reborn_more), stringResource(R.string.reborn_more))
-                        }
-                        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.reborn_about_menu)) },
-                                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_info), null) },
-                                onClick = {
-                                    menu = false
-                                    onOpenAbout()
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.reborn_classic)) },
-                                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
-                                onClick = {
-                                    menu = false
-                                    RebornActions.openClassic(context)
-                                },
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = background,
-                    scrolledContainerColor = background,
-                ),
-                scrollBehavior = scrollBehavior,
+    RebornFlexibleScaffold(
+        title = stringResource(R.string.reborn_home_title),
+        subtitle = stringResource(R.string.reborn_home_subtitle),
+        scrollBehavior = scrollBehavior,
+        connectScroll = false,
+        actions = {
+            ActionIcon(R.drawable.ic_reborn_setup, stringResource(R.string.reborn_setup_action), onOpenSetup)
+            ActionIcon(
+                R.drawable.ic_reborn_settings,
+                stringResource(R.string.reborn_settings_title),
+                { RebornActions.openSettings(context) },
             )
-        },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = padding.calculateTopPadding() + 4.dp,
-                bottom = padding.calculateBottomPadding() + 28.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            item(key = "hero") {
-                Entrance(0, animate) { StatusHero(model, status?.readAt ?: 0L) }
-            }
-            items(model?.issues.orEmpty(), key = { "issue_" + it.key }) { issue ->
-                FixBanner(
-                    title = issue.title,
-                    text = issue.text,
-                    fixLabel = stringResource(R.string.reborn_fix),
-                    onFix = { fix(issue.fix) },
-                    warning = issue.warning,
-                    busy = busy != null,
-                    modifier = Modifier.animateItem(),
+            RebornOverflow {
+                listOf(
+                    MenuGroup(listOf(MenuAction(stringResource(R.string.reborn_about_menu), R.drawable.ic_reborn_info, onClick = onOpenAbout))),
+                    MenuGroup(
+                        listOf(
+                            MenuAction(
+                                stringResource(R.string.reborn_classic),
+                                R.drawable.ic_reborn_open,
+                                supporting = stringResource(R.string.reborn_classic_supporting),
+                                onClick = { RebornActions.openClassic(context) },
+                            ),
+                        ),
+                    ),
                 )
             }
-            model?.hooksUpdate?.let { update ->
-                item(key = "hooks_update") {
-                    HooksUpdateCard(
-                        update = update,
+        },
+    ) { padding ->
+        RebornPullToRefresh(
+            refreshing = home.refreshing,
+            onRefresh = {
+                home.refresh()
+                refresh++
+            },
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+            scrollConnection = scrollBehavior.nestedScrollConnection,
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 4.dp,
+                    bottom = padding.calculateBottomPadding() + 28.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                item(key = "hero") {
+                    Entrance(0, animate) { StatusHero(model, status?.readAt ?: 0L) }
+                }
+                items(model?.issues.orEmpty(), key = { "issue_" + it.key }) { issue ->
+                    FixBanner(
+                        title = issue.title,
+                        text = issue.text,
+                        fixLabel = stringResource(R.string.reborn_fix),
+                        onFix = { fix(issue.fix) },
+                        warning = issue.warning,
                         busy = busy != null,
-                        onRestart = { confirm = Confirm.RestartSystemUi },
                         modifier = Modifier.animateItem(),
                     )
                 }
-            }
-            item(key = "showcase") {
-                Entrance(1, animate) {
-                    ShowcaseCarousel(theme = applied?.amoled?.theme, onOpenStudio = onOpenAmoled, active = active)
+                model?.hooksUpdate?.let { update ->
+                    item(key = "hooks_update") {
+                        HooksUpdateCard(
+                            update = update,
+                            busy = busy != null,
+                            onRestart = { confirm = Confirm.RestartSystemUi },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
                 }
-            }
-            item(key = "applied_header") {
-                Entrance(2, animate) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        SectionHeader(stringResource(R.string.reborn_applied_now), Modifier.weight(1f))
-                        TextButton(onClick = onOpenApplied, modifier = Modifier.padding(top = 10.dp)) {
-                            Text(stringResource(R.string.reborn_see_all))
-                            Spacer(Modifier.width(4.dp))
-                            Icon(painterResource(R.drawable.ic_reborn_chevron), contentDescription = null, modifier = Modifier.size(18.dp))
+                item(key = "showcase") {
+                    Entrance(1, animate) {
+                        ShowcaseCarousel(theme = applied?.amoled?.theme, onOpenStudio = onOpenAmoled, active = active)
+                    }
+                }
+                item(key = "applied_header") {
+                    Entrance(2, animate) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            SectionHeader(stringResource(R.string.reborn_applied_now), Modifier.weight(1f))
+                            TextButton(onClick = onOpenApplied, modifier = Modifier.padding(top = 10.dp)) {
+                                Text(stringResource(R.string.reborn_see_all))
+                                Spacer(Modifier.width(4.dp))
+                                Icon(painterResource(R.drawable.ic_reborn_chevron), contentDescription = null, modifier = Modifier.size(18.dp))
+                            }
                         }
                     }
                 }
-            }
-            item(key = "amoled") {
-                Entrance(3, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
-            }
-            item(key = "applied_tiles") {
-                Entrance(4, animate) { AppliedTiles(applied, onOpenApplied) }
-            }
-            item(key = "actions_header") {
-                Entrance(5, animate) { SectionHeader(stringResource(R.string.reborn_quick_actions)) }
-            }
-            item(key = "actions") {
-                Entrance(6, animate) {
-                    QuickActions(
-                        paused = model?.hooksPaused == true,
-                        busy = busy,
-                        onRestart = {
-                            act("restart") {
-                                RebornActions.restartSystemUi()
-                                context.getString(R.string.reborn_restarting_systemui)
-                            }
-                        },
-                        onPause = { confirm = if (model?.hooksPaused == true) Confirm.Resume else Confirm.Pause },
-                        onSoftReboot = { confirm = Confirm.SoftReboot },
-                        onSetup = onOpenSetup,
-                        onUndoAll = {
-                            val snapshot = applied
-                            if (snapshot == null) snackbar(context.getString(R.string.reborn_reading))
-                            else AppliedRepository.askUndo(snapshot.undoPlan())
-                        },
-                    )
+                item(key = "amoled") {
+                    Entrance(3, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
+                }
+                item(key = "applied_tiles") {
+                    Entrance(4, animate) { AppliedTiles(applied, onOpenApplied) }
+                }
+                item(key = "actions_header") {
+                    Entrance(5, animate) { SectionHeader(stringResource(R.string.reborn_quick_actions)) }
+                }
+                item(key = "actions") {
+                    Entrance(6, animate) {
+                        QuickActions(
+                            paused = model?.hooksPaused == true,
+                            busy = busy,
+                            onRestart = {
+                                act("restart") {
+                                    RebornActions.restartSystemUi()
+                                    context.getString(R.string.reborn_restarting_systemui)
+                                }
+                            },
+                            onPause = { confirm = if (model?.hooksPaused == true) Confirm.Resume else Confirm.Pause },
+                            onSoftReboot = { confirm = Confirm.SoftReboot },
+                            onSetup = onOpenSetup,
+                            onUndoAll = {
+                                val snapshot = applied
+                                if (snapshot == null) snackbar(context.getString(R.string.reborn_reading))
+                                else AppliedRepository.askUndo(snapshot.undoPlan())
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -377,6 +369,7 @@ fun HomeScreen(
             text = stringResource(R.string.reborn_soft_reboot_text),
             confirmLabel = stringResource(R.string.reborn_soft_reboot),
             icon = R.drawable.ic_reborn_power,
+            destructive = true,
             onDismiss = { confirm = null },
             onConfirm = {
                 act("reboot", recheckAfter = 0L) {
@@ -400,11 +393,11 @@ private fun StatusHero(model: HomeStatus?, readAt: Long) {
         null -> colors.unknown
     }
     val accent = if (model == null) MaterialTheme.colorScheme.primary else status.accent
-    SectionCard(container = colors.heroCard, contentPadding = PaddingValues(24.dp)) {
+    HeroCard(Modifier.animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec())) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Crossfade(
                 targetState = model?.level,
-                animationSpec = tween(450),
+                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
                 modifier = Modifier.size(108.dp),
                 label = "heroShape",
             ) { level ->
@@ -445,11 +438,9 @@ private fun StatusHero(model: HomeStatus?, readAt: Long) {
             Spacer(Modifier.width(20.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(R.string.reborn_hero_overline).uppercase(Locale.getDefault()),
-                    style = MaterialTheme.typography.labelLarge,
+                    text = stringResource(R.string.reborn_hero_overline),
+                    style = MaterialTheme.typography.overline,
                     color = accent,
-                    letterSpacing = 1.4.sp,
-                    fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -462,15 +453,15 @@ private fun StatusHero(model: HomeStatus?, readAt: Long) {
             }
         }
         Spacer(Modifier.height(22.dp))
+        val motion = MaterialTheme.motionScheme
         AnimatedContent(
             targetState = model?.headline ?: R.string.reborn_checking_headline,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
             label = "headline",
         ) { headline ->
             Text(
                 text = stringResource(headline),
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.displaySmallEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
@@ -529,8 +520,7 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(
                     stringResource(R.string.reborn_amoled_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                 )
                 Text(
                     text = when {
@@ -552,8 +542,7 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Text(
                 text = stringResource(if (on) R.string.reborn_on else R.string.reborn_off),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineMediumEmphasized,
                 color = if (on) scheme.primary else scheme.onSurfaceVariant,
             )
         }
@@ -600,8 +589,7 @@ private fun HooksUpdateCard(update: HooksUpdate, busy: Boolean, onRestart: () ->
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         stringResource(R.string.reborn_update_ready_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.titleSmallEmphasized,
                         color = scheme.onSecondaryContainer,
                     )
                     Text(
@@ -619,14 +607,22 @@ private fun HooksUpdateCard(update: HooksUpdate, busy: Boolean, onRestart: () ->
                         onRestart()
                     },
                     enabled = !busy,
+                    shapes = ButtonDefaults.shapes(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = scheme.onSecondaryContainer,
                         contentColor = scheme.secondaryContainer,
+                        // Busy keeps the colours: the in-button indicator says it is working
+                        disabledContainerColor = scheme.onSecondaryContainer,
+                        disabledContentColor = scheme.secondaryContainer,
                     ),
                 ) {
-                    Icon(painterResource(R.drawable.ic_reborn_restart), contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.reborn_update_ready_action))
+                    BusyLabel(busy) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.ic_reborn_restart), contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.reborn_update_ready_action))
+                        }
+                    }
                 }
             }
         }
@@ -666,8 +662,7 @@ private fun AppliedTiles(applied: AppliedSnapshot?, onOpenApplied: () -> Unit) {
             Spacer(Modifier.height(14.dp))
             Text(
                 text = applied?.count(AppliedSource.THEME_OVERLAY, true)?.toString() ?: "–",
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.heroNumber,
             )
             Text(
                 text = stringResource(R.string.reborn_overlays_on),
@@ -692,8 +687,7 @@ private fun AppliedTiles(applied: AppliedSnapshot?, onOpenApplied: () -> Unit) {
             Spacer(Modifier.height(14.dp))
             Text(
                 text = stringResource(R.string.reborn_qs_tweaks),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMediumEmphasized,
             )
             Spacer(Modifier.height(10.dp))
             if (applied == null) {
@@ -837,7 +831,7 @@ private fun WideActionTile(
             ShapedIcon(icon, container, content, size = 52.dp, shape = MaterialShapes.Burst.toShape())
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(title, style = MaterialTheme.typography.titleMediumEmphasized)
                 Spacer(Modifier.height(2.dp))
                 Text(
                     subtitle,

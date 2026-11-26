@@ -55,14 +55,13 @@
                 android:drawablePadding="16dp"
                 android:gravity="start"
                 android:text="@string/studio_applying"
-                android:textAllCaps="true"
                 android:textColor="?android:attr/textColorPrimary" />
 
         </LinearLayout>
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/loading_bar"
-            style="?android:progressBarStyleHorizontal"
+            style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/information"

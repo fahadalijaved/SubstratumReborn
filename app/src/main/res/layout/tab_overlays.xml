@@ -22,12 +22,11 @@
             android:focusable="true"
             android:focusableInTouchMode="true">
 
-            <ProgressBar
+            <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/header_loading_bar"
-                style="?android:progressBarStyleHorizontal"
+                style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-3dp"
                 android:indeterminate="true" />
 
             <!-- Search by app label or package; selections survive filtering -->
@@ -89,7 +88,7 @@
                     android:layout_marginBottom="-12dp"
                     android:layout_toStartOf="@+id/toggle_all_overlays" />
 
-                <Switch
+                <com.google.android.material.materialswitch.MaterialSwitch
                     android:id="@+id/toggle_all_overlays"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

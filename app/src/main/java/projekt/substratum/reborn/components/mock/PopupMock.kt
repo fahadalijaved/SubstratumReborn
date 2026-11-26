@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledPreview
+import projekt.substratum.reborn.components.design.SystemFont
 
 private val UpdateBlue = Color(0xFF3E8BFF)
 private val WeatherAmber = Color(0xFFFFA42B)
@@ -46,6 +47,14 @@ private val WeatherAmber = Color(0xFFFFA42B)
  */
 @Composable
 fun PopupMock(
+    roles: MockRoles,
+    side: MockSide,
+    modifier: Modifier = Modifier,
+) = SystemFont { PopupMockBody(roles, side, modifier) }
+
+/** The mock itself, in the system font (see [SystemFont]). */
+@Composable
+private fun PopupMockBody(
     roles: MockRoles,
     side: MockSide,
     modifier: Modifier = Modifier,
@@ -65,7 +74,7 @@ fun PopupMock(
         ) {
             Notification(
                 background = notification,
-                icon = R.drawable.ic_reborn_refresh,
+                icon = R.drawable.ic_mock_refresh,
                 iconColor = UpdateBlue,
                 app = stringResource(R.string.reborn_mock_update_app),
                 text = stringResource(R.string.reborn_mock_update_text),
@@ -94,7 +103,7 @@ fun PopupMock(
                         modifier = Modifier.weight(1f),
                     )
                     Icon(
-                        painterResource(R.drawable.ic_reborn_more),
+                        painterResource(R.drawable.ic_mock_more),
                         contentDescription = null,
                         tint = MockTitle,
                         modifier = Modifier.size(20.dp),

@@ -28,17 +28,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -46,7 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,7 +67,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -81,6 +79,10 @@ import projekt.substratum.common.platform.AmoledLevel
 import projekt.substratum.common.platform.AmoledPalette
 import projekt.substratum.reborn.components.AppIcon
 import projekt.substratum.reborn.components.ShapedIcon
+import projekt.substratum.reborn.components.design.MenuAction
+import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.PageLoading
+import projekt.substratum.reborn.components.design.RebornMenu
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.theme.StatusColors
@@ -123,7 +125,10 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val records by StudioState.records.collectAsStateWithLifecycle()
     val data by rememberRoot(row.pkg, records) { StudioState.readInspector(context, row.pkg) }
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
     val host = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var query by rememberSaveable { mutableStateOf("") }
@@ -174,8 +179,7 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text(
                             row.label,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleLargeEmphasized,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -241,12 +245,7 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 val d = data
                 when {
-                    d == null -> Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(220.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { LoadingIndicator(Modifier.size(56.dp)) }
+                    d == null -> PageLoading(height = 220.dp)
                     d.record == null && entries.isEmpty() -> EmptyRecord()
                     else -> {
                         Text(
@@ -287,7 +286,7 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
                 Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-            ) { Snackbar(it, shape = RoundedCornerShape(16.dp)) }
+            ) { Snackbar(it, shape = MaterialTheme.shapes.large) }
         }
     }
 
@@ -320,8 +319,7 @@ private fun EmptyRecord() {
         Spacer(Modifier.height(18.dp))
         Text(
             stringResource(R.string.reborn_studio_inspector_empty),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleLargeEmphasized,
         )
         Spacer(Modifier.height(6.dp))
         Text(
@@ -402,46 +400,35 @@ private fun ChangeRow(entry: Entry, onKeep: () -> Unit, onPin: () -> Unit, onRes
                 )
             }
         }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+        RebornMenu(expanded = menu, onDismiss = { menu = false }) {
             // A keep or pin goes by name: with an obfuscated name it would change every colour
-            // that shares it, so only a rule set earlier can be reset
+            // that shares it, so only a rule set earlier can be reset. The group label says so.
             val ownName = entry.shared <= 1
-            if (!ownName) {
-                Text(
-                    pluralStringResource(R.plurals.reborn_studio_shared_name, entry.shared, entry.shared),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .width(240.dp)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-            }
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.reborn_studio_keep_stock)) },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_undo), null) },
-                enabled = !entry.kept && ownName,
-                onClick = {
-                    menu = false
-                    onKeep()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.reborn_studio_pin)) },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_pin), null) },
-                enabled = ownName,
-                onClick = {
-                    menu = false
-                    onPin()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.reborn_studio_reset)) },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_refresh), null) },
-                enabled = entry.userRule,
-                onClick = {
-                    menu = false
-                    onReset()
-                },
+            listOf(
+                MenuGroup(
+                    label = if (ownName) null
+                    else pluralStringResource(R.plurals.reborn_studio_shared_name, entry.shared, entry.shared),
+                    entries = listOf(
+                        MenuAction(
+                            stringResource(R.string.reborn_studio_keep_stock),
+                            R.drawable.ic_reborn_undo,
+                            enabled = !entry.kept && ownName,
+                            onClick = onKeep,
+                        ),
+                        MenuAction(
+                            stringResource(R.string.reborn_studio_pin),
+                            R.drawable.ic_reborn_pin,
+                            enabled = ownName,
+                            onClick = onPin,
+                        ),
+                        MenuAction(
+                            stringResource(R.string.reborn_studio_reset),
+                            R.drawable.ic_reborn_refresh,
+                            enabled = entry.userRule,
+                            onClick = onReset,
+                        ),
+                    ),
+                ),
             )
         }
     }
@@ -467,7 +454,6 @@ private fun RuleChip(rule: String) {
     Text(
         label,
         style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Medium,
         color = status.onContainer,
         maxLines = 1,
         modifier = Modifier
@@ -555,7 +541,7 @@ private fun PinDialog(name: String, initial: Int, onDismiss: () -> Unit, onPin: 
                         } else null,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = MaterialTheme.shapes.large,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -568,10 +554,11 @@ private fun PinDialog(name: String, initial: Int, onDismiss: () -> Unit, onPin: 
                     parsed?.let(onPin)
                     onDismiss()
                 },
+                shapes = ButtonDefaults.shapes(),
             ) { Text(stringResource(R.string.reborn_studio_pin_title)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.reborn_cancel)) }
+            TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.reborn_cancel)) }
         },
     )
 }

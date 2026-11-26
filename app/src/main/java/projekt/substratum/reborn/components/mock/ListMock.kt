@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledPreview
+import projekt.substratum.reborn.components.design.SystemFont
 
 /** One UI's dark text: AMOLED never changes text */
 internal val MockTitle = Color(0xFFFCFCFF)
@@ -52,6 +53,14 @@ private val ListDivider = Color(0x1FFFFFFF)
  */
 @Composable
 fun ListMock(
+    roles: MockRoles,
+    side: MockSide,
+    modifier: Modifier = Modifier,
+) = SystemFont { ListMockBody(roles, side, modifier) }
+
+/** The mock itself, in the system font (see [SystemFont]). */
+@Composable
+private fun ListMockBody(
     roles: MockRoles,
     side: MockSide,
     modifier: Modifier = Modifier,
@@ -78,14 +87,14 @@ fun ListMock(
                 modifier = Modifier.weight(1f),
             )
             Icon(
-                painterResource(R.drawable.ic_reborn_search),
+                painterResource(R.drawable.ic_mock_search),
                 contentDescription = null,
                 tint = MockSummary,
                 modifier = Modifier.size(20.dp),
             )
             Spacer(Modifier.width(14.dp))
             Icon(
-                painterResource(R.drawable.ic_reborn_more),
+                painterResource(R.drawable.ic_mock_more),
                 contentDescription = null,
                 tint = MockSummary,
                 modifier = Modifier.size(20.dp),
@@ -122,16 +131,16 @@ fun ListMock(
             }
         }
         ListCard(card) {
-            Folder(R.drawable.ic_reborn_file, FolderBlue,
+            Folder(R.drawable.ic_mock_file, FolderBlue,
                 stringResource(R.string.reborn_mock_documents), stringResource(R.string.reborn_mock_documents_text))
             FolderDivider()
-            Folder(R.drawable.ic_reborn_download, FolderGreen,
+            Folder(R.drawable.ic_mock_download, FolderGreen,
                 stringResource(R.string.reborn_mock_downloads), stringResource(R.string.reborn_mock_downloads_text))
             FolderDivider()
             Folder(R.drawable.ic_reborn_volume, FolderPurple,
                 stringResource(R.string.reborn_mock_music), stringResource(R.string.reborn_mock_music_text))
             FolderDivider()
-            Folder(R.drawable.ic_reborn_wallpaper, FolderAmber,
+            Folder(R.drawable.ic_mock_wallpaper, FolderAmber,
                 stringResource(R.string.reborn_mock_pictures), stringResource(R.string.reborn_mock_pictures_text))
         }
     }

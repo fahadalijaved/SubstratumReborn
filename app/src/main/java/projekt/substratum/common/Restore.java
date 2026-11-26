@@ -8,7 +8,7 @@
 package projekt.substratum.common;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -183,7 +183,7 @@ public class Restore {
         private final WeakReference<Activity> ref;
         ArrayList<String> finalCommandsArray;
         private boolean withUninstall;
-        private ProgressDialog alertDialog;
+        private RebornProgressDialog alertDialog;
 
         private RestoreFunction(Activity activity) {
             super();
@@ -194,7 +194,7 @@ public class Restore {
         protected void onPreExecute() {
             Activity activity = ref.get();
             if (activity != null) {
-                alertDialog = new ProgressDialog(activity, R.style.RestoreDialog);
+                alertDialog = new RebornProgressDialog(activity, R.style.RestoreDialog);
                 alertDialog.setMessage(activity.getString(R.string.manage_dialog_performing));
                 alertDialog.setIndeterminate(true);
                 alertDialog.setCancelable(false);
@@ -315,7 +315,7 @@ public class Restore {
      */
     private static class BootAnimationClearer extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Activity> ref;
-        private ProgressDialog alertDialog;
+        private RebornProgressDialog alertDialog;
 
         private BootAnimationClearer(Activity activity) {
             super();
@@ -326,7 +326,7 @@ public class Restore {
         protected void onPreExecute() {
             Activity activity = ref.get();
             if (activity != null) {
-                alertDialog = new ProgressDialog(activity, R.style.RestoreDialog);
+                alertDialog = new RebornProgressDialog(activity, R.style.RestoreDialog);
                 alertDialog.setMessage(activity.getString(R.string.manage_dialog_performing));
                 alertDialog.setIndeterminate(true);
                 alertDialog.setCancelable(false);
@@ -368,7 +368,7 @@ public class Restore {
      */
     private static class FontsClearer extends AsyncTask<String, Integer, String> {
         private final WeakReference<Activity> ref;
-        private ProgressDialog alertDialog;
+        private RebornProgressDialog alertDialog;
 
         private FontsClearer(Activity activity) {
             super();
@@ -380,7 +380,7 @@ public class Restore {
             Activity activity = ref.get();
             if (activity != null) {
                 if (References.ENABLE_EXTRAS_DIALOG) {
-                    alertDialog = new ProgressDialog(ref.get(), R.style.RestoreDialog);
+                    alertDialog = new RebornProgressDialog(ref.get(), R.style.RestoreDialog);
                     alertDialog.setMessage(ref.get().getString(R.string.manage_dialog_performing));
                     alertDialog.setIndeterminate(true);
                     alertDialog.setCancelable(false);
@@ -425,7 +425,7 @@ public class Restore {
      */
     private static class SoundsClearer extends AsyncTask<Void, Void, Void> {
         private final WeakReference<Activity> ref;
-        private ProgressDialog alertDialog;
+        private RebornProgressDialog alertDialog;
 
         private SoundsClearer(Activity activity) {
             super();
@@ -436,7 +436,7 @@ public class Restore {
         protected void onPreExecute() {
             Activity activity = ref.get();
             if (activity != null) {
-                alertDialog = new ProgressDialog(activity, R.style.RestoreDialog);
+                alertDialog = new RebornProgressDialog(activity, R.style.RestoreDialog);
                 alertDialog.setMessage(activity.getString(R.string.manage_dialog_performing));
                 alertDialog.setIndeterminate(true);
                 alertDialog.setCancelable(false);

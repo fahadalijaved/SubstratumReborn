@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledPreview
+import projekt.substratum.reborn.components.design.SystemFont
 
 /** One UI's settings icons keep their own colours in dark mode: they are not AMOLED's to change. */
 private val IconBlue = Color(0xFF3E8BFF)
@@ -60,6 +61,15 @@ private class SettingsColors(
  */
 @Composable
 fun SettingsMock(
+    roles: MockRoles,
+    side: MockSide,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) = SystemFont { SettingsMockBody(roles, side, modifier, compact) }
+
+/** The mock itself, in the system font (see [SystemFont]). */
+@Composable
+private fun SettingsMockBody(
     roles: MockRoles,
     side: MockSide,
     modifier: Modifier = Modifier,
@@ -119,7 +129,7 @@ fun SettingsMock(
                 stringResource(R.string.reborn_mock_sounds), stringResource(R.string.reborn_mock_sounds_text))
         }
         Group(colors, compact) {
-            SettingRow(colors, compact, R.drawable.ic_reborn_amoled, IconGreen,
+            SettingRow(colors, compact, R.drawable.ic_mock_amoled, IconGreen,
                 stringResource(R.string.reborn_mock_dark), stringResource(R.string.reborn_mock_dark_text),
                 accentSummary = true, switch = true)
             if (!compact) {

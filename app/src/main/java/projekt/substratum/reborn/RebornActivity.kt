@@ -14,11 +14,8 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -30,15 +27,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -48,18 +42,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import projekt.substratum.R
 import projekt.substratum.common.RebornInit
 import projekt.substratum.reborn.amoled.AmoledTab
 import projekt.substratum.reborn.amoled.StudioState
+import projekt.substratum.reborn.applied.AppliedRepository
 import projekt.substratum.reborn.applied.AppliedScreen
 import projekt.substratum.reborn.applied.UndoEverythingHost
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.RebornSnackbarHost
+import projekt.substratum.reborn.components.design.NavDest
+import projekt.substratum.reborn.components.design.RebornNavBar
+import projekt.substratum.reborn.components.design.fadeThrough
 import kotlinx.coroutines.delay
 import projekt.substratum.reborn.home.AboutScreen
 import projekt.substratum.reborn.home.HomeScreen
@@ -71,11 +65,13 @@ import projekt.substratum.reborn.theme.isDarkPreferred
 import projekt.substratum.reborn.themes.ThemesScreen
 import projekt.substratum.util.helpers.LocaleHelper
 
-enum class RebornTab(val key: String, @StringRes val label: Int, @DrawableRes val icon: Int) {
-    Home("home", R.string.reborn_tab_home, R.drawable.ic_reborn_home),
-    Amoled("amoled", R.string.reborn_tab_amoled, R.drawable.ic_reborn_amoled),
-    Themes("themes", R.string.reborn_tab_themes, R.drawable.ic_reborn_themes),
-    Applied("applied", R.string.reborn_tab_applied, R.drawable.ic_reborn_applied);
+enum class RebornTab(val dest: NavDest) {
+    Home(NavDest("home", R.string.reborn_tab_home, R.drawable.ic_reborn_home, R.drawable.ic_reborn_home_filled)),
+    Amoled(NavDest("amoled", R.string.reborn_tab_amoled, R.drawable.ic_reborn_amoled, R.drawable.ic_reborn_amoled_filled)),
+    Themes(NavDest("themes", R.string.reborn_tab_themes, R.drawable.ic_reborn_themes, R.drawable.ic_reborn_themes_filled)),
+    Applied(NavDest("applied", R.string.reborn_tab_applied, R.drawable.ic_reborn_applied, R.drawable.ic_reborn_applied_filled));
+
+    val key: String get() = dest.key
 
     companion object {
         fun of(key: String?): RebornTab? = entries.firstOrNull { it.key.equals(key, ignoreCase = true) }
@@ -139,7 +135,8 @@ fun RebornApp(requestedTab: MutableState<String?>) {
     var showWhatsNew by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val tabs = rememberSaveableStateHolder()
-    val haptics = LocalHapticFeedback.current
+    val motion = MaterialTheme.motionScheme
+    val restartPending by AppliedRepository.restartPending.collectAsState()
 
     LaunchedEffect(requestedTab.value) {
         RebornTab.of(requestedTab.value)?.let {
@@ -162,7 +159,8 @@ fun RebornApp(requestedTab: MutableState<String?>) {
     AnimatedContent(
         targetState = showSetup,
         transitionSpec = {
-            (fadeIn(tween(320)) + scaleIn(tween(320), initialScale = 0.97f)) togetherWith fadeOut(tween(160))
+            (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.97f)) togetherWith
+                fadeOut(motion.fastEffectsSpec())
         },
         label = "setup",
     ) { setup ->
@@ -179,21 +177,13 @@ fun RebornApp(requestedTab: MutableState<String?>) {
                         contentWindowInsets = WindowInsets(0),
                         snackbarHost = { RebornSnackbarHost(snackbar) },
                         bottomBar = {
-                            NavigationBar {
-                                RebornTab.entries.forEach { item ->
-                                    NavigationBarItem(
-                                        selected = tab == item,
-                                        onClick = {
-                                            if (tab != item) {
-                                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                                tab = item
-                                            }
-                                        },
-                                        icon = { Icon(painterResource(item.icon), contentDescription = null) },
-                                        label = { Text(stringResource(item.label)) },
-                                    )
-                                }
-                            }
+                            // The M3E short bar (64 dp); it ticks on every tap itself
+                            RebornNavBar(
+                                destinations = RebornTab.entries.map { it.dest },
+                                selected = tab.key,
+                                onSelect = { d -> tab = RebornTab.entries.first { it.key == d.key } },
+                                badges = if (restartPending) setOf(RebornTab.Applied.key) else emptySet(),
+                            )
                         },
                     ) { padding ->
                         Box(
@@ -204,7 +194,7 @@ fun RebornApp(requestedTab: MutableState<String?>) {
                         ) {
                             AnimatedContent(
                                 targetState = tab,
-                                transitionSpec = { fadeIn(tween(220, delayMillis = 60)) togetherWith fadeOut(tween(90)) },
+                                transitionSpec = { fadeThrough(motion) },
                                 label = "tab",
                             ) { current ->
                                 tabs.SaveableStateProvider(current.key) {
@@ -234,7 +224,6 @@ fun RebornApp(requestedTab: MutableState<String?>) {
                         }
                     }
                     // About, over the tabs (they keep their state underneath), on the expressive springs
-                    val motion = MaterialTheme.motionScheme
                     AnimatedVisibility(
                         visible = showAbout,
                         enter = slideInHorizontally(motion.defaultSpatialSpec()) { it / 4 } +

@@ -17,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -48,7 +47,8 @@ import static projekt.substratum.common.Internal.THEME_WALLPAPER;
 public class Wallpapers extends Fragment {
 
     public static AsyncTask<String, Integer, String> mainLoader = null;
-    private ProgressBar materialProgressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View materialProgressBar;
     private View noNetwork;
     private View noWallpapers;
     private SwipeRefreshLayout swipeRefreshLayout;

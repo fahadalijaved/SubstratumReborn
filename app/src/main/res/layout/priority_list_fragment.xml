@@ -12,12 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/priority_header_loading_bar"
-            style="?android:progressBarStyleHorizontal"
+            style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-7dp"
             android:indeterminate="true" />
 
         <androidx.recyclerview.widget.RecyclerView

@@ -6,7 +6,6 @@ package projekt.substratum.reborn.applied
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,23 +26,20 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -58,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateMapOf
@@ -71,7 +68,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -81,7 +77,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,9 +99,16 @@ import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.StatusChip
 import projekt.substratum.reborn.components.TagChip
+import projekt.substratum.reborn.components.design.HeroCard
+import projekt.substratum.reborn.components.design.PageLoading
+import projekt.substratum.reborn.components.design.RebornExtendedFab
+import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
+import projekt.substratum.reborn.components.design.RebornPullToRefresh
+import projekt.substratum.reborn.components.design.SegmentedGroup
+import projekt.substratum.reborn.components.design.rebornSegmentColors
+import projekt.substratum.reborn.components.design.rememberRefreshableRoot
 import projekt.substratum.reborn.components.onIo
 import projekt.substratum.reborn.components.rememberResumeCount
-import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.theme.LocalRebornColors
 
 /** The entries of one target app, as Applied shows them. */
@@ -126,9 +128,10 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
     val context = LocalContext.current
     val resume = rememberResumeCount()
     val version by AppliedRepository.version.collectAsStateWithLifecycle()
-    val snapshot by rememberRoot(resume, version, initial = RebornCache.applied) {
+    val applied = rememberRefreshableRoot(resume, version, initial = RebornCache.applied) {
         AppliedRepository.read(context).also { RebornCache.applied = it }
     }
+    val snapshot = applied.value
     val restartPending by AppliedRepository.restartPending.collectAsStateWithLifecycle()
     var source by rememberSaveable { mutableStateOf<AppliedSource?>(null) }
     var state by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -142,6 +145,8 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
     val haptics = LocalHapticFeedback.current
     val focus = LocalFocusManager.current
     val listState = rememberLazyListState()
+    // Undo all is a FAB, extended while the list is at its top
+    val fabExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
 
     LaunchedEffect(snapshot) {
         val byKey = snapshot?.entries?.associateBy { it.key } ?: return@LaunchedEffect
@@ -220,155 +225,145 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val background = MaterialTheme.colorScheme.background
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = background,
-        topBar = {
-            LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.reborn_tab_applied), fontWeight = FontWeight.Bold) },
-                subtitle = {
-                    if (data != null) {
-                        val on = all.count { it.enabled }
-                        val apps = all.map { it.targetPkg }.distinct().size
-                        Text(stringResource(R.string.reborn_applied_subtitle, on, all.size - on,
-                            pluralStringResource(R.plurals.reborn_applied_apps, apps, apps)))
-                    }
-                },
-                actions = {
-                    FilledTonalButton(
-                        onClick = {
-                            haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-                            data?.let { AppliedRepository.askUndo(it.undoPlan()) }
-                        },
-                        enabled = data != null,
-                        modifier = Modifier.padding(end = 8.dp),
-                    ) {
-                        Icon(painterResource(R.drawable.ic_reborn_undo), contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.reborn_applied_undo_all))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = background, scrolledContainerColor = background),
-                scrollBehavior = scrollBehavior,
-            )
+    val subtitle = if (data != null) {
+        val on = all.count { it.enabled }
+        val apps = all.map { it.targetPkg }.distinct().size
+        stringResource(R.string.reborn_applied_subtitle, on, all.size - on,
+            pluralStringResource(R.plurals.reborn_applied_apps, apps, apps))
+    } else null
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    RebornFlexibleScaffold(
+        title = stringResource(R.string.reborn_tab_applied),
+        subtitle = subtitle,
+        scrollBehavior = scrollBehavior,
+        connectScroll = false,
+        floatingActionButton = {
+            if (data != null && data.entries.isNotEmpty()) {
+                RebornExtendedFab(
+                    label = stringResource(R.string.reborn_applied_undo_all),
+                    icon = R.drawable.ic_reborn_undo,
+                    onClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        AppliedRepository.askUndo(data.undoPlan())
+                    },
+                    expanded = fabExpanded,
+                )
+            }
         },
     ) { padding ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding() + 28.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        RebornPullToRefresh(
+            refreshing = applied.refreshing,
+            onRefresh = applied.refresh,
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+            scrollConnection = scrollBehavior.nestedScrollConnection,
         ) {
-            if (data != null && data.entries.isNotEmpty()) {
-                stickyHeader(key = "controls", contentType = "controls") {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .background(background)
-                            .padding(bottom = 6.dp),
-                    ) {
-                        TextField(
-                            value = query,
-                            onValueChange = { query = it },
-                            modifier = Modifier
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    // Room for the Undo all FAB over the last group
+                    bottom = padding.calculateBottomPadding() + 28.dp + 88.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                if (data != null && data.entries.isNotEmpty()) {
+                    stickyHeader(key = "controls", contentType = "controls") {
+                        Column(
+                            Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                            placeholder = { Text(stringResource(R.string.reborn_applied_search)) },
-                            leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_search), contentDescription = null) },
-                            trailingIcon = if (query.isNotEmpty()) {
-                                {
-                                    IconButton(onClick = { query = "" }) {
-                                        Icon(painterResource(R.drawable.ic_reborn_close), stringResource(R.string.reborn_studio_clear_search))
+                                .background(background)
+                                .padding(bottom = 6.dp),
+                        ) {
+                            TextField(
+                                value = query,
+                                onValueChange = { query = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                placeholder = { Text(stringResource(R.string.reborn_applied_search)) },
+                                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_search), contentDescription = null) },
+                                trailingIcon = if (query.isNotEmpty()) {
+                                    {
+                                        IconButton(onClick = { query = "" }) {
+                                            Icon(painterResource(R.drawable.ic_reborn_close), stringResource(R.string.reborn_studio_clear_search))
+                                        }
                                     }
-                                }
-                            } else null,
-                            singleLine = true,
-                            shape = CircleShape,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                            ),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
-                        )
-                        Filters(
-                            all = all,
-                            bySource = bySource,
-                            source = source,
-                            state = state,
-                            onSource = {
-                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                source = it
-                            },
-                            onState = {
-                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                state = if (state == it) null else it
-                            },
-                        )
+                                } else null,
+                                singleLine = true,
+                                shape = CircleShape,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                ),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+                            )
+                            Filters(
+                                all = all,
+                                bySource = bySource,
+                                source = source,
+                                state = state,
+                                onSource = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    source = it
+                                },
+                                onState = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    state = if (state == it) null else it
+                                },
+                            )
+                        }
                     }
                 }
-            }
-            if (restartPending) {
-                item(key = "restart") {
-                    FixBanner(
-                        title = stringResource(R.string.reborn_applied_restart_title),
-                        text = stringResource(R.string.reborn_applied_restart_text),
-                        fixLabel = stringResource(R.string.reborn_applied_restart),
-                        onFix = ::restartSystemUi,
-                        warning = true,
-                        busy = restarting,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .animateItem(),
-                    )
-                }
-            }
-            when {
-                data == null -> item(key = "loading") {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(320.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { LoadingIndicator(Modifier.size(64.dp)) }
-                }
-                data.entries.isEmpty() -> item(key = "empty") {
-                    EmptyApplied(onOpenAmoled, onOpenThemes, Modifier.padding(horizontal = 16.dp))
-                }
-                groups.isEmpty() -> item(key = "no_match") {
-                    NoMatch(Modifier.padding(horizontal = 16.dp))
-                }
-                else -> {
-                    item(key = "hint") {
-                        Text(
-                            stringResource(R.string.reborn_applied_swipe_hint),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp),
-                        )
-                    }
-                    items(groups, key = { it.targetPkg }, contentType = { "group" }) { group ->
-                        GroupCard(
-                            group = group,
-                            onTurnOff = ::turnOff,
-                            onInspect = { inspecting = it.targetPkg },
+                if (restartPending) {
+                    item(key = "restart") {
+                        FixBanner(
+                            title = stringResource(R.string.reborn_applied_restart_title),
+                            text = stringResource(R.string.reborn_applied_restart_text),
+                            fixLabel = stringResource(R.string.reborn_applied_restart),
+                            onFix = ::restartSystemUi,
+                            warning = true,
+                            busy = restarting,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .animateItem(),
                         )
+                    }
+                }
+                when {
+                    data == null -> item(key = "loading") { PageLoading(height = 320.dp) }
+                    data.entries.isEmpty() -> item(key = "empty") {
+                        EmptyApplied(onOpenAmoled, onOpenThemes, Modifier.padding(horizontal = 16.dp))
+                    }
+                    groups.isEmpty() -> item(key = "no_match") {
+                        NoMatch(Modifier.padding(horizontal = 16.dp))
+                    }
+                    else -> {
+                        item(key = "hint") {
+                            Text(
+                                stringResource(R.string.reborn_applied_swipe_hint),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 24.dp),
+                            )
+                        }
+                        items(groups, key = { it.targetPkg }, contentType = { "group" }) { group ->
+                            GroupCard(
+                                group = group,
+                                onTurnOff = ::turnOff,
+                                onInspect = { inspecting = it.targetPkg },
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .animateItem(),
+                            )
+                        }
                     }
                 }
             }
@@ -444,7 +439,7 @@ private fun Filters(
     }
 }
 
-/** An app's card: its icon, name and counts, then a row per entry. */
+/** An app's group: its icon, name and counts, then its entries as one segmented list. */
 @Composable
 private fun GroupCard(
     group: AppliedGroup,
@@ -452,21 +447,19 @@ private fun GroupCard(
     onInspect: (AppliedEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
     val on = group.entries.count { it.enabled }
-    SectionCard(modifier = modifier, contentPadding = PaddingValues(top = 16.dp, bottom = 4.dp)) {
+    Column(modifier) {
         Row(
-            modifier = Modifier.padding(horizontal = 18.dp),
+            modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AppIcon(group.targetPkg, size = 40.dp, shape = RoundedCornerShape(12.dp))
+            AppIcon(group.targetPkg, size = 40.dp, shape = MaterialTheme.shapes.medium)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     group.label,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -484,31 +477,26 @@ private fun GroupCard(
             ) {
                 Text(
                     on.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.labelLargeEmphasized,
                     color = if (on > 0) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
-        group.entries.forEachIndexed { i, entry ->
-            key(entry.key) {
-                if (i > 0) {
-                    HorizontalDivider(
-                        Modifier.padding(horizontal = 18.dp),
-                        color = if (colors.dark) colors.cardBorder else scheme.outlineVariant,
-                    )
-                }
-                EntryRow(entry, onTurnOff, onInspect)
-            }
+        SegmentedGroup(group.entries.size) { i, shapes ->
+            val entry = group.entries[i]
+            key(entry.key) { EntryRow(entry, shapes, onTurnOff, onInspect) }
         }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EntryRow(entry: AppliedEntry, onTurnOff: (AppliedEntry) -> Unit, onInspect: (AppliedEntry) -> Unit) {
-    val colors = LocalRebornColors.current
+private fun EntryRow(
+    entry: AppliedEntry,
+    shapes: ListItemShapes,
+    onTurnOff: (AppliedEntry) -> Unit,
+    onInspect: (AppliedEntry) -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
     val swipe = rememberSwipeToDismissBoxState()
     val scope = rememberCoroutineScope()
@@ -516,6 +504,8 @@ private fun EntryRow(entry: AppliedEntry, onTurnOff: (AppliedEntry) -> Unit, onI
     val inspectable = entry.source == AppliedSource.AMOLED
     SwipeToDismissBox(
         state = swipe,
+        // The swipe background takes the segment's shape
+        modifier = Modifier.clip(shapes.shape),
         backgroundContent = { SwipeBackground(swipe) },
         enableDismissFromStartToEnd = entry.enabled,
         enableDismissFromEndToStart = entry.enabled,
@@ -525,37 +515,17 @@ private fun EntryRow(entry: AppliedEntry, onTurnOff: (AppliedEntry) -> Unit, onI
             scope.launch { swipe.reset() }
         },
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(colors.card)
-                .then(if (inspectable) Modifier.clickable { onInspect(entry) } else Modifier)
-                .semantics {
-                    if (entry.enabled) {
-                        customActions = listOf(CustomAccessibilityAction(turnOff) {
-                            onTurnOff(entry)
-                            true
-                        })
-                    }
-                }
-                .padding(horizontal = 18.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    entry.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    entry.detail,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+        val rowModifier = Modifier.semantics {
+            if (entry.enabled) {
+                customActions = listOf(CustomAccessibilityAction(turnOff) {
+                    onTurnOff(entry)
+                    true
+                })
+            }
+        }
+        val supporting: @Composable () -> Unit = {
+            Column {
+                Text(entry.detail, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(8.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -568,14 +538,34 @@ private fun EntryRow(entry: AppliedEntry, onTurnOff: (AppliedEntry) -> Unit, onI
                     SourceChip(entry)
                 }
             }
-            if (inspectable) {
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    painterResource(R.drawable.ic_reborn_chevron),
-                    contentDescription = stringResource(R.string.reborn_applied_inspect),
-                    tint = scheme.onSurfaceVariant,
-                )
-            }
+        }
+        val headline: @Composable () -> Unit = {
+            Text(entry.title, style = MaterialTheme.typography.bodyLargeEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        if (inspectable) {
+            SegmentedListItem(
+                onClick = { onInspect(entry) },
+                shapes = shapes,
+                colors = rebornSegmentColors(),
+                modifier = rowModifier,
+                supportingContent = supporting,
+                trailingContent = {
+                    Icon(
+                        painterResource(R.drawable.ic_reborn_chevron),
+                        contentDescription = stringResource(R.string.reborn_applied_inspect),
+                        tint = scheme.onSurfaceVariant,
+                    )
+                },
+                content = headline,
+            )
+        } else {
+            SegmentedListItem(
+                shapes = shapes,
+                colors = rebornSegmentColors(),
+                modifier = rowModifier,
+                supportingContent = supporting,
+                content = headline,
+            )
         }
     }
 }
@@ -616,8 +606,7 @@ private fun RowScope.SwipeBackground(state: SwipeToDismissBoxState) {
         Spacer(Modifier.width(10.dp))
         Text(
             stringResource(R.string.reborn_applied_turn_off),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelLargeEmphasized,
             color = status.onContainer,
         )
     }
@@ -651,9 +640,8 @@ private fun AppliedInspector(entry: AppliedEntry, label: String, onDismiss: () -
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun EmptyApplied(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
-    SectionCard(modifier = modifier, container = colors.heroCard, contentPadding = PaddingValues(24.dp)) {
+    HeroCard(modifier) {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -669,7 +657,7 @@ private fun EmptyApplied(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit, mod
             )
         }
         Spacer(Modifier.height(20.dp))
-        Text(stringResource(R.string.reborn_applied_empty), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.reborn_applied_empty), style = MaterialTheme.typography.headlineMediumEmphasized)
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.reborn_applied_empty_text),
@@ -678,12 +666,12 @@ private fun EmptyApplied(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit, mod
         )
         Spacer(Modifier.height(22.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick = onOpenAmoled) {
+            Button(onClick = onOpenAmoled, shapes = ButtonDefaults.shapes()) {
                 Icon(painterResource(R.drawable.ic_reborn_amoled), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.reborn_applied_open_studio))
             }
-            OutlinedButton(onClick = onOpenThemes) {
+            OutlinedButton(onClick = onOpenThemes, shapes = ButtonDefaults.shapes()) {
                 Text(stringResource(R.string.reborn_applied_open_themes))
             }
         }

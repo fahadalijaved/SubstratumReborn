@@ -7,7 +7,7 @@
 
 package projekt.substratum.util.tabs;
 
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -35,7 +35,7 @@ import static projekt.substratum.common.Systems.checkThemeInterfacer;
 public class FontUtils {
 
     private Context context;
-    private ProgressDialog progress;
+    private RebornProgressDialog progress;
     private String themePid;
     private SharedPreferences prefs = Substratum.getPreferences();
 
@@ -72,7 +72,7 @@ public class FontUtils {
             if (fontUtils != null) {
                 Context context = fontUtils.context;
                 if (References.ENABLE_EXTRAS_DIALOG) {
-                    fontUtils.progress = new ProgressDialog(context, R.style.AppTheme_DialogAlert);
+                    fontUtils.progress = new RebornProgressDialog(context, R.style.AppTheme_DialogAlert);
                     fontUtils.progress.setMessage(context.getString(R.string
                             .font_dialog_apply_text));
                     fontUtils.progress.setIndeterminate(false);

@@ -7,7 +7,7 @@
 
 package projekt.substratum.tabs;
 
-import android.app.ProgressDialog;
+import projekt.substratum.util.views.RebornProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -81,13 +80,14 @@ public class Fonts extends Fragment {
     private TextView normalBold;
     private TextView italics;
     private TextView italicsBold;
-    private ProgressBar progressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View progressBar;
     private RelativeLayout defaults;
     private RelativeLayout fontHolder;
     private RelativeLayout fontPlaceholder;
     private Spinner fontSelector;
     private String themePid;
-    private ProgressDialog progressDialog;
+    private RebornProgressDialog progressDialog;
     private SharedPreferences prefs = Substratum.getPreferences();
     private AsyncTask current;
     private boolean paused;
@@ -252,7 +252,7 @@ public class Fonts extends Fragment {
             if (fragment.isAdded()) {
                 final Context context = fragment.context;
                 if (References.ENABLE_EXTRAS_DIALOG) {
-                    fragment.progressDialog = new ProgressDialog(context, R.style.RestoreDialog);
+                    fragment.progressDialog = new RebornProgressDialog(context, R.style.RestoreDialog);
                     fragment.progressDialog.setMessage(
                             context.getString(R.string.manage_dialog_performing));
                     fragment.progressDialog.setIndeterminate(true);

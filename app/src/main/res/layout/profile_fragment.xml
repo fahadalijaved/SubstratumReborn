@@ -12,12 +12,11 @@
         android:layout_height="match_parent"
         android:focusableInTouchMode="true">
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/header_loading_bar"
-            style="?android:progressBarStyleHorizontal"
+            style="@style/Widget.Material3Expressive.LinearProgressIndicator.Wavy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-7dp"
             android:indeterminate="true" />
 
         <ScrollView
@@ -209,7 +208,7 @@
                             android:textColor="?attr/colorPrimary"
                             android:textStyle="bold" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/scheduled_profiles_enable_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

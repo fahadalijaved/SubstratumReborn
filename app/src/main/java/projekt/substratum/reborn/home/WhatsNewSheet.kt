@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -42,9 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import projekt.substratum.BuildConfig
 import projekt.substratum.R
@@ -52,8 +51,8 @@ import projekt.substratum.Substratum
 import projekt.substratum.reborn.components.HeroShape
 import projekt.substratum.reborn.components.MorphingShape
 import projekt.substratum.reborn.components.ShapedIcon
+import projekt.substratum.reborn.components.design.overline
 import androidx.graphics.shapes.RoundedPolygon
-import java.util.Locale
 
 /** The "What's new" sheet: shown once per version, after the setup checklist. */
 object WhatsNew {
@@ -83,7 +82,10 @@ private class Highlight(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val highlights: List<Highlight> by lazy {
     listOf(
-        // The engine first: Reborn is a theme engine, AMOLED one of its built-in themes
+        // This version's own change, then 2.0's: the engine first (Reborn is a theme engine,
+        // AMOLED one of its built-in themes)
+        Highlight(R.drawable.ic_reborn_palette, R.string.reborn_new_design, R.string.reborn_new_design_text,
+            MaterialShapes.Flower),
         Highlight(R.drawable.ic_reborn_layers, R.string.reborn_new_engine, R.string.reborn_new_engine_text,
             MaterialShapes.Burst),
         Highlight(R.drawable.ic_reborn_amoled, R.string.reborn_new_builtin, R.string.reborn_new_builtin_text,
@@ -104,7 +106,7 @@ private val highlights: List<Highlight> by lazy {
 }
 
 /**
- * Reborn 2.0's highlights in a bottom sheet, with a way into AMOLED Studio.
+ * This version's highlights (and 2.0's) in a bottom sheet, with a way into AMOLED Studio.
  *
  * @param onDismiss The sheet is gone (closed by a button, a swipe or back)
  */
@@ -148,10 +150,8 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
                 Spacer(Modifier.width(18.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        stringResource(R.string.reborn_new_overline).uppercase(Locale.getDefault()),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.4.sp,
+                        stringResource(R.string.reborn_new_overline),
+                        style = MaterialTheme.typography.overline,
                         color = scheme.primary,
                     )
                     Text(
@@ -189,13 +189,16 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = { close() }) {
+                TextButton(onClick = { close() }, shapes = ButtonDefaults.shapes()) {
                     Text(stringResource(R.string.reborn_new_done))
                 }
-                Button(onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                    close(onOpenStudio)
-                }) {
+                Button(
+                    onClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                        close(onOpenStudio)
+                    },
+                    shapes = ButtonDefaults.shapes(),
+                ) {
                     Text(stringResource(R.string.reborn_new_open_studio))
                 }
             }
@@ -212,8 +215,7 @@ private fun HighlightRow(item: Highlight, container: Color, content: Color) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 stringResource(item.title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMediumEmphasized,
             )
             Text(
                 stringResource(item.text),

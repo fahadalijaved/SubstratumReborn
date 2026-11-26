@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -47,7 +46,8 @@ import static projekt.substratum.common.platform.ThemeManager.listTargetWithMult
 public class PriorityLoaderFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private ProgressBar materialProgressBar;
+    /** The M3E LoadingIndicator (not a ProgressBar): only shown and hidden */
+    private View materialProgressBar;
     private RelativeLayout emptyView;
     private List<PrioritiesInterface> prioritiesList;
     private List<String> appList;

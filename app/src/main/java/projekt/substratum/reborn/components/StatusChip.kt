@@ -27,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import projekt.substratum.R
@@ -78,7 +77,6 @@ fun StatusChip(text: String, state: ChipState, modifier: Modifier = Modifier) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Medium,
             color = colors.onContainer,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -107,7 +105,6 @@ fun TagChip(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Medium,
             color = content,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

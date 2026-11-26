@@ -10,6 +10,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import projekt.substratum.R
 import projekt.substratum.Substratum
 import projekt.substratum.common.References
+import projekt.substratum.reborn.components.design.RebornTypography
 
 /** A status role: the strong accent, what sits on it, and a quiet container for chips. */
 @Immutable
@@ -107,8 +109,8 @@ private fun extras(dark: Boolean, scheme: ColorScheme): RebornColors = if (dark)
 }
 
 /**
- * Material 3 Expressive with wallpaper (Monet) colours; in dark mode every surface is true black
- * and the containers step up from #0A0A0A.
+ * Material 3 Expressive with wallpaper (Monet) colours, Google Sans Flex type and the M3E shape
+ * scale; in dark mode every surface is true black and the containers step up from #0A0A0A.
  */
 @Composable
 fun RebornTheme(
@@ -129,6 +131,10 @@ fun RebornTheme(
         MaterialExpressiveTheme(
             colorScheme = scheme,
             motionScheme = MotionScheme.expressive(),
+            // M3E scale: 4/8/12/16, largeIncreased 20, extraLarge 28, extraLargeIncreased 32,
+            // extraExtraLarge 48. Use MaterialTheme.shapes.* (or ShapeDefaults.*) instead of literals.
+            shapes = Shapes(),
+            typography = RebornTypography,
             content = content,
         )
     }
