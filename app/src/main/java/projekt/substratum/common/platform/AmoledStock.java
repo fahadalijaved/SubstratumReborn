@@ -152,6 +152,24 @@ final class AmoledStock {
         }
     }
 
+    /**
+     * The overlay APKs an app shows (the phone's own static overlays and compiled themes), one
+     * path a line, without AMOLED's and without fabricated overlays; "" when there are none or
+     * the hidden list cannot be read. Part of the engine's cache key: a theme switched on or off
+     * for an app changes its stock colors.
+     */
+    static String overlayApks(ApplicationInfo info) {
+        if (info == null) return "";
+        readFields();
+        if (resourceDirs == null) return "";
+        try {
+            String[] apks = filter((String[]) resourceDirs.get(info), true);
+            return apks == null ? "" : String.join("\n", apks);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return "";
+        }
+    }
+
     private static synchronized void readFields() {
         if (fieldsRead) return;
         fieldsRead = true;

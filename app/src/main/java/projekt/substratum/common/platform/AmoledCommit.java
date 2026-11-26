@@ -13,8 +13,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import projekt.substratum.util.helpers.Root;
 
@@ -25,7 +27,8 @@ import projekt.substratum.util.helpers.Root;
  * each module list, cleans up apps that lose their colors, restarts module apps that are safe to
  * restart, and lists the AMOLED overlays at the end. Each step prints a marker:
  * {@code R|<overlay>|<rc>} (overlay), {@code M|<pkg>|<rc>} (module list), {@code C|<pkg>|<rc>}
- * (clean up) and {@code E|<pkg>|<rc>} (overlay enabled again), then a separator and the list.
+ * (clean up) and {@code E|<pkg>|<rc>} (overlay enabled again), plus {@code S|<pkg>|1} for an app
+ * a gentle run left running, then a separator and the list.
  */
 final class AmoledCommit {
 
@@ -83,6 +86,10 @@ final class AmoledCommit {
          */
         Map<String, Character> overlays = new HashMap<>();
         /**
+         * Apps a gentle run did not force-stop because they were running: "restart needed"
+         */
+        final Set<String> running = new HashSet<>();
+        /**
          * The script ran to the end
          */
         boolean complete;
@@ -98,8 +105,12 @@ final class AmoledCommit {
 
     /**
      * Run a batch (root). Blocking.
+     *
+     * @param gentle Nothing is force-stopped: an app to restart that is running prints
+     *               {@code S|<pkg>|1} instead ({@link Outcome#running}), one that is not running
+     *               loads its colors when it starts
      */
-    static Outcome run(Context context, List<Op> ops) {
+    static Outcome run(Context context, List<Op> ops, boolean gentle) {
         Outcome outcome = new Outcome();
         if (ops.isEmpty()) {
             outcome.complete = true;
@@ -148,19 +159,15 @@ final class AmoledCommit {
                                 .append(" 2>/dev/null; r=$?; echo \"M|").append(pkg)
                                 .append("|$r\"\n");
                         if (op.restart) {
-                            s.append("[ $r -eq 0 ] && { ")
-                                    .append(XposedBackend.forgetStartsCommand(pkg))
-                                    .append("; am force-stop ").append(pkg).append("; }\n");
+                            s.append("[ $r -eq 0 ] && { ").append(restart(pkg, gentle))
+                                    .append("; }\n");
                         }
                         break;
                     }
                     case CLEAN:
                         s.append(disable(name)).append("rm -f ").append(def).append(' ')
                                 .append(ids).append("; echo \"C|").append(pkg).append("|0\"\n");
-                        if (op.restart) {
-                            s.append(XposedBackend.forgetStartsCommand(pkg))
-                                    .append("; am force-stop ").append(pkg).append('\n');
-                        }
+                        if (op.restart) s.append(restart(pkg, gentle)).append('\n');
                         break;
                     case ENABLE:
                         s.append("cmd overlay enable --user 0 com.android.shell:").append(name)
@@ -193,6 +200,10 @@ final class AmoledCommit {
         for (String line : markers.split("\n")) {
             String[] parts = line.trim().split("\\|");
             if (parts.length != 3 || parts[0].length() != 1) continue;
+            if ("S".equals(parts[0])) {
+                outcome.running.add(parts[1]);
+                continue;
+            }
             try {
                 outcome.codes.put(parts[1], Integer.parseInt(parts[2].trim()));
             } catch (NumberFormatException ignored) {
@@ -204,6 +215,16 @@ final class AmoledCommit {
             outcome.overlays = SystemAmoled.parseOverlayStates(out.substring(list));
         }
         return outcome;
+    }
+
+    /**
+     * Restart an app so it loads its new module colors (only for apps safe to restart): a
+     * force-stop, or in a gentle run (a silent re-theme after updates) nothing but a marker when
+     * it is running, so the app in use is never closed and its playback never stopped.
+     */
+    private static String restart(String pkg, boolean gentle) {
+        if (gentle) return "pidof " + pkg + " >/dev/null 2>&1 && echo \"S|" + pkg + "|1\"";
+        return XposedBackend.forgetStartsCommand(pkg) + "; am force-stop " + pkg;
     }
 
     private static String disable(String name) {

@@ -69,10 +69,12 @@ public class SystemAmoledService extends Service {
     private static final long WAKE_LOCK_TIMEOUT = 30L * 60L * 1000L;
     /**
      * Doze disables wake locks: while jobs run, Substratum is on the temporary allowlist, for this
-     * long, renewed every {@link #ALLOWLIST_RENEW} while the queue runs
+     * long, renewed every {@link #ALLOWLIST_RENEW} while the queue runs. The system caps a
+     * temporary allowlist entry at max_temp_app_allowlist_duration_ms (5 minutes by default), so
+     * a longer request lapses after 5 minutes: the renewal comes well before that.
      */
-    private static final long ALLOWLIST_MS = 30L * 60L * 1000L;
-    private static final long ALLOWLIST_RENEW = 20L * 60L * 1000L;
+    private static final long ALLOWLIST_MS = 5L * 60L * 1000L;
+    private static final long ALLOWLIST_RENEW = 3L * 60L * 1000L;
     /**
      * Progress notifications at most this often (a warm apply reports hundreds of apps a second)
      */
@@ -92,7 +94,10 @@ public class SystemAmoledService extends Service {
         @Override
         public void run() {
             if (PENDING.get() == 0) return;
+            // The status root shell: it never waits behind the job
             new Thread(SystemAmoledService::allowWhileIdle, "AmoledAllowlist").start();
+            // Uptime: it only advances while the allowlist keeps the wake lock working, so
+            // each renewal lands before the entry lapses
             main.postDelayed(this, ALLOWLIST_RENEW);
         }
     };
@@ -322,8 +327,9 @@ public class SystemAmoledService extends Service {
         if (!state.enabled) return getString(R.string.system_amoled_saved_off);
         AmoledRules rules = rules(job.theme != null ? job.theme : state.rulesTheme);
         long start = android.os.SystemClock.elapsedRealtime();
+        // A silent re-theme after updates never closes the app in use (gentle)
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
-                progress(job, pkg, i, total), job.packages);
+                progress(job, pkg, i, total), job.packages, job.auto);
         long elapsed = android.os.SystemClock.elapsedRealtime() - start;
         Log.i(TAG, "applied to " + job.packages + ": " + done[1] + " colors");
         if (job.auto) {

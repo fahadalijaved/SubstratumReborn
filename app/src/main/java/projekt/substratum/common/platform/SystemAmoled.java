@@ -105,7 +105,21 @@ public final class SystemAmoled {
      */
     public static int[] applyAll(Context context, AmoledRules rules, Progress progress,
                                  List<String> only) {
-        if (AmoledEngine.isEnabled()) return AmoledEngine.applyAll(context, rules, progress, only);
+        return applyAll(context, rules, progress, only, false);
+    }
+
+    /**
+     * {@link #applyAll(Context, AmoledRules, Progress, List)}
+     *
+     * @param gentle Started on its own (updated apps): with the fast engine, a module app that is
+     *               running is not force-stopped but marked "restart needed" (the classic engine
+     *               restarts as always)
+     */
+    public static int[] applyAll(Context context, AmoledRules rules, Progress progress,
+                                 List<String> only, boolean gentle) {
+        if (AmoledEngine.isEnabled()) {
+            return AmoledEngine.applyAll(context, rules, progress, only, gentle);
+        }
         long start = android.os.SystemClock.elapsedRealtime();
         List<String> targets = only != null ? only : targets(context, rules);
         Map<String, Character> overlays = overlayStates();
@@ -346,7 +360,7 @@ public final class SystemAmoled {
         Log.w(TAG, pkg + ": previous overlay still visible, colors may be incomplete");
     }
 
-    private static Resources nightResources(Context context, String pkg)
+    static Resources nightResources(Context context, String pkg)
             throws PackageManager.NameNotFoundException {
         Context app = context.createPackageContext(pkg, Context.CONTEXT_IGNORE_SECURITY);
         Configuration night = new Configuration(app.getResources().getConfiguration());

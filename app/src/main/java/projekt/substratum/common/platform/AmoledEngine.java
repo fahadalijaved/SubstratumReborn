@@ -115,6 +115,43 @@ public final class AmoledEngine {
         return cached > 0 && cached * 2 >= processed;
     }
 
+    /**
+     * Forget what the cache holds for an app, so its next apply reads it again and registers it
+     * again (an explicit re-apply of one app). Blocking (a file).
+     */
+    public static void forget(Context context, String pkg) {
+        AmoledCache.delete(context, pkg);
+    }
+
+    // Cache keys
+
+    /**
+     * The part of every app's cache key that is the same for all apps: the rules, the wallpaper
+     * palette and the framework's overlay APKs (app colors that reference framework colors follow
+     * them). Blocking (the package manager).
+     */
+    static String rulesHash(Context context, AmoledRules rules) {
+        String framework = "";
+        try {
+            framework = AmoledStock.overlayApks(
+                    context.getPackageManager().getApplicationInfo(ANDROID, 0));
+        } catch (PackageManager.NameNotFoundException | RuntimeException ignored) {
+            // none to add
+        }
+        return AmoledCache.rulesHash(rules,
+                AmoledCache.systemPalette(context) + '|' + AmoledCache.sha1(framework));
+    }
+
+    /**
+     * An app's cache key: its version, {@link #rulesHash(Context, AmoledRules)} and the overlay
+     * APKs it shows (a compiled theme changes its stock colors).
+     */
+    static String cacheKey(PackageInfo info, String idsKey, String rulesHash) {
+        String overlays = AmoledStock.overlayApks(info.applicationInfo);
+        String key = AmoledCache.key(idsKey, rulesHash);
+        return overlays.isEmpty() ? key : key + '|' + AmoledCache.sha1(overlays);
+    }
+
     // Planning
 
     /**
@@ -191,7 +228,7 @@ public final class AmoledEngine {
      */
     public static List<String> changedPackages(Context context, String theme) {
         AmoledRules rules = AmoledRules.effective(context, theme, Substratum.getPreferences());
-        String rulesHash = AmoledCache.rulesHash(rules);
+        String rulesHash = rulesHash(context, rules);
         AmoledState state = AmoledState.read(context);
         Map<String, Character> overlays = SystemAmoled.overlayStates(true);
         PackageManager pm = context.getPackageManager();
@@ -213,7 +250,7 @@ public final class AmoledEngine {
             }
             AmoledCache.Entry entry = AmoledCache.read(context, pkg);
             if (entry == null || entry.hash == null ||
-                    !AmoledCache.key(AmoledCache.idsKey(info), rulesHash).equals(entry.key)) {
+                    !cacheKey(info, AmoledCache.idsKey(info), rulesHash).equals(entry.key)) {
                 changed.add(pkg);
                 continue;
             }
@@ -234,26 +271,68 @@ public final class AmoledEngine {
     // Applying
 
     /**
-     * {@link SystemAmoled#applyAll(Context, AmoledRules, SystemAmoled.Progress, List)} with this
-     * engine.
+     * {@link SystemAmoled#applyAll(Context, AmoledRules, SystemAmoled.Progress, List, boolean)}
+     * with this engine.
      *
+     * @param gentle A module app that is running is marked "restart needed" instead of being
+     *               force-stopped (a silent re-theme after updates must not close the app in use
+     *               or stop its playback)
      * @return {apps themed, colors changed, apps read from the cache, apps processed}
      */
     static int[] applyAll(Context context, AmoledRules rules, SystemAmoled.Progress progress,
-                          List<String> only) {
+                          List<String> only, boolean gentle) {
         long start = SystemClock.elapsedRealtime();
-        List<String> targets = new ArrayList<>(only != null ? only : targets(context, rules));
-        Run run = new Run(context, rules, progress, targets.size());
+        // Each app once: two reads of one app would commit it twice
+        List<String> targets = new ArrayList<>(new LinkedHashSet<>(
+                only != null ? only : targets(context, rules)));
+        Run run = new Run(context, rules, progress, targets.size(), gentle);
         // The framework first, the classic way and on its own: everything else reads it applied
         if (targets.remove(ANDROID)) {
             Prepared framework = run.prepare(ANDROID, true);
             run.progress(framework.pkg);
             run.commit(Collections.singletonList(framework));
+            // Registered again after its read switched it off: the apps are read against it
+            if (framework.kind == Kind.APPLY && !framework.upToDate &&
+                    framework.route == Route.OVERLAY && !targets.isEmpty()) {
+                awaitFramework(context, framework);
+            }
         }
         if (!targets.isEmpty()) run.parallel(targets);
         Log.i(TAG, summary(run.apps, run.colors, SystemClock.elapsedRealtime() - start,
                 run.cached, run.processed));
         return new int[]{run.apps, run.colors, run.cached, run.processed};
+    }
+
+    /**
+     * The framework's overlay reaches this process asynchronously (a configuration change): wait,
+     * up to 10 s, until a color it changes reads its AMOLED value here, so the apps read next see
+     * the framework as it is applied (the classic engine's one-by-one reads waited as long).
+     */
+    private static void awaitFramework(Context context, Prepared framework) {
+        AmoledChange probe = null;
+        for (AmoledChange change : framework.changes) {
+            if (AmoledChange.COLOR.equals(change.type) && change.stockDark != null &&
+                    change.stockDark != change.amoled &&
+                    !framework.rejected.contains("color/" + change.name)) {
+                probe = change;
+                break;
+            }
+        }
+        if (probe == null) return;
+        android.util.TypedValue value = new android.util.TypedValue();
+        for (int i = 0; i < 40; i++) {
+            try {
+                SystemAmoled.nightResources(context, ANDROID).getValue(probe.id, value, true);
+                if (value.data == probe.amoled) return;
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            } catch (Exception e) {
+                return;
+            }
+        }
+        Log.w(TAG, "the framework overlay is not visible here yet, reading the apps anyway");
     }
 
     private static File moduleFile(String pkg) {
@@ -342,21 +421,27 @@ public final class AmoledEngine {
         final SystemAmoled.Progress progress;
         final PackageManager pm;
         final int total;
+        /**
+         * No force-stops: running module apps are marked "restart needed"
+         */
+        final boolean gentle;
         int done;
         int apps;
         int colors;
         int cached;
         int processed;
 
-        Run(Context context, AmoledRules rules, SystemAmoled.Progress progress, int total) {
+        Run(Context context, AmoledRules rules, SystemAmoled.Progress progress, int total,
+            boolean gentle) {
             this.context = context;
             this.rules = rules;
-            this.rulesHash = AmoledCache.rulesHash(rules);
+            this.rulesHash = rulesHash(context, rules);
             // One overlay list for the whole run
             this.overlays = new ConcurrentHashMap<>(SystemAmoled.overlayStates());
             this.progress = progress;
             this.pm = context.getPackageManager();
             this.total = total;
+            this.gentle = gentle;
         }
 
         void progress(String pkg) {
@@ -436,7 +521,7 @@ public final class AmoledEngine {
             p.versionKey = XposedBackend.versionKey(info.applicationInfo.sourceDir,
                     androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(info));
             p.idsKey = AmoledCache.idsKey(info);
-            p.cacheKey = AmoledCache.key(p.idsKey, rulesHash);
+            p.cacheKey = cacheKey(info, p.idsKey, rulesHash);
             AmoledCache.Entry entry = AmoledCache.read(context, pkg);
             p.previous = entry;
             if (entry != null && p.cacheKey.equals(entry.key) && entry.changes != null) {
@@ -624,7 +709,7 @@ public final class AmoledEngine {
                         break;
                 }
             }
-            AmoledCommit.Outcome outcome = AmoledCommit.run(context, ops);
+            AmoledCommit.Outcome outcome = AmoledCommit.run(context, ops, gentle);
             if (!ops.isEmpty() && !outcome.complete) {
                 // The root shell went away mid-batch: nothing is known, everything keeps what it
                 // had (no fallbacks that would move apps to another route)
@@ -636,7 +721,17 @@ public final class AmoledEngine {
                 }
             }
             List<Consumer<AmoledState>> updates = new ArrayList<>();
-            for (Prepared p : batch) finish(p, outcome, since, updates);
+            for (Prepared p : batch) {
+                // One app's trouble never stops the rest of the batch (and the apps read after
+                // it, whose overlays a classic read may have switched off)
+                try {
+                    finish(p, outcome, since, updates);
+                } catch (RuntimeException e) {
+                    Log.w(TAG, "Could not finish " + p.pkg + ": " + e);
+                    String error = String.valueOf(e);
+                    updates.add(s -> s.app(p.pkg).error = error);
+                }
+            }
             if (!updates.isEmpty()) {
                 AmoledState.update(context, s -> {
                     for (Consumer<AmoledState> update : updates) update.accept(s);
@@ -661,7 +756,8 @@ public final class AmoledEngine {
                     return;
                 case NOT_COVERED: {
                     AmoledChange.delete(context, pkg);
-                    boolean restartNeeded = p.hadModule && !p.safe;
+                    boolean restartNeeded = p.hadModule &&
+                            (!p.safe || outcome.running.contains(pkg));
                     updates.add(s -> SystemAmoled.none(s.app(pkg)).restartNeeded = restartNeeded);
                     return;
                 }
@@ -687,6 +783,11 @@ public final class AmoledEngine {
                     p.count = 0;
                     p.hash = null;
                     p.restartNeeded = p.hadModule;
+                }
+                // A gentle run left it running (see AmoledCommit#run)
+                if (outcome.running.contains(pkg)) {
+                    Log.i(TAG, pkg + " is running: not restarted, restart needed");
+                    p.restartNeeded = true;
                 }
             }
             int count = p.count;
@@ -779,13 +880,20 @@ public final class AmoledEngine {
             if (handed > 0) {
                 p.count = handed;
                 p.hash = AmoledCache.sha1(Route.MODULE.name() + '\n' + p.content);
-                p.restartNeeded = !SystemAmoled.restartIfSafe(context, pkg);
+                p.restartNeeded = !restartIfSafe(pkg);
             } else {
                 p.route = Route.UNSUPPORTED;
                 p.count = 0;
                 p.hash = null;
-                p.restartNeeded = p.hadModule && !SystemAmoled.restartIfSafe(context, pkg);
+                p.restartNeeded = p.hadModule && !restartIfSafe(pkg);
             }
+        }
+
+        /**
+         * {@link SystemAmoled#restartIfSafe}, except in a gentle run (never force-stopped there)
+         */
+        private boolean restartIfSafe(String pkg) {
+            return !gentle && SystemAmoled.restartIfSafe(context, pkg);
         }
     }
 }

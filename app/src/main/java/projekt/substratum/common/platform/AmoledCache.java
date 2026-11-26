@@ -33,8 +33,10 @@ import java.util.Set;
  * its overlay (or module list) is already in place with the same contents.
  * <p>
  * An entry is valid for one {@link #key}: the app version (version code, last update time, APK
- * path), the system build, {@link #ENGINE_VERSION} and a hash of everything in the rules that
- * decides colors (rules, look, accent, the user's own rules: {@link AmoledRules#fingerprint}).
+ * path), the system build, {@link #ENGINE_VERSION}, a hash of everything in the rules that
+ * decides colors (rules, look, accent, the user's own rules: {@link AmoledRules#fingerprint}),
+ * of what every app's stock colors follow (the wallpaper palette, the framework's overlay APKs)
+ * and of the overlay APKs the app shows (a compiled theme).
  * The app's color resource ids are kept under the version part alone ({@link #idsKey}): a new look
  * reads the same ids again without walking the resource table.
  */
@@ -82,8 +84,47 @@ final class AmoledCache {
      * The rules part of the key.
      */
     static String rulesHash(AmoledRules rules) {
-        return sha1(ENGINE_VERSION + "\n" + rules.fingerprint());
+        return rulesHash(rules, "");
     }
+
+    /**
+     * The rules part of the key, with what else every app's stock colors follow (see
+     * {@link #systemPalette}), when known.
+     */
+    static String rulesHash(AmoledRules rules, String system) {
+        return sha1(ENGINE_VERSION + "\n" + rules.fingerprint() +
+                (system == null || system.isEmpty() ? "" : "\n" + system));
+    }
+
+    /**
+     * The wallpaper's tonal palettes as the framework shows them now (Android 12+), hashed: the
+     * stock colors of apps that follow the wallpaper change with it (and the module maps
+     * code-drawn surfaces by those stock values), so a new wallpaper reads them again. "" when
+     * there is no palette.
+     */
+    static String systemPalette(Context context) {
+        if (Build.VERSION.SDK_INT < 31 || context == null) return "";
+        android.content.res.Resources res = context.getResources();
+        StringBuilder s = new StringBuilder();
+        for (String palette : PALETTES) {
+            for (int tone : TONES) {
+                try {
+                    int id = res.getIdentifier("system_" + palette + "_" + tone, "color",
+                            "android");
+                    if (id != 0) s.append(Integer.toHexString(res.getColor(id, null)));
+                } catch (RuntimeException ignored) {
+                    // not on this version
+                }
+                s.append(',');
+            }
+        }
+        return sha1(s.toString());
+    }
+
+    private static final String[] PALETTES = {"accent1", "accent2", "accent3", "neutral1",
+            "neutral2"};
+    private static final int[] TONES = {0, 10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+            1000};
 
     /**
      * The installed version of an app, as far as its colors go.

@@ -672,7 +672,11 @@ object StudioState {
 
     fun reapply(row: AppRow) {
         withRoot {
-            queue(AmoledJobs.Kind.APPLY_ONE) { AmoledJobs.applyOne(app, row.pkg) }
+            // Asked for this app: read it again, even when the fast engine's cache holds it
+            queue(AmoledJobs.Kind.APPLY_ONE) {
+                AmoledEngine.forget(app, row.pkg)
+                AmoledJobs.applyOne(app, row.pkg)
+            }
             say(string(R.string.reborn_studio_reapplying_app, row.label))
         }
     }

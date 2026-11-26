@@ -37,6 +37,12 @@ public class AmoledCacheTest {
         same.keep("com.android.settings", "divider_color");
         assertEquals(AmoledCache.rulesHash(AmoledRules.defaults().withUserRules(user)),
                 AmoledCache.rulesHash(AmoledRules.defaults().withUserRules(same)));
+        // What every app's stock colors follow (wallpaper palette, framework overlays)
+        assertEquals(pure, AmoledCache.rulesHash(AmoledRules.defaults(), ""));
+        String palette = AmoledCache.rulesHash(AmoledRules.defaults(), "a|b");
+        assertNotEquals(pure, palette);
+        assertEquals(palette, AmoledCache.rulesHash(AmoledRules.defaults(), "a|b"));
+        assertNotEquals(palette, AmoledCache.rulesHash(AmoledRules.defaults(), "c|b"));
     }
 
     @Test
