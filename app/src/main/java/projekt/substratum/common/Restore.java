@@ -294,8 +294,10 @@ public class Restore {
                     }
                 } else {
                     // The panic button undoes AMOLED for every app too (queued: it runs in the
-                    // AMOLED service, keeps a snapshot of the definitions and restarts System UI)
-                    if (context != null && AmoledJobs.isApplied(context)) {
+                    // AMOLED service, keeps a snapshot of the definitions and restarts System UI).
+                    // Also behind a running job: an apply in progress is not marked applied yet
+                    if (context != null &&
+                            (AmoledJobs.isApplied(context) || AmoledJobs.isBusy())) {
                         AmoledJobs.remove(context);
                     }
                     ThemeManager.disableAllThemeOverlays(context);

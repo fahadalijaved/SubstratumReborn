@@ -194,7 +194,8 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
                 installing = null
             }
             when (result) {
-                null -> snackbar(context.getString(R.string.reborn_needs_root), null, null)
+                // Without root the system installer takes the bundled APK
+                null -> StarterTheme.install(context)
                 true -> {
                     Broadcasts.sendRefreshMessage(context.applicationContext)
                     refresh++
@@ -417,8 +418,14 @@ fun ThemesScreen(onOpenStudio: (String) -> Unit) {
             },
             onShortcut = {
                 sheetFor = null
+                // The label is the shortcut's id too: namesakes get their version, or their
+                // package when the versions match, so one does not replace the other's shortcut
                 val label = if (sheetTheme.namesake) {
-                    context.getString(R.string.reborn_theme_shortcut_label, sheetTheme.name, sheetTheme.version ?: sheetTheme.pkg)
+                    val others = snapshot?.themes.orEmpty().filter {
+                        it.pkg != sheetTheme.pkg && it.name.equals(sheetTheme.name, ignoreCase = true)
+                    }
+                    val suffix = sheetTheme.version?.takeIf { v -> others.none { it.version == v } } ?: sheetTheme.pkg
+                    context.getString(R.string.reborn_theme_shortcut_label, sheetTheme.name, suffix)
                 } else sheetTheme.name
                 scope.launch {
                     val done = runCatching { onIo { References.createLauncherIcon(context, sheetTheme.pkg, label) } }.isSuccess
@@ -629,7 +636,8 @@ private fun HeroArt(theme: ThemeItem, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier) {
         val width = constraints.maxWidth.coerceIn(1, 1440)
         val hero by produceState(cachedHero(theme, width), theme.pkg, theme.updated, width) {
-            if (value == null) value = withContext(heroLoader) { loadHero(context, theme, width) }
+            // Also after an update of the theme or another width: the old hero stays meanwhile
+            value = cachedHero(theme, width) ?: withContext(heroLoader) { loadHero(context, theme, width) }
         }
         Crossfade(targetState = hero, animationSpec = tween(320), label = "hero") { h ->
             when {

@@ -35,6 +35,7 @@ import java.io.File
 import java.io.FileReader
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.abs
 
 enum class AppliedSource { THEME_OVERLAY, AMOLED, QS }
 
@@ -233,7 +234,8 @@ object AppliedRepository {
 
         // Quick Settings: the rows act on their own, the rest only while AMOLED is applied
         val qs = QsOptions.read()
-        if (qs.aspect > 0f) {
+        // 0 is stock, and so is the stock aspect itself (an older Studio or a theme may write it)
+        if (qs.aspect > 0f && abs(qs.aspect - QsOptions.STOCK_ASPECT) > 0.005f) {
             val aspect = String.format(Locale.US, "%.2f", qs.aspect)
             entries += qsEntry(QsOption.ROWS, true,
                 context.getString(R.string.reborn_applied_qs_rows_title),
@@ -318,12 +320,16 @@ object AppliedRepository {
         false
     }
 
-    /** A theme's name (its Substratum_Name, else its app name), or the package if it is gone. */
-    private fun themeLabel(context: Context, pkg: String): String = themeLabels.getOrPut(pkg) {
-        try {
+    /**
+     * A theme's name (its Substratum_Name, else its app name), or the package if it is gone. Only
+     * found names are kept: a theme installed again later is named on the next read.
+     */
+    private fun themeLabel(context: Context, pkg: String): String {
+        themeLabels[pkg]?.let { return it }
+        return try {
             val info = context.packageManager.getApplicationInfo(pkg, PackageManager.GET_META_DATA)
-            info.metaData?.getString(References.metadataName)
-                ?: info.loadLabel(context.packageManager).toString()
+            (info.metaData?.getString(References.metadataName)
+                ?: info.loadLabel(context.packageManager).toString()).also { themeLabels[pkg] = it }
         } catch (e: Exception) {
             pkg
         }

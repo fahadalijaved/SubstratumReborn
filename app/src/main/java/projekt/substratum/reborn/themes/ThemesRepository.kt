@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.util.LruCache
 import androidx.compose.runtime.Immutable
@@ -131,6 +132,10 @@ fun loadHero(context: Context, theme: ThemeItem, width: Int): Hero {
     } catch (e: Exception) {
         Log.w(TAG, "hero of ${theme.pkg}: $e")
         null
+    } catch (e: OutOfMemoryError) {
+        // A huge hero image: the drawn artwork instead of a crash
+        Log.w(TAG, "hero of ${theme.pkg} is too large: $e")
+        null
     }
     var light = 0xFF3A3F58.toInt()
     var deep = 0xFF0B0C12.toInt()
@@ -171,12 +176,13 @@ fun installThemeFile(context: Context, uri: Uri): InstallResult {
         val name = info?.applicationInfo?.metaData?.getString(References.metadataName)
         if (info == null || name == null) return InstallResult.NotATheme
         if (!Root.checkRootAccess()) return InstallResult.NoRoot
-        var out = Root.runCommand("pm install -r '${apk.absolutePath}' 2>&1")
+        var out = pmInstall(apk.absolutePath)
         if (out?.contains("Success") != true) {
             Log.i(TAG, "install from the cache failed (${out?.trim()}), trying /data/local/tmp")
             val tmp = "/data/local/tmp/reborn_theme_import.apk"
-            out = Root.runCommand("cp -f '${apk.absolutePath}' $tmp && chmod 644 $tmp && " +
-                "pm install -r $tmp 2>&1; rm -f $tmp")
+            val copied = Root.runCommand("cp -f '${apk.absolutePath}' $tmp && chmod 644 $tmp && echo copied=ok")
+            out = if (copied?.contains("copied=ok") == true) pmInstall(tmp) else copied
+            Root.runCommand("rm -f $tmp")
         }
         return if (out?.contains("Success") == true) {
             InstallResult.Installed(info.packageName, name, AmoledRules.isRulesTheme(context, info.packageName))
@@ -189,6 +195,17 @@ fun installThemeFile(context: Context, uri: Uri): InstallResult {
     } finally {
         apk.delete()
     }
+}
+
+/**
+ * `pm install -r` as root. Android 14 and later refuse apps built for an old SDK, which many
+ * Substratum themes are: those are installed again with the block bypassed.
+ */
+private fun pmInstall(path: String): String? {
+    val out = Root.runCommand("pm install -r '$path' 2>&1")
+    if (Build.VERSION.SDK_INT < 34 || out?.contains("INSTALL_FAILED_DEPRECATED_SDK_VERSION") != true) return out
+    Log.i(TAG, "$path targets an old SDK, installing with the low target SDK block bypassed")
+    return Root.runCommand("pm install -r --bypass-low-target-sdk-block '$path' 2>&1")
 }
 
 /** The reason in pm's output ("Failure [INSTALL_FAILED_...]"), or its last line. */
