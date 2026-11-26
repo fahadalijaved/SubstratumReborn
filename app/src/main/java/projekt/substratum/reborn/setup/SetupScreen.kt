@@ -86,11 +86,11 @@ private data class Step(
     val required: Boolean = true,
 )
 
-/** Labels for the packages the module's scope needs. */
-private fun scopeLabel(pkg: String): Int = when (pkg) {
+/** Labels for the packages the module's scope needs, or null to show the package name. */
+private fun scopeLabel(pkg: String): Int? = when (pkg) {
     RebornStatus.SYSTEMUI -> R.string.reborn_scope_systemui
     RebornStatus.SETTINGS -> R.string.reborn_scope_settings
-    else -> R.string.reborn_scope_self
+    else -> null
 }
 
 private fun steps(context: android.content.Context, s: RebornStatus.Snapshot): List<Step> {
@@ -137,7 +137,9 @@ private fun steps(context: android.content.Context, s: RebornStatus.Snapshot): L
             context.resources.getQuantityString(R.plurals.reborn_value_scope_missing, missing.size, missing.size),
             StepFix.Lsposed,
             detail = context.getString(R.string.reborn_scope_missing_list,
-                missing.joinToString("\n") { "•  " + context.getString(scopeLabel(it)) + "  (" + it + ")" }),
+                missing.joinToString("\n") { pkg ->
+                    "•  " + (scopeLabel(pkg)?.let(context::getString) ?: pkg) + "  (" + pkg + ")"
+                }),
         )
     }
     val hooks = when {

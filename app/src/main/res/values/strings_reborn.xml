@@ -252,11 +252,10 @@
     <string name="reborn_step_module">LSPosed module enabled</string>
     <string name="reborn_step_module_text">Reborn\'s engine runs as an LSPosed module. Enable it in the LSPosed manager.</string>
     <string name="reborn_step_scope">Scope complete</string>
-    <string name="reborn_step_scope_text">The module needs System UI, Settings and Reborn itself in its LSPosed scope.</string>
+    <string name="reborn_step_scope_text">The module needs System UI and Settings in its LSPosed scope. Reborn itself does not need to be there.</string>
     <string name="reborn_scope_missing_list">Add to the scope:\n%1$s</string>
     <string name="reborn_scope_systemui">System UI</string>
     <string name="reborn_scope_settings">Settings</string>
-    <string name="reborn_scope_self">Reborn</string>
     <string name="reborn_step_hooks">SystemUI hooked</string>
     <string name="reborn_step_hooks_text">SystemUI reports the module after it starts. A restart of SystemUI loads it.</string>
     <string name="reborn_step_battery">Battery: unrestricted (recommended)</string>

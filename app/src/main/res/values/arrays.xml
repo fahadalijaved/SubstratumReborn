@@ -47,12 +47,12 @@
         <item>m267.6,59.5c-20.3,-12.1 -46.3,-5.4 -58.3,14.8l-157.3,264.3c-2.1,2.7 -4.1,5.6 -5.9,8.6 -1.7,2.9 -3.2,5.9 -4.5,9l-0.3,0.5c-3.6,6 -5.5,12.6 -5.9,19.1 -7,36.5 9.6,73.5 41.6,92.6 30.3,18 69.7,11.9 98.2,-8.7 7.7,-3.5 20.5,-23.3 20.5,-23.3L361.1,164.7c12.3,-20.1 5.5,-46.3 -14.8,-58.3zM142.8,358c19.4,11.5 25.8,36.6 14.2,56 -11.5,19.4 -36.6,25.8 -56,14.2 -19.4,-11.5 -25.8,-36.6 -14.2,-56 11.5,-19.4 36.6,-25.8 56,-14.2z</item>
         <item>m74.2,31.3c-23.6,0 -42.6,19 -42.6,42.6l0,307.6a88.4,88.4 60.1,0 0,-0.7 10.4,88.4 88.4,73.4 0,0 0.7,10l0,0.6c0,7 1.7,13.6 4.7,19.5a88.4,88.4 0,0 0,83.1 58.3,88.4 88.4,0 0,0 81.1,-53.2c4.9,-6.9 7.8,-15.4 7.8,-24.5L208.3,73.9c0,-23.6 -19,-42.6 -42.6,-42.6zM119.7,351.6a40.9,40.9 58.6,0 1,40.9 40.9,40.9 40.9,71.1 0,1 -40.9,40.9 40.9,40.9 67,0 1,-40.9 -40.9,40.9 40.9,55.6 0,1 40.9,-40.9z</item>
     </string-array>
-    <!-- LSPosed "Select recommended": Substratum itself plus every app themes commonly target
+    <!-- LSPosed "Select recommended": every app themes commonly target
          (One UI system apps and the targets of popular themes). Apps that are not installed
          are ignored. The framework is left out on purpose: framework overlays already apply
-         inside each scoped app. -->
+         inside each scoped app. Reborn itself is left out: it does not need its own scope
+         (RebornStatus.moduleEnabled), and the module never changes Reborn's own look. -->
     <string-array name="xposed_scope" translatable="false">
-        <item>projekt.substratum</item>
         <item>app.revanced.android.youtube</item>
         <item>ch.deletescape.lawnchair.ci</item>
         <item>ch.deletescape.lawnchair.plah</item>

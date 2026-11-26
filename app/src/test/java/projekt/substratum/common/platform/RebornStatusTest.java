@@ -84,10 +84,13 @@ public class RebornStatusTest {
         RebornStatus.LsposedInfo info = new RebornStatus.LsposedInfo();
         info.level = RebornStatus.Level.OK;
         info.scope.add("com.android.systemui");
-        info.scope.add("com.android.settings");
         assertEquals(1, info.missingScope().size());
-        assertEquals("projekt.substratum", info.missingScope().get(0));
+        assertEquals("com.android.settings", info.missingScope().get(0));
+        info.scope.add("com.android.settings");
+        // Reborn itself is not needed in its own scope: LSPosed hides modules in that list
+        assertTrue(info.missingScope().isEmpty());
         info.level = RebornStatus.Level.UNKNOWN;
+        info.scope.clear();
         assertTrue(info.missingScope().isEmpty());
     }
 }

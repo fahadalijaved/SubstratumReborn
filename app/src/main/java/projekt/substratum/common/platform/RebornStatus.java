@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Build;
+import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -48,10 +49,11 @@ public final class RebornStatus {
     public static final String SYSTEMUI = "com.android.systemui";
     public static final String SETTINGS = "com.android.settings";
     /**
-     * Packages the module must have in its LSPosed scope: System UI (quick settings, AMOLED),
-     * Settings, and Substratum itself (its engine check hooks itself)
+     * Packages the module must have in its LSPosed scope: System UI (quick settings, AMOLED) and
+     * Settings. Reborn itself is not needed: LSPosed hides modules in its scope list, and
+     * {@link #moduleEnabled} reads LSPosed's database instead of relying on the self-hook.
      */
-    public static final String[] REQUIRED_SCOPE = {SYSTEMUI, SETTINGS, MODULE};
+    public static final String[] REQUIRED_SCOPE = {SYSTEMUI, SETTINGS};
     public static final String LSPOSED_MANAGER = "org.lsposed.manager";
     public static final String[] ROOT_MANAGERS = {"me.weishu.kernelsu", "com.rifsxd.ksunext"};
     static final String LSPOSED_DIR = "/data/adb/lspd/config";
@@ -65,6 +67,11 @@ public final class RebornStatus {
      * share the copy folder, and one read's clean-up would delete the other's files
      */
     private static final Object LSPOSED_LOCK = new Object();
+    /**
+     * The module's enabled state from the last database read in this process, or null: the
+     * main thread answers from it instead of reading the database
+     */
+    private static volatile Boolean lastEnabled;
 
     private RebornStatus() {
     }
@@ -235,6 +242,25 @@ public final class RebornStatus {
         }
     }
 
+    /**
+     * Whether Reborn's LSPosed module is enabled, cheapest proof first: the self-hook (only when
+     * Reborn is in its own scope, which is optional), System UI's heartbeat since this boot, then
+     * LSPosed's database (root). Blocking; on the main thread the database is not read and the
+     * last answer is used.
+     */
+    public static boolean moduleEnabled(Context context) {
+        if (XposedBackend.isModuleActive()) return true;
+        Heartbeat hb = moduleHeartbeat(context);
+        if (hb.present && hb.sinceBoot) return true;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            Boolean last = lastEnabled;
+            return last != null && last;
+        }
+        if (!Root.checkRootAccess()) return false;
+        LsposedInfo info = lsposed(context, true);
+        return info.level != Level.UNKNOWN && info.enabled;
+    }
+
     private static LsposedInfo readLsposed(Context context) {
         LsposedInfo info = new LsposedInfo();
         File dir = new File(context.getCacheDir(), "lspd");
@@ -259,6 +285,7 @@ public final class RebornStatus {
                 while (c.moveToNext()) info.scope.add(c.getString(0));
             }
             info.level = info.enabled ? Level.OK : Level.ERROR;
+            lastEnabled = info.enabled;
         } catch (Throwable t) {
             // Another LSPosed build, a changed schema or a locked file: say so, never crash
             Log.w(TAG, "LSPosed database unreadable", t);

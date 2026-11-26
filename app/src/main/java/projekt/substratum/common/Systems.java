@@ -35,8 +35,8 @@ import java.util.Map;
 
 import projekt.substratum.BuildConfig;
 import projekt.substratum.Substratum;
+import projekt.substratum.common.platform.RebornStatus;
 import projekt.substratum.common.platform.SubstratumService;
-import projekt.substratum.common.platform.XposedBackend;
 import projekt.substratum.util.helpers.FileDownloader;
 import projekt.substratum.util.helpers.Root;
 import projekt.substratum.util.readers.ReadSupportedROMsFile;
@@ -139,8 +139,9 @@ public class Systems {
             }
 
             if (ATLEAST_PIE) {
-                if (XposedBackend.isModuleActive() && Root.checkRootAccess()) {
-                    // Substratum's LSPosed module is active: resources are replaced in-process
+                if (Root.checkRootAccess() && RebornStatus.moduleEnabled(context)) {
+                    // Reborn's LSPosed module is enabled (self-hook, System UI heartbeat or
+                    // LSPosed's database): resources are replaced in-process
                     prefs.edit().putInt(
                             "current_theme_mode",
                             OVERLAY_MANAGER_SERVICE_XPOSED

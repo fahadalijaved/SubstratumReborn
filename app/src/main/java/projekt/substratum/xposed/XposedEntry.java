@@ -93,7 +93,9 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
         String pkg = lpparam.packageName;
         if (SELF.equals(pkg)) {
-            // Lets Substratum see the module, also while the kill switch is on
+            // Optional: when Reborn is in its own scope it sees the module at once, also while
+            // the kill switch is on. Without it, RebornStatus.moduleEnabled reads System UI's
+            // heartbeat and LSPosed's database
             try {
                 XposedHelpers.findAndHookMethod(XposedBackend.class.getName(),
                         lpparam.classLoader, "isModuleActive",
