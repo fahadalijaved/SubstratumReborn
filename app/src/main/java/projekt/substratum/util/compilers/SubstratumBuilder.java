@@ -37,6 +37,8 @@ import projekt.substratum.common.Resources;
 import projekt.substratum.common.Systems;
 import projekt.substratum.common.commands.CompilerCommands;
 import projekt.substratum.common.commands.FileOperations;
+import projekt.substratum.common.platform.ClassicDarkMode;
+import projekt.substratum.common.platform.ClassicReport;
 import projekt.substratum.common.platform.ThemeManager;
 import projekt.substratum.common.platform.XposedBackend;
 
@@ -57,6 +59,15 @@ public class SubstratumBuilder {
 
     public boolean hasErroredOut = false;
     public boolean specialSnowflake = false;
+    /**
+     * Lines of the theme the self-healing compile left out ({@code file: name (missing
+     * reference)}), for the apply summary
+     */
+    public final List<String> pruned = new ArrayList<>();
+    /**
+     * What the engine did to the overlay's values (dark mode only, the module's share)
+     */
+    public ClassicReport report;
     public String noInstall = "";
     private boolean debug = false;
     private String errorLogs = "";
@@ -350,9 +361,19 @@ public class SubstratumBuilder {
         if (!hasErroredOut) {
             if (isDeviceOMS) {
                 if (Systems.isXposedBackend(context)) {
-                    // Applied in-process by the LSPosed module, nothing is installed
-                    if (!XposedBackend.install(context, signedOverlayAPKPath, overlayName,
-                            workArea)) {
+                    // Applied in-process by the LSPosed module, nothing is installed. Classic
+                    // themes apply in dark mode only unless the user (or the theme) says not to
+                    boolean darkOnly = ClassicDarkMode.isOn(context, themeParent);
+                    report = new ClassicReport();
+                    report.target = targetPackage;
+                    report.theme = themeParent;
+                    report.darkOnly = darkOnly;
+                    report.time = System.currentTimeMillis();
+                    report.pruned.addAll(pruned);
+                    if (XposedBackend.install(context, signedOverlayAPKPath, overlayName,
+                            workArea, darkOnly, report)) {
+                        report.save(context, overlayName);
+                    } else {
                         hasErroredOut = true;
                         dumpErrorLogs(overlayPackage,
                                 "Could not store \"" + overlayName + "\" for the LSPosed module.");
@@ -464,7 +485,6 @@ public class SubstratumBuilder {
         return errorLogs;
     }
 
-    private static final int MAX_COMPILE_REPAIRS = 5;
     private int compileRepairs = 0;
 
     private boolean runAAPTShellCommands(String commands,
@@ -510,8 +530,9 @@ public class SubstratumBuilder {
                 }
                 // Themes written for older One UI reference resources that newer releases
                 // removed. Drop just the broken entries or files and build the rest.
-                if (errored && compileRepairs < MAX_COMPILE_REPAIRS &&
-                        CompileRepair.repair(errorLines) > 0) {
+                // Up to MAX_ROUNDS rounds, as long as each one prunes something new
+                if (errored && compileRepairs < CompileRepair.MAX_ROUNDS &&
+                        repair(errorLines) > 0) {
                     compileRepairs++;
                     Substratum.log(References.SUBSTRATUM_BUILDER, "Dropped resources that this " +
                             "system no longer has, compiling again (pass " + compileRepairs + ")");
@@ -564,6 +585,13 @@ public class SubstratumBuilder {
             }
         }
         return false;
+    }
+
+    private int repair(List<String> errorLines) {
+        List<CompileRepair.Pruned> round = new ArrayList<>();
+        int repaired = CompileRepair.repair(errorLines, round);
+        for (CompileRepair.Pruned p : round) pruned.add(p.toString());
+        return repaired;
     }
 
     /**

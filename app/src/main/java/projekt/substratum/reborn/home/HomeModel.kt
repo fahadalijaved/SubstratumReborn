@@ -14,7 +14,7 @@ import projekt.substratum.reborn.components.ChipState
 
 enum class HeroLevel { Ok, Warn, Error }
 
-enum class Fix { RootManager, Lsposed, Engine, RestartSystemUi, ResetGuard, ResumeHooks }
+enum class Fix { RootManager, Lsposed, Engine, RestartSystemUi, ResetGuard, ResumeHooks, PausePart, PauseClassicSystemUi }
 
 data class Issue(
     val key: String,
@@ -22,6 +22,10 @@ data class Issue(
     val text: String,
     val fix: Fix,
     val warning: Boolean = false,
+    /** The fix button's words when they say more than "Fix" */
+    val fixLabel: String? = null,
+    /** PausePart and PauseClassicSystemUi: the overlays to hold */
+    val parts: List<String> = emptyList(),
 )
 
 data class StatusRow(
@@ -48,6 +52,39 @@ data class HomeStatus(
     /** An updated module waits for a System UI restart, or null */
     val hooksUpdate: HooksUpdate? = null,
 )
+
+/**
+ * System UI's guard tripped: the classic part its last crash points at is paused (the module
+ * recorded it); when none can be named, every classic part System UI loads; with none of those,
+ * the guard is just cleared.
+ */
+private fun guardIssue(context: Context, s: RebornStatus.Snapshot): Issue {
+    val part = s.crashPart
+    if (part != null) {
+        val who = listOfNotNull(s.crashTheme, part.label).joinToString(" · ")
+        return Issue(
+            "guard",
+            context.getString(R.string.reborn_issue_part_title, who),
+            context.getString(R.string.reborn_issue_part_text),
+            Fix.PausePart,
+            fixLabel = context.getString(R.string.reborn_fix_pause_part, part.label),
+            parts = listOf(part.overlay),
+        )
+    }
+    if (s.classicSystemUiParts.isNotEmpty()) {
+        return Issue(
+            "guard",
+            context.getString(R.string.reborn_issue_guard_title),
+            context.resources.getQuantityString(R.plurals.reborn_issue_guard_classic_text,
+                s.classicSystemUiParts.size, s.classicSystemUiParts.size),
+            Fix.PauseClassicSystemUi,
+            fixLabel = context.getString(R.string.reborn_fix_pause_classic),
+            parts = s.classicSystemUiParts,
+        )
+    }
+    return Issue("guard", context.getString(R.string.reborn_issue_guard_title),
+        context.getString(R.string.reborn_issue_guard_text), Fix.ResetGuard)
+}
 
 /** Plain words for what [RebornStatus] read. */
 fun describe(context: Context, s: RebornStatus.Snapshot): HomeStatus {
@@ -136,9 +173,7 @@ fun describe(context: Context, s: RebornStatus.Snapshot): HomeStatus {
     }
     if (root.granted && !s.hooksPaused && lsp.level != RebornStatus.Level.ERROR) {
         when {
-            hb.guardTripped() -> issues += Issue("guard",
-                context.getString(R.string.reborn_issue_guard_title),
-                context.getString(R.string.reborn_issue_guard_text), Fix.ResetGuard)
+            hb.guardTripped() -> issues += guardIssue(context, s)
             !hb.present || !hb.sinceBoot -> issues += Issue("heartbeat",
                 context.getString(R.string.reborn_issue_heartbeat_title),
                 context.getString(R.string.reborn_issue_heartbeat_text), Fix.RestartSystemUi)

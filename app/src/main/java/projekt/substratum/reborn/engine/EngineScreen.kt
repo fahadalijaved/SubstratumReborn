@@ -173,8 +173,8 @@ fun EngineScreen(onBack: () -> Unit, onOpenSetup: () -> Unit) {
                     FixBanner(
                         title = issue.title,
                         text = issue.text,
-                        fixLabel = stringResource(R.string.reborn_fix),
-                        onFix = { actions.fix(issue.fix) },
+                        fixLabel = issue.fixLabel ?: stringResource(R.string.reborn_fix),
+                        onFix = { actions.fix(issue) },
                         warning = issue.warning,
                         busy = busy != null,
                         // Only the banner whose fix is running shows the indicator

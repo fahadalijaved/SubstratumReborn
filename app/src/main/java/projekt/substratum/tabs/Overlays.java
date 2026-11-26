@@ -157,6 +157,9 @@ import projekt.substratum.util.views.SafeDialogs;
 public class Overlays extends Fragment {
 
     public static AsyncTask mainLoader = null;
+    // The Overlays tab on screen now: an apply that outlived a recreated screen reports there
+    private static java.lang.ref.WeakReference<Overlays> live =
+            new java.lang.ref.WeakReference<>(null);
     final OverlaysInstance currentInstance = OverlaysInstance.getInstance();
     // Theme instance based variables, used globally amongst all Overlays* files
     public String themeName;
@@ -935,9 +938,18 @@ public class Overlays extends Fragment {
         startActivityForResult(intent, 2486);
     }
 
+    /**
+     * The Overlays tab on screen now, or null
+     */
+    static Overlays live() {
+        Overlays overlays = live.get();
+        return overlays != null && overlays.isAdded() ? overlays : null;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        live = new java.lang.ref.WeakReference<>(this);
         if (Systems.checkOMS(context) && !toggleAll.isChecked()) {
             refreshList();
         } else {

@@ -97,6 +97,20 @@ public final class FabricatedValues {
      */
     public static int register(Context context, File workArea, String target, String name,
                                Set<String> leftToModule) {
+        return register(context, workArea, target, name, leftToModule, false, null);
+    }
+
+    /**
+     * @param leftToModule Also receives the values a shell overlay may not change in the target
+     *                     (see {@link ClassicRoute}) and the bools and integers this shell could
+     *                     not carry
+     * @param darkOnly     Night entries only, paired with the target's stock day values
+     *                     ({@link ClassicDarkMode})
+     * @param report       Receives what was moved or left out, may be null
+     */
+    public static int register(Context context, File workArea, String target, String name,
+                               Set<String> leftToModule, boolean darkOnly,
+                               ClassicReport report) {
         Map<String, String[]> items = new LinkedHashMap<>();
         Map<String, String> colors = new LinkedHashMap<>();
         Set<String> skipped = new HashSet<>();
@@ -105,8 +119,27 @@ public final class FabricatedValues {
         folders.sort((a, b) -> Boolean.compare(isVariant(a), isVariant(b)));
         for (File folder : folders) readValues(folder, items, colors, skipped);
         resolveColors(colors, systemColors(context), items, skipped);
-        if (leftToModule != null) leftToModule.addAll(skipped);
-        return registerItems(context, target, name, new ArrayList<>(items.values()));
+        Set<String> toModule = leftToModule != null ? leftToModule : new HashSet<>();
+        toModule.addAll(skipped);
+        List<String[]> list = new ArrayList<>(items.values());
+        if (darkOnly && !list.isEmpty()) {
+            ClassicDarkMode.Result dark = ClassicDarkMode.transform(list,
+                    ClassicDarkMode.stockReader(context, target));
+            list = dark.items;
+            if (report != null) report.darkDropped.addAll(dark.dropped);
+            Log.i(TAG, name + ": dark mode only, " + dark.stockDay + " stock light values, " +
+                    dark.dropped.size() + " light-only values left out");
+        }
+        // What a shell overlay may not change here goes to the module, before idmap2 refuses
+        // the whole overlay for it
+        Set<String> refused = ClassicRoute.refusedFor(context, target, list);
+        list = ClassicRoute.withoutRefused(list, refused, toModule);
+        Set<String> scalars = new HashSet<>();
+        List<String[]> registered = registerChecked(context, target, name, list, scalars);
+        toModule.addAll(scalars);
+        if (registered == null) return 0;
+        ClassicRoute.saveDefinition(context, name, registered);
+        return registered.size();
     }
 
     /**
@@ -266,13 +299,70 @@ public final class FabricatedValues {
     public static int registerItems(Context context, String target, String name,
                                     List<String[]> items) {
         if (items.isEmpty()) return 0;
+        return ok(fabricate(context, target, name, items), name) ? items.size() : 0;
+    }
 
+    /**
+     * {@link #registerItems}, retrying without bools and integers when the shell refuses the
+     * definition: in {@code --file} mode this shell may take each item's type from the target
+     * path ({@code bool/x}) and fail the whole definition on it ("Error: For input string:
+     * \"bool\""), so the overlay's colours would reach scoped apps only.
+     *
+     * @param movedToModule Receives the bools and integers left out on the retry; the module
+     *                      applies them by value
+     * @return The items registered, or null when nothing was
+     */
+    static List<String[]> registerChecked(Context context, String target, String name,
+                                          List<String[]> items, Set<String> movedToModule) {
+        if (items.isEmpty()) return null;
+        String out = fabricate(context, target, name, items);
+        if (ok(out, null)) {
+            Log.i(TAG, name + ": " + items.size() + " values registered");
+            return items;
+        }
+        Set<String> scalars = new HashSet<>();
+        List<String[]> colors = withoutScalars(items, scalars);
+        if (scalars.isEmpty()) {
+            ok(out, name);
+            return null;
+        }
+        Log.w(TAG, name + ": the shell refused the definition" +
+                (out != null && out.contains("For input string") ? " (bool/integer types)" : "") +
+                ", retrying without its " + scalars.size() + " bools and integers");
+        movedToModule.addAll(scalars);
+        if (colors.isEmpty()) return null;
+        if (!ok(fabricate(context, target, name, colors), name)) return null;
+        Log.i(TAG, name + ": " + colors.size() + " colours registered, " + scalars.size() +
+                " bools and integers left to the module");
+        return colors;
+    }
+
+    /**
+     * The items without bools and integers, whose {@code type/name} go to {@code scalars}. Pure.
+     */
+    static List<String[]> withoutScalars(List<String[]> items, Set<String> scalars) {
+        List<String[]> kept = new ArrayList<>(items.size());
+        for (String[] item : items) {
+            if (item[0].startsWith("bool/") || item[0].startsWith("integer/")) {
+                scalars.add(item[0]);
+            } else {
+                kept.add(item);
+            }
+        }
+        return kept;
+    }
+
+    /**
+     * Writes the definition and runs {@code cmd overlay fabricate}; the shell's output
+     */
+    private static String fabricate(Context context, String target, String name,
+                                    List<String[]> items) {
         File definition = new File(context.getCacheDir(), name + ".xml");
         try (FileWriter writer = new FileWriter(definition)) {
             writer.write(definitionXml(items));
         } catch (IOException e) {
             Log.e(TAG, "Could not write the definition", e);
-            return 0;
+            return null;
         }
         // system_server reads the definition itself, so it has to live in a system data folder
         prepareDir();
@@ -284,13 +374,20 @@ public final class FabricatedValues {
                 " --file '" + dest + "' 2>&1; echo rc=$?");
         //noinspection ResultOfMethodCallIgnored
         definition.delete();
-        if (out == null || !out.trim().endsWith("rc=0") || out.contains("Error")) {
+        return out;
+    }
+
+    /**
+     * @param name Logs a failure for this overlay when not null
+     */
+    private static boolean ok(String out, String name) {
+        boolean ok = out != null && out.trim().endsWith("rc=0") && !out.contains("Error");
+        if (!ok && name != null) {
             Log.e(TAG, "fabricate failed for " + name + ": " + out);
             // The folder may have gone: set it up again next time
             dirReady = false;
-            return 0;
         }
-        return items.size();
+        return ok;
     }
 
     /**

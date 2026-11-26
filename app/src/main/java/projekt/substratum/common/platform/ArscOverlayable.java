@@ -5,12 +5,17 @@
 
 package projekt.substratum.common.platform;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -42,6 +47,7 @@ public final class ArscOverlayable {
     public static final int POLICY_SYSTEM_PARTITION = 0x00000002;
     public static final int POLICY_SIGNATURE = 0x00000010;
     private static final String ARSC = "resources.arsc";
+    private static final String SHELL = "com.android.shell";
 
     private ArscOverlayable() {
     }
@@ -193,6 +199,40 @@ public final class ArscOverlayable {
         if (signatureMatch) return true;
         Integer policies = declarations.get(id);
         return policies != null && (policies & POLICY_PUBLIC) != 0;
+    }
+
+    /**
+     * The resources a shell-owned fabricated overlay may not change in an app: none when the app
+     * is signed like the shell or its table cannot be read (idmap2 decides then), else every one
+     * outside a PUBLIC overlayable. Used by the AMOLED engine and for classic overlays.
+     *
+     * @param nameToId The overlay's targets ({@code type/name}) and their ids in the app
+     * @return The refused targets, in the given order
+     */
+    public static Set<String> refusedByShell(PackageManager pm, ApplicationInfo info,
+                                             Map<String, Integer> nameToId) {
+        if (nameToId.isEmpty() || info == null) return new LinkedHashSet<>();
+        try {
+            if (pm.checkSignatures(SHELL, info.packageName) == PackageManager.SIGNATURE_MATCH) {
+                return new LinkedHashSet<>();
+            }
+        } catch (RuntimeException e) {
+            return new LinkedHashSet<>();
+        }
+        Map<Integer, Integer> declared = read(info.sourceDir, info.splitSourceDirs);
+        if (declared == null) return new LinkedHashSet<>();
+        return refusedBy(declared, nameToId);
+    }
+
+    /**
+     * The part of {@link #refusedByShell} after the signature check. Pure.
+     */
+    static Set<String> refusedBy(Map<Integer, Integer> declared, Map<String, Integer> nameToId) {
+        Set<String> refused = new LinkedHashSet<>();
+        for (Map.Entry<String, Integer> e : nameToId.entrySet()) {
+            if (!accepted(declared, e.getValue(), false)) refused.add(e.getKey());
+        }
+        return refused;
     }
 
     /**

@@ -156,6 +156,7 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
     val snackbar = rememberActionSnackbar()
     val scope = rememberCoroutineScope()
     var sheetFor by rememberSaveable { mutableStateOf<String?>(null) }
+    var turnOffFor by rememberSaveable { mutableStateOf<String?>(null) }
     var filter by rememberSaveable { mutableStateOf(ThemeFilter.All) }
     val installer = rememberThemeInstaller(
         onChanged = { refresh++ },
@@ -334,6 +335,17 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
         )
     }
 
+    val turnOffTheme = turnOffFor?.let { pkg -> snapshot?.installed?.firstOrNull { it.pkg == pkg } }
+    if (turnOffTheme != null) {
+        TurnOffDialog(
+            themeName = turnOffTheme.name,
+            onConfirm = {
+                turnOffFor = null
+                ClassicThemeActions.turnOffWithUndo(scope, context, turnOffTheme, snackbar) { refresh++ }
+            },
+            onDismiss = { turnOffFor = null },
+        )
+    }
     val sheetTheme = sheetFor?.let { pkg -> snapshot?.installed?.firstOrNull { it.pkg == pkg } }
     if (sheetTheme != null) {
         ThemeSheet(
@@ -367,6 +379,12 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                 sheetFor = null
                 ThemeActions.uninstall(context, sheetTheme.pkg)
             },
+            onTurnOff = if (sheetTheme.kind.classic && sheetTheme.inUse) {
+                {
+                    sheetFor = null
+                    turnOffFor = sheetTheme.pkg
+                }
+            } else null,
         )
     }
 }

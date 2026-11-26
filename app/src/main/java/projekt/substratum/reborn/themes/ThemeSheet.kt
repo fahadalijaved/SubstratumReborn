@@ -109,6 +109,8 @@ fun ThemeSheet(
     onAppInfo: () -> Unit,
     onShortcut: () -> Unit,
     onUninstall: () -> Unit,
+    /** Classic themes with parts on: switch them all off (null: not offered) */
+    onTurnOff: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val sheet = rememberBottomSheetState(
@@ -200,6 +202,22 @@ fun ThemeSheet(
             }
             SegmentedGroup(actions.size, Modifier.padding(horizontal = 16.dp)) { i, shapes ->
                 SheetAction(actions[i], shapes, rebornSegmentColors())
+            }
+            if (onTurnOff != null) {
+                // Every overlay and module part of the theme off, with Undo afterwards
+                Spacer(Modifier.height(12.dp))
+                SegmentedGroup(1, Modifier.padding(horizontal = 16.dp)) { _, shapes ->
+                    SheetAction(
+                        SheetActionRow(
+                            R.drawable.ic_reborn_off,
+                            stringResource(R.string.reborn_theme_turn_off),
+                            stringResource(R.string.reborn_theme_turn_off_sheet_text),
+                            onTurnOff,
+                        ),
+                        shapes,
+                        rebornSegmentColors(),
+                    )
+                }
             }
             if (theme.removable) {
                 // Destructive, so in its own group, in the error colours

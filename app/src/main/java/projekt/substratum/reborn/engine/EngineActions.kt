@@ -26,6 +26,7 @@ import projekt.substratum.reborn.components.ConfirmDialog
 import projekt.substratum.reborn.components.rememberSnackbar
 import projekt.substratum.reborn.home.Fix
 import projekt.substratum.reborn.home.HomeStatus
+import projekt.substratum.reborn.home.Issue
 
 /** The engine actions that ask first. */
 enum class Confirm { Pause, Resume, SoftReboot, RestartSystemUi }
@@ -87,9 +88,24 @@ class EngineActions internal constructor(
     fun actionKey(fix: Fix): String? = when (fix) {
         Fix.Engine -> "engine"
         Fix.RestartSystemUi -> "restart"
-        Fix.ResetGuard -> "guard"
+        Fix.ResetGuard, Fix.PausePart, Fix.PauseClassicSystemUi -> "guard"
         Fix.ResumeHooks -> "pause"
         Fix.RootManager, Fix.Lsposed -> null
+    }
+
+    /** An issue's fix, with what it names (the parts to pause). */
+    fun fix(issue: Issue) {
+        when (issue.fix) {
+            Fix.PausePart, Fix.PauseClassicSystemUi -> act("guard") {
+                val held = RebornActions.pauseClassicParts(issue.parts)
+                if (held > 0) {
+                    context.resources.getQuantityString(R.plurals.reborn_parts_paused, held, held)
+                } else {
+                    context.getString(R.string.reborn_guard_reset)
+                }
+            }
+            else -> fix(issue.fix)
+        }
     }
 
     fun fix(fix: Fix) {
@@ -105,7 +121,7 @@ class EngineActions internal constructor(
                 context.getString(R.string.reborn_engine_switched)
             }
             Fix.RestartSystemUi -> restartSystemUi()
-            Fix.ResetGuard -> act("guard") {
+            Fix.ResetGuard, Fix.PausePart, Fix.PauseClassicSystemUi -> act("guard") {
                 RebornActions.resetSystemUiGuard()
                 context.getString(R.string.reborn_guard_reset)
             }

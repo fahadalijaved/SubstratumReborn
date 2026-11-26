@@ -115,11 +115,44 @@ final class OverlaysManager {
     }
 
     /**
+     * An apply started earlier is still running (possibly from a screen that was recreated
+     * since): it is not started again, and its state is not reset under it.
+     */
+    private static boolean busy(Overlays overlays) {
+        if (!overlays.currentInstance.isBusy()) return false;
+        if (overlays.context != null) {
+            Toast.makeText(overlays.context, R.string.classic_apply_busy, Toast.LENGTH_SHORT)
+                    .show();
+        }
+        return true;
+    }
+
+    /**
+     * The application context of a fragment's screen: background work never depends on the
+     * screen, which applying a theme can recreate or close
+     */
+    private static Context appContext(Overlays overlays) {
+        Context context = overlays.context != null ? overlays.context : overlays.getContext();
+        return context != null ? context.getApplicationContext() : Substratum.getInstance();
+    }
+
+    /**
+     * What the self-healing compile left out of the overlay just built
+     */
+    private static void collectPruned(Overlays overlays, OverlaysItem checked) {
+        if (overlays.compileInstance == null) return;
+        for (String line : overlays.compileInstance.pruned) {
+            overlays.currentInstance.pruned.add(labelOf(checked) + " · " + line);
+        }
+    }
+
+    /**
      * Consolidated function to compile overlays
      *
      * @param overlays Overlays fragment
      */
     static void selectStateMode(Overlays overlays, String state) {
+        if (busy(overlays)) return;
         overlays.overlayItemList = overlays.overlaysAdapter.getOverlayList();
         overlays.currentInstance.reset();
 
@@ -132,6 +165,7 @@ final class OverlaysManager {
 
         if (!overlays.currentInstance.checkedOverlays.isEmpty()) {
             CompileTask compile = new CompileTask(overlays, state);
+            overlays.currentInstance.start();
             if ((overlays.baseSpinner.getSelectedItemPosition() != 0) &&
                     (overlays.baseSpinner.getVisibility() == View.VISIBLE)) {
                 compile.execute(overlays.baseSpinner.getSelectedItem().toString());
@@ -168,6 +202,7 @@ final class OverlaysManager {
             Log.e(TAG, "selectEnabledDisabled must use a valid mode, or else it will not work!");
             return;
         }
+        if (busy(overlays)) return;
         overlays.currentInstance.reset();
         overlays.overlayItemList = overlays.overlaysAdapter.getOverlayList();
         overlays.overlaysAdapter.refreshOverlayStateList(overlays.context);
@@ -195,6 +230,7 @@ final class OverlaysManager {
         if (overlays.context != null && Systems.checkOMS(overlays.context)) {
             if (!overlays.currentInstance.checkedOverlays.isEmpty()) {
                 CompileTask compile = new CompileTask(overlays, mode);
+                overlays.currentInstance.start();
                 if ((overlays.baseSpinner.getSelectedItemPosition() != 0) &&
                         (overlays.baseSpinner.getVisibility() == View.VISIBLE)) {
                     compile.execute(overlays.baseSpinner.getSelectedItem().toString());
@@ -303,6 +339,7 @@ final class OverlaysManager {
     }
 
     private static void endingEnableDisable(Overlays overlays, Context context) {
+        if (overlays != null) overlays.currentInstance.finish();
         if ((overlays != null) && (context != null)) {
             if (!overlays.currentInstance.finalRunner.isEmpty()) {
                 List<String> toAnalyze = new ArrayList<>();
@@ -331,10 +368,10 @@ final class OverlaysManager {
                         }
                     }, (long) References.REFRESH_WINDOW_DELAY);
                 }
-            } else {
+            } else if (overlays.isAdded() && overlays.getActivityView() != null) {
                 currentShownLunchBar = Lunchbar.make(
                         overlays.getActivityView(),
-                        overlays.context.getString(R.string.toast_disabled3),
+                        context.getString(R.string.toast_disabled3),
                         Snackbar.LENGTH_LONG);
                 currentShownLunchBar.show();
             }
@@ -348,6 +385,10 @@ final class OverlaysManager {
     static class CompileTask extends AsyncTask<String, Integer, String> {
 
         private final WeakReference<Overlays> ref;
+        // Held until the task is done: a screen recreated meanwhile must not stop the apply
+        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        private final Overlays keep;
+        private final Context app;
         private final String state;
         private String currentPackageName = "";
         private String currentDialogOverlay;
@@ -355,6 +396,8 @@ final class OverlaysManager {
         CompileTask(Overlays overlays, String state) {
             super();
             ref = new WeakReference<>(overlays);
+            keep = overlays;
+            app = appContext(overlays);
             this.state = state;
         }
 
@@ -365,10 +408,9 @@ final class OverlaysManager {
             Substratum.log(SUBSTRATUM_BUILDER,
                     "Substratum is proceeding with your actions and is now actively running...");
             if (overlays != null) {
-                Context context = overlays.getActivity();
+                Context context = overlays.getActivity() != null ? overlays.getActivity() : app;
                 if (state.equals(COMPILE_ENABLE) || state.equals(COMPILE_UPDATE)) {
                     // This is the time when the notification should be shown on the user's screen
-                    assert context != null;
                     overlays.builder = new NotificationCompat.Builder(context,
                             References.DEFAULT_NOTIFICATION_CHANNEL_ID);
                     int notificationPriority = NotificationManager.IMPORTANCE_HIGH;
@@ -447,7 +489,9 @@ final class OverlaysManager {
                 }
                 double progress = (overlays.currentInstance.currentAmount /
                         overlays.currentInstance.totalAmount) * 100.0;
-                overlays.dialogProgress.setProgress((int) progress, true);
+                if (overlays.dialogProgress != null) {
+                    overlays.dialogProgress.setProgress((int) progress, true);
+                }
             }
         }
 
@@ -455,7 +499,11 @@ final class OverlaysManager {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             Overlays overlays = ref.get();
-            if (overlays != null && overlays.context != null) {
+            if (overlays == null || overlays.context == null) {
+                if (overlays != null) overlays.currentInstance.finish();
+                return;
+            }
+            {
                 Context context = overlays.context;
                 if (COMPILE_ENABLE.equals(state)) {// It's compile and enable mode, we have to first sort out all the
                     // "pm install"'s from the final_commands
@@ -541,7 +589,7 @@ final class OverlaysManager {
                         }
                         for (int i = 0; i < overlays.currentInstance.lateInstall.size(); i++) {
                             ThemeManager.installOverlay(
-                                    overlays.getActivity(),
+                                    context,
                                     overlays.currentInstance.lateInstall.get(i));
                         }
                     } else {
@@ -552,12 +600,12 @@ final class OverlaysManager {
                                 new File(overlays.currentInstance.lateInstall.get(0)));
                         intent.setDataAndType(uri, PACKAGE_INSTALL_URI);
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        overlays.startActivityForResult(intent, 2486);
+                        if (overlays.isAdded()) overlays.startActivityForResult(intent, 2486);
                     }
                 } else if (!Systems.checkOMS(context) &&
                         (overlays.currentInstance.finalRunner.size() ==
                                 overlays.currentInstance.failCount)) {
-                    AlertDialog.Builder alertDialogBuilder =
+                    final AlertDialog.Builder alertDialogBuilder =
                             new MaterialAlertDialogBuilder(context);
                     alertDialogBuilder
                             .setTitle(context.getString(R.string.legacy_dialog_soft_reboot_title));
@@ -573,8 +621,7 @@ final class OverlaysManager {
                                         dialog.dismiss();
                                     });
                     alertDialogBuilder.setCancelable(false);
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
+                    if (SafeDialogs.canShow(context)) alertDialogBuilder.create().show();
                 }
                 overlays.overlaysAdapter.refreshOverlayStateList(overlays.context);
                 overlays.overlaysAdapter.notifyDataSetChanged();
@@ -588,7 +635,8 @@ final class OverlaysManager {
         protected String doInBackground(String... sUrl) {
             Overlays overlays = ref.get();
             if (overlays != null) {
-                Context context = overlays.getActivity();
+                // Never the screen: it can be recreated or closed while this runs
+                Context context = app;
                 String parsedVariant = sUrl[0].replaceAll("\\s+", "");
                 String unparsedVariant = sUrl[0];
                 if (overlays.mixAndMatchMode && !Systems.checkOMS(context)) {
@@ -960,6 +1008,7 @@ final class OverlaysManager {
                                             false
                                     );
                                 }
+                                collectPruned(overlays, checked);
                                 if (overlays.compileInstance.hasErroredOut) {
                                     if (!overlays.compileInstance.getErrorLogs()
                                             .contains("type3") ||
@@ -1030,6 +1079,7 @@ final class OverlaysManager {
                                         false
                                 );
 
+                                collectPruned(overlays, checked);
                                 if (overlays.compileInstance.hasErroredOut) {
                                     overlays.currentInstance.failCount += 1;
                                     if (overlays.currentInstance.errorLogs.length() == 0) {
@@ -1096,10 +1146,17 @@ final class OverlaysManager {
         final WeakReference<Overlays> ref;
         final WeakReference<Context> refContext;
 
+        // Held until the task is done (see CompileTask)
+        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        private final Overlays keep;
+        private final Context app;
+
         FinishEnableTask(Overlays overlays) {
             super();
             ref = new WeakReference<>(overlays);
             refContext = new WeakReference<>(overlays.context);
+            keep = overlays;
+            app = appContext(overlays);
         }
 
         @Override
@@ -1115,7 +1172,7 @@ final class OverlaysManager {
         protected Void doInBackground(Void... voids) {
             Overlays overlays = ref.get();
             if (overlays != null) {
-                Context context = overlays.getActivity();
+                Context context = app;
                 if (!overlays.currentInstance.finalRunner.isEmpty()) {
                     if (overlays.mixAndMatchMode) {
                         // Buffer the disableBeforeEnabling String
@@ -1153,10 +1210,17 @@ final class OverlaysManager {
         final WeakReference<Overlays> ref;
         final WeakReference<Context> refContext;
 
+        // Held until the task is done (see CompileTask)
+        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        private final Overlays keep;
+        private final Context app;
+
         FinishDisableTask(Overlays overlays) {
             super();
             ref = new WeakReference<>(overlays);
             refContext = new WeakReference<>(overlays.context);
+            keep = overlays;
+            app = appContext(overlays);
         }
 
         @Override
@@ -1176,7 +1240,7 @@ final class OverlaysManager {
         protected Void doInBackground(Void... voids) {
             Overlays overlays = ref.get();
             if (overlays != null) {
-                Context context = overlays.getActivity();
+                Context context = app;
                 if (!overlays.currentInstance.finalRunner.isEmpty()) {
                     ThemeManager.disableOverlay(context, overlays.currentInstance.finalCommand);
                 }
@@ -1199,10 +1263,17 @@ final class OverlaysManager {
         final WeakReference<Overlays> ref;
         final WeakReference<Context> refContext;
 
+        // Held until the task is done (see CompileTask)
+        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        private final Overlays keep;
+        private final Context app;
+
         FinishDisableEnableTask(Overlays overlays) {
             super();
             ref = new WeakReference<>(overlays);
             refContext = new WeakReference<>(overlays.context);
+            keep = overlays;
+            app = appContext(overlays);
         }
 
         @Override
@@ -1225,7 +1296,7 @@ final class OverlaysManager {
         protected Void doInBackground(Void... voids) {
             Overlays overlays = ref.get();
             if (overlays != null) {
-                Context context = overlays.getActivity();
+                Context context = app;
                 if (!overlays.currentInstance.finalRunner.isEmpty()) {
                     ArrayList<String> enableOverlays = new ArrayList<>();
                     ArrayList<String> disableOverlays = new ArrayList<>();
@@ -1275,11 +1346,17 @@ final class OverlaysManager {
         // Taken now: the failure path hands the log to the LogChar bar and clears it
         private final CharSequence errorLog;
         private ApplySummary summary;
+        // Held until the task is done (see CompileTask)
+        @SuppressWarnings({"unused", "FieldCanBeLocal"})
+        private final Overlays keep;
+        private final Context app;
 
         FinishUpdateTask(Overlays overlays, String state) {
             super();
             ref = new WeakReference<>(overlays);
             refContext = new WeakReference<>(overlays.context);
+            keep = overlays;
+            app = appContext(overlays);
             this.state = state;
             oneTap = isOneTapApply(overlays.context, state);
             errorLog = new StringBuilder(overlays.currentInstance.errorLogs);
@@ -1361,21 +1438,25 @@ final class OverlaysManager {
             super.onPostExecute(aVoid);
             Overlays overlays = ref.get();
             Context context = refContext.get();
+            if (overlays != null) overlays.currentInstance.finish();
             if ((context != null) && (overlays != null)) {
                 if (oneTap) overlays.progressBar.setVisibility(View.GONE);
-                if (oneTap && summary != null && overlays.isAdded()) {
+                // The screen this started from, or the one that replaced it meanwhile
+                Overlays shown = overlays.isAdded() ? overlays : Overlays.live();
+                if (oneTap && summary != null && shown != null && shown.isAdded()) {
                     // Rows show their new state; what was applied is unticked
-                    overlays.getCurrentOverlays();
-                    for (OverlaysItem item : overlays.overlaysAdapter.getOverlayList()) {
-                        item.updateEnabledOverlays(overlays.currentInstanceOverlays);
+                    shown.getCurrentOverlays();
+                    for (OverlaysItem item : shown.overlaysAdapter.getOverlayList()) {
+                        item.updateEnabledOverlays(shown.currentInstanceOverlays);
+                        if (shown != overlays) item.setSelected(false);
                     }
                     for (OverlaysItem item : overlays.currentInstance.checkedOverlays) {
                         item.setSelected(false);
                     }
-                    overlays.overlaysAdapter.refreshOverlayStateList(overlays.context);
-                    overlays.applySearch();
-                    summary.show(overlays.getActivity(), summary.errorLog.length() == 0 ? null :
-                            () -> overlays.showErrorLog(summary.errorLog));
+                    shown.overlaysAdapter.refreshOverlayStateList(shown.context);
+                    shown.applySearch();
+                    summary.show(shown.getActivity(), summary.errorLog.length() == 0 ? null :
+                            () -> shown.showErrorLog(summary.errorLog));
                 }
                 if (Systems.IS_OREO && overlays.isAdded() &&
                         SafeDialogs.canShow(overlays.getActivity()) &&
@@ -1420,7 +1501,8 @@ final class OverlaysManager {
             Overlays overlays = ref.get();
             if (overlays != null) {
                 Activity activity = overlays.getActivity();
-                Context context = refContext.get();
+                // Enabling never depends on the screen, which applying can recreate
+                Context context = app;
 
                 if (!overlays.currentInstance.hasFailed ||
                         (overlays.currentInstance.finalRunner.size() >
@@ -1461,11 +1543,12 @@ final class OverlaysManager {
                         summary = ApplySummary.apply(context,
                                 overlays.currentInstance.builtOverlays, disabledFirst,
                                 overlays.currentInstance.failedLabels, errorLog);
+                        summary.pruned.addAll(overlays.currentInstance.pruned);
                     } else if (state.equals(COMPILE_ENABLE)) {
                         ThemeManager.enableOverlay(context, overlays.currentInstance.finalCommand);
                     }
 
-                    if (activity != null) {
+                    if (activity != null && overlays.isAdded()) {
                         activity.runOnUiThread(() -> {
                             if (!overlays.currentInstance.finalRunner.isEmpty()) {
                                 overlays.progressBar.setVisibility(View.VISIBLE);
@@ -1511,6 +1594,7 @@ final class OverlaysManager {
                 if (oneTap && summary == null) {
                     summary = ApplySummary.failedOnly(
                             overlays.currentInstance.failedLabels, errorLog);
+                    summary.pruned.addAll(overlays.currentInstance.pruned);
                 }
 
                 if (!overlays.currentInstance.lateInstall.isEmpty() &&

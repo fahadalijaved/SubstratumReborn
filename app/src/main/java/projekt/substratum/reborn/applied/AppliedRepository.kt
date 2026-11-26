@@ -24,6 +24,7 @@ import projekt.substratum.common.platform.AmoledJobs
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.common.platform.AmoledRules
 import projekt.substratum.common.platform.AmoledState
+import projekt.substratum.common.platform.ClassicParts
 import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.common.platform.ThemeManager
 import projekt.substratum.common.platform.XposedBackend
@@ -68,6 +69,8 @@ data class AppliedEntry(
     val value: String? = null,
     /** THEME_OVERLAY: the theme package it came from, when known */
     val themePkg: String? = null,
+    /** THEME_OVERLAY: installed but held back after it crashed System UI */
+    val held: Boolean = false,
 ) {
     val key: String = when (source) {
         AppliedSource.THEME_OVERLAY -> "overlay:$overlay"
@@ -175,6 +178,9 @@ object AppliedRepository {
 
     private fun changed() = _version.update { it + 1 }
 
+    /** Something applied changed elsewhere (a classic part paused or a theme turned off). */
+    fun changedNow() = changed()
+
     /** System UI was restarted (Restart here, on Home or in the Studio). */
     fun restartDone() {
         _restartPending.value = false
@@ -194,16 +200,20 @@ object AppliedRepository {
             val target = XposedBackend.getTarget(name) ?: continue
             val meta = overlayMeta(context, name)
             val theme = meta.parent?.let { themeLabel(context, it) }
+            val held = XposedBackend.isHeld(name)
+            val detail = if (meta.fabricated) context.getString(R.string.reborn_applied_overlay_fabricated, name) else name
             entries += AppliedEntry(
                 source = AppliedSource.THEME_OVERLAY,
                 targetPkg = target,
                 title = context.getString(R.string.reborn_applied_overlay_title),
                 enabled = XposedBackend.isEnabled(name),
                 themeLabel = theme,
-                detail = if (meta.fabricated) context.getString(R.string.reborn_applied_overlay_fabricated, name) else name,
+                detail = if (held) context.getString(R.string.reborn_applied_detail_join,
+                    context.getString(R.string.reborn_part_paused), detail) else detail,
                 overlay = name,
                 fabricated = meta.fabricated,
                 themePkg = meta.parent,
+                held = held,
             )
         }
 
@@ -388,8 +398,13 @@ object AppliedRepository {
                 AppliedSource.THEME_OVERLAY -> {
                     val name = entry.overlay ?: return false
                     if (!Root.checkRootAccess()) return false
-                    if (on) ThemeManager.enableOverlay(app, arrayListOf(name))
-                    else ThemeManager.disableOverlay(app, arrayListOf(name))
+                    if (XposedBackend.isHeld(name)) {
+                        // A paused part: on loads it again, off forgets the pause
+                        ClassicParts.setEnabled(app, name, on)
+                    } else {
+                        if (on) ThemeManager.enableOverlay(app, arrayListOf(name))
+                        else ThemeManager.disableOverlay(app, arrayListOf(name))
+                    }
                     XposedBackend.isEnabled(name) == on
                 }
                 AppliedSource.AMOLED -> {

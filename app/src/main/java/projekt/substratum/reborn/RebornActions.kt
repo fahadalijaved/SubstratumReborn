@@ -12,6 +12,7 @@ import projekt.substratum.activities.launch.RebornSettingsActivity
 import projekt.substratum.common.Packages
 import projekt.substratum.common.commands.ElevatedCommands
 import projekt.substratum.common.platform.AmoledState
+import projekt.substratum.common.platform.ClassicParts
 import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.common.platform.XposedBackend
@@ -38,6 +39,19 @@ object RebornActions {
     }
 
     suspend fun resetSystemUiGuard() = onIo { RebornStatus.resetSystemUiGuard() }
+
+    /**
+     * Hold classic parts that crashed System UI (installed, not loaded), clear its guard and
+     * restart it. The rest of their themes stays on.
+     *
+     * @return How many parts are held now
+     */
+    suspend fun pauseClassicParts(overlays: List<String>): Int = onIo {
+        val held = ClassicParts.pauseForSystemUi(overlays).size
+        AppliedRepository.restartDone()
+        AppliedRepository.changedNow()
+        held
+    }
 
     suspend fun softReboot() = onIo { ElevatedCommands.softReboot() }
 

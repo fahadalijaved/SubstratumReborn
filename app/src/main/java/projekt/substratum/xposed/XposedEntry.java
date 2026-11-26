@@ -53,17 +53,28 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     private static final Map<Resources, List<ValueReplacement>> VALUES = new WeakHashMap<>();
     private static boolean configHooked;
 
+    /**
+     * What follows a themed Resources object's configuration: a plain value (re-read), a
+     * forwarded file of a dark mode only overlay (on at night, stock by day), or only the
+     * overlay's resources (kept in the same configuration, for the drawables they hand out)
+     */
     private static final class ValueReplacement {
+        static final int VALUE = 0, FILE = 1, FOLLOW = 2;
+        final int kind;
         final String target, type, name;
         final XModuleResources modRes;
         final int id;
+        final boolean darkOnly;
 
-        ValueReplacement(String target, String type, String name, XModuleResources modRes, int id) {
+        ValueReplacement(int kind, String target, String type, String name,
+                         XModuleResources modRes, int id, boolean darkOnly) {
+            this.kind = kind;
             this.target = target;
             this.type = type;
             this.name = name;
             this.modRes = modRes;
             this.id = id;
+            this.darkOnly = darkOnly;
         }
     }
     // Value types that can be forwarded; styles, attrs and ids cannot be replaced this way
@@ -82,7 +93,7 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
         if (!HookGuard.allowFramework()) return;
         for (String name : enabledOverlays()) {
             try {
-                apply(null, FRAMEWORK, name);
+                apply(null, FRAMEWORK, name, true);
             } catch (Throwable t) {
                 XposedBridge.log(TAG + "skipping " + name + " for framework: " + t);
             }
@@ -119,6 +130,11 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
             return;
         }
         if (!HookGuard.processAllowed()) return;
+        // Which theme part a crash of this app points at, for the app's "pause that part"
+        if (lpparam.isFirstApplication || mainSystemUi) {
+            SafeForward.installRecorder(lpparam.appInfo != null ?
+                    lpparam.appInfo.deviceProtectedDataDir : null);
+        }
         if (systemUi) {
             boolean battery = false, qs = false, layout = false;
             QsOptions options;
@@ -168,9 +184,13 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
         // Only in processes the guard lets through (framework values are replaced system-wide
         // and do not need it)
         if (!enabled.isEmpty()) hookConfigurationChanges();
+        if (!enabled.isEmpty()) SafeForward.installRecorder(null);
+        boolean framework = HookGuard.allowFramework();
         for (String name : enabled) {
             try {
-                apply(resparam.res, target, name);
+                // Framework overlays of dark mode only themes come here too, per app: a
+                // system-wide replacement cannot follow each app's night mode
+                apply(resparam.res, target, name, framework);
             } catch (Throwable t) {
                 // Never take the target app down because of one overlay
                 XposedBridge.log(TAG + "skipping " + name + " for " + target + ": " + t);
@@ -192,36 +212,58 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     }
 
     /**
-     * @param res Target resources, or null for the framework (system-wide replacement)
+     * @param res       Target resources, or null for the framework (system-wide replacement)
+     * @param framework Framework overlays of dark mode only themes may be applied to these
+     *                  resources (the kill switch for the framework is off)
      */
-    private static void apply(XResources res, String target, String name) throws IOException {
+    private static void apply(XResources res, String target, String name, boolean framework)
+            throws IOException {
         String base = XposedBackend.DIR + '/' + name;
         try (BufferedReader reader = new BufferedReader(
                 new FileReader(base + XposedBackend.INDEX))) {
             String targetLine = reader.readLine();
             String packageLine = reader.readLine();
-            if (targetLine == null || !targetLine.equals("target=" + target)) return;
+            if (targetLine == null || !targetLine.startsWith("target=")) return;
             if (packageLine == null || !packageLine.startsWith("package=")) return;
+            String overlayTarget = targetLine.substring(7);
+            boolean frameworkHere = res != null && framework && FRAMEWORK.equals(overlayTarget);
+            if (!overlayTarget.equals(target) && !frameworkHere) return;
             String overlayPackage = packageLine.substring(8);
+
+            // The header (key=value lines), then one type/name per resource
+            boolean fabricated = false;
+            boolean darkOnly = false;
+            String line = reader.readLine();
+            while (line != null && line.indexOf('=') > 0) {
+                if (line.equals(XposedBackend.FABRICATED)) fabricated = true;
+                if (line.equals(XposedBackend.DARK_ONLY)) darkOnly = true;
+                line = reader.readLine();
+            }
+            // A framework overlay: system-wide from the zygote, unless it is dark mode only,
+            // which goes to each app's resources instead
+            if (frameworkHere && !overlayTarget.equals(target) && !darkOnly) return;
+            if (res == null && darkOnly) return;
+            target = overlayTarget;
+            List<String> lines = new ArrayList<>();
+            for (; line != null; line = reader.readLine()) lines.add(line);
 
             XModuleResources modRes = XModuleResources.createInstance(
                     base + XposedBackend.APK, res);
             if (SYSTEMUI.equals(target)) BatteryHook.offer(modRes, overlayPackage);
+            boolean night = res == null || SafeForward.isNight(res);
+            if (res != null) {
+                remember(res, new ValueReplacement(ValueReplacement.FOLLOW, target, null, null,
+                        modRes, 0, darkOnly));
+            }
             int replaced = 0;
-            boolean fabricated = false;
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.equals(XposedBackend.FABRICATED)) {
-                    fabricated = true;
-                    continue;
-                }
+            for (String entry : lines) {
                 // Values the fabricated overlay could not carry stay with the module
-                boolean keep = line.startsWith(XposedBackend.KEEP);
-                if (keep) line = line.substring(XposedBackend.KEEP.length());
-                int slash = line.indexOf('/');
+                boolean keep = entry.startsWith(XposedBackend.KEEP);
+                if (keep) entry = entry.substring(XposedBackend.KEEP.length());
+                int slash = entry.indexOf('/');
                 if (slash <= 0) continue;
-                String type = line.substring(0, slash);
-                String resName = line.substring(slash + 1);
+                String type = entry.substring(0, slash);
+                String resName = entry.substring(slash + 1);
                 if (!FORWARDABLE.contains(type)) continue;
                 // The system Overlay Manager already applies these natively
                 if (fabricated && !keep && (type.equals("color") || type.equals("bool") ||
@@ -229,24 +271,57 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                 int id = modRes.getIdentifier(resName, type, overlayPackage);
                 if (id == 0) continue;
                 try {
+                    if (type.equals("drawable") || type.equals("mipmap")) {
+                        // Checked on its first lookup: one the app would cast to another class,
+                        // or that does not load, stays stock
+                        set(res, target, type, resName, new SafeForward.Drawables(modRes, id, name,
+                                overlayPackage, entry, darkOnly, res == null));
+                        SafeForward.forwarded(name, overlayPackage, entry, null, null);
+                        replaced++;
+                        continue;
+                    }
                     // Plain values are handed over as values: forwarding them leaks the
                     // overlay's resource ids into the target, which some code paths then look
                     // up in the target's own table and crash on
                     Object value = directValue(modRes, type, id);
-                    Object replacement = value != null ? value : modRes.fwd(id);
-                    if (res == null) {
-                        XResources.setSystemWideReplacement(target, type, resName, replacement);
-                    } else {
-                        res.setReplacement(target, type, resName, replacement);
-                        if (value != null) remember(res,
-                                new ValueReplacement(target, type, resName, modRes, id));
+                    if (value != null) {
+                        if (res == null) {
+                            XResources.setSystemWideReplacement(target, type, resName, value);
+                        } else {
+                            if (!darkOnly || night) res.setReplacement(target, type, resName, value);
+                            remember(res, new ValueReplacement(ValueReplacement.VALUE, target,
+                                    type, resName, modRes, id, darkOnly));
+                        }
+                        replaced++;
+                        continue;
                     }
+                    if (!SafeForward.fileOpens(modRes, name, type, resName, id)) continue;
+                    if (res == null) {
+                        XResources.setSystemWideReplacement(target, type, resName, modRes.fwd(id));
+                    } else {
+                        if (!darkOnly || night) {
+                            res.setReplacement(target, type, resName, modRes.fwd(id));
+                        }
+                        if (darkOnly) remember(res, new ValueReplacement(ValueReplacement.FILE,
+                                target, type, resName, modRes, id, true));
+                    }
+                    SafeForward.forwarded(name, overlayPackage, entry, null, null);
                     replaced++;
                 } catch (Throwable ignored) {
                     // The target does not have this resource
                 }
             }
-            XposedBridge.log(TAG + name + " replaced " + replaced + " resources in " + target);
+            XposedBridge.log(TAG + name + " replaced " + replaced + " resources in " + target +
+                    (frameworkHere ? " (this app)" : "") + (darkOnly ? ", dark mode only" : ""));
+        }
+    }
+
+    private static void set(XResources res, String target, String type, String name,
+                            Object replacement) {
+        if (res == null) {
+            XResources.setSystemWideReplacement(target, type, name, replacement);
+        } else {
+            res.setReplacement(target, type, name, replacement);
         }
     }
 
@@ -318,12 +393,29 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     private static void reapply(XResources res, List<ValueReplacement> list) {
         Configuration config = res.getConfiguration();
         DisplayMetrics metrics = res.getDisplayMetrics();
+        boolean night = SafeForward.isNight(res);
         Set<XModuleResources> updated = new HashSet<>();
         for (ValueReplacement r : list) {
             try {
                 if (updated.add(r.modRes)) r.modRes.updateConfiguration(config, metrics);
+                if (r.kind == ValueReplacement.FOLLOW) continue;
+                // Dark mode only: the theme at night, the app's own resource by day
+                boolean on = !r.darkOnly || night;
+                if (r.kind == ValueReplacement.FILE) {
+                    res.setReplacement(r.target, r.type, r.name,
+                            on ? r.modRes.fwd(r.id) : SafeForward.STOCK);
+                    continue;
+                }
+                if (!on) {
+                    res.setReplacement(r.target, r.type, r.name, SafeForward.STOCK);
+                    continue;
+                }
                 Object value = directValue(r.modRes, r.type, r.id);
-                if (value != null) res.setReplacement(r.target, r.type, r.name, value);
+                if (value != null) {
+                    res.setReplacement(r.target, r.type, r.name, value);
+                } else if (r.darkOnly) {
+                    res.setReplacement(r.target, r.type, r.name, SafeForward.STOCK);
+                }
             } catch (Throwable ignored) {
                 // Keep the previous value
             }

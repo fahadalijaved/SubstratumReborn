@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +52,27 @@ public class XposedBackend {
     public static final String INDEX = ".idx";
     public static final String ENABLED = ".enabled";
     public static final String FABRICATED = "fabricated=true";
+    /**
+     * Index header of an overlay whose theme applies in dark mode only (see
+     * {@link ClassicDarkMode}): the module applies what it carries only while the configuration
+     * is night
+     */
+    public static final String DARK_ONLY = "dark-only=true";
+    /**
+     * Marker of an overlay that is installed but held back: the module does not load it (a part
+     * that crashed System UI, paused from the app)
+     */
+    public static final String HELD = ".enabled.held";
+    /**
+     * In the target's device-protected data: what the module attributed the last crash to
+     * ({@code overlay=}, {@code names=}, {@code time=}, {@code error=}). Cleared with the guard.
+     */
+    public static final String CRASH_FILE = "reborn_guard_crash";
+    /**
+     * Prefix of the file in the target's device-protected data that lists what the module did not
+     * forward for an overlay ({@code reborn_skipped_<overlay>}: {@code type/name reason} lines)
+     */
+    public static final String SKIPPED_PREFIX = "reborn_skipped_";
     /**
      * Prefix of an index line whose color, bool or integer the fabricated overlay could not
      * carry (an unresolvable reference): the module keeps applying it.
@@ -175,6 +197,15 @@ public class XposedBackend {
      *                 leave everything to the LSPosed module.
      */
     public static boolean install(Context context, String apkPath, String name, String workArea) {
+        return install(context, apkPath, name, workArea, false, null);
+    }
+
+    /**
+     * @param darkOnly Apply the overlay in dark mode only ({@link ClassicDarkMode})
+     * @param report   Receives what was moved or left out, may be null
+     */
+    public static boolean install(Context context, String apkPath, String name, String workArea,
+                                  boolean darkOnly, ClassicReport report) {
         String target = archiveMetadata(context, apkPath, References.metadataOverlayTarget);
         if (target == null) {
             Log.e(TAG, "Overlay has no target metadata: " + apkPath);
@@ -193,39 +224,108 @@ public class XposedBackend {
         Set<String> leftToModule = new HashSet<>();
         boolean fabricated = workArea != null &&
                 FabricatedValues.register(context, new File(workArea), target, name,
-                        leftToModule) > 0;
-        File index = new File(context.getCacheDir(), name + INDEX);
-        try (FileWriter writer = new FileWriter(index)) {
-            writer.write("target=" + target + '\n');
-            writer.write("package=" + archive.packageName + '\n');
-            // Tells the module to leave colors, bools and integers to the fabricated overlay
-            if (fabricated) writer.write(FABRICATED + '\n');
+                        leftToModule, darkOnly, report) > 0;
+        if (!fabricated) ClassicRoute.forgetDefinition(context, name);
+        if (report != null && fabricated) {
             for (String resource : resources) {
-                writer.write((fabricated && leftToModule.contains(resource) ? KEEP : "") +
-                        resource + '\n');
+                if (leftToModule.contains(resource)) report.toModule.add(resource);
             }
+        }
+        String index = ClassicRoute.index(target, archive.packageName, fabricated, darkOnly,
+                resources, leftToModule);
+        String base = DIR + '/' + name;
+        if (!writeFiles(context, name, apkPath, index)) {
+            Log.e(TAG, "Could not store " + name);
+            return false;
+        }
+        return new File(base + APK).exists() && new File(base + INDEX).exists();
+    }
+
+    /**
+     * Copies the overlay (when {@code apkPath} is given) and its index next to the old files,
+     * then renames them over: an enabled overlay's APK is mapped by running processes (every
+     * scoped app for the framework, System UI, the target), and rewriting it in place would pull
+     * the pages from under them (SIGBUS). A rename leaves them on the old file until they
+     * restart.
+     */
+    private static boolean writeFiles(Context context, String name, String apkPath,
+                                      String index) {
+        File local = new File(context.getCacheDir(), name + INDEX);
+        try (FileWriter writer = new FileWriter(local)) {
+            writer.write(index);
         } catch (IOException e) {
             Log.e(TAG, "Could not write overlay index", e);
             return false;
         }
         String base = DIR + '/' + name;
-        // Copied next to the old files, then renamed over them: an enabled overlay's APK is
-        // mapped by running processes (every scoped app for the framework, System UI, the
-        // target), and rewriting it in place would pull the pages from under them (SIGBUS). A
-        // rename leaves them on the old file until they restart.
         String apkNew = base + APK + PART;
         String indexNew = base + INDEX + PART;
-        Root.runCommand("mkdir -p " + DIR + " && chmod 755 " + DIR +
-                " && cp -f '" + apkPath + "' '" + apkNew + "'" +
-                " && cp -f '" + index.getAbsolutePath() + "' '" + indexNew + "'" +
-                " && chmod 644 '" + apkNew + "' '" + indexNew + "'" +
-                " && mv -f '" + apkNew + "' '" + base + APK + "'" +
-                " && mv -f '" + indexNew + "' '" + base + INDEX + "'" +
-                " ; rm -f '" + apkNew + "' '" + indexNew + "'" +
-                " ; restorecon -R " + DIR);
+        StringBuilder command = new StringBuilder("mkdir -p " + DIR + " && chmod 755 " + DIR);
+        if (apkPath != null) {
+            command.append(" && cp -f '").append(apkPath).append("' '").append(apkNew)
+                    .append("' && chmod 644 '").append(apkNew).append('\'');
+        }
+        command.append(" && cp -f '").append(local.getAbsolutePath()).append("' '")
+                .append(indexNew).append("' && chmod 644 '").append(indexNew).append('\'');
+        if (apkPath != null) {
+            command.append(" && mv -f '").append(apkNew).append("' '").append(base).append(APK)
+                    .append('\'');
+        }
+        command.append(" && mv -f '").append(indexNew).append("' '").append(base).append(INDEX)
+                .append("' ; rm -f '").append(apkNew).append("' '").append(indexNew)
+                .append("' ; restorecon -R ").append(DIR);
+        Root.runCommand(command.toString());
         //noinspection ResultOfMethodCallIgnored
-        index.delete();
-        return new File(base + APK).exists() && new File(base + INDEX).exists();
+        local.delete();
+        return true;
+    }
+
+    /**
+     * The stored index of an overlay, or null
+     */
+    static String readIndex(String name) {
+        File file = new File(DIR, name + INDEX);
+        if (!file.isFile()) return null;
+        try {
+            return new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Replace a stored overlay's index (root), keeping its APK
+     */
+    static void writeIndex(Context context, String name, String content) {
+        writeFiles(context, name, null, content);
+    }
+
+    /**
+     * Whether the index of a stored overlay says it has a fabricated half
+     */
+    public static boolean isFabricated(String name) {
+        return headerHas(name, FABRICATED);
+    }
+
+    /**
+     * Whether a stored overlay applies in dark mode only
+     */
+    public static boolean isDarkOnly(String name) {
+        return headerHas(name, DARK_ONLY);
+    }
+
+    private static boolean headerHas(String name, String marker) {
+        try (BufferedReader reader = new BufferedReader(
+                new java.io.FileReader(DIR + '/' + name + INDEX))) {
+            String line;
+            while ((line = reader.readLine()) != null && line.contains("=")) {
+                if (line.trim().equals(marker)) return true;
+            }
+        } catch (IOException ignored) {
+            // not stored
+        }
+        return false;
     }
 
     public static void enable(Iterable<String> names) {
@@ -239,6 +339,19 @@ public class XposedBackend {
         if (command.length() == 0) return;
         Root.runCommand(command + "restorecon -R " + DIR);
         FabricatedValues.enable(names);
+    }
+
+    /**
+     * {@link #enable}, then the overlays idmap2 refused as a whole are registered again without
+     * what it rejected, which the module applies instead ({@link ClassicRoute#healRefused}).
+     */
+    public static void enable(Context context, Iterable<String> names) {
+        enable(names);
+        try {
+            ClassicRoute.healRefused(context, names);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Could not check the refused overlays", e);
+        }
     }
 
     public static void disable(Iterable<String> names) {
@@ -257,6 +370,7 @@ public class XposedBackend {
             String base = DIR + '/' + name;
             command.append("rm -f '").append(base).append(APK).append("' '").append(base)
                     .append(INDEX).append("' '").append(base).append(ENABLED).append("' '")
+                    .append(base).append(HELD).append("' '")
                     .append(FabricatedValues.DIR).append('/').append(name).append(".xml'; ");
         }
         if (command.length() != 0) Root.runCommand(command.toString());
@@ -278,6 +392,80 @@ public class XposedBackend {
 
     public static boolean isEnabled(String name) {
         return new File(DIR + '/' + name + ENABLED).exists();
+    }
+
+    /**
+     * Installed, but held back: the module does not load it until it is released
+     */
+    public static boolean isHeld(String name) {
+        return new File(DIR + '/' + name + HELD).exists();
+    }
+
+    /**
+     * Hold enabled overlays back (their marker becomes {@value #HELD}): the module stops loading
+     * them from the next start of their targets, the rest of the theme stays. Their fabricated
+     * halves are switched off as well. Root.
+     *
+     * @return The overlays that are held now
+     */
+    public static List<String> hold(Collection<String> names) {
+        List<String[]> moves = ClassicRoute.markerMoves(listing(), names, true);
+        List<String> held = new ArrayList<>();
+        StringBuilder command = new StringBuilder();
+        for (String[] move : moves) {
+            command.append("mv -f '").append(DIR).append('/').append(move[0]).append("' '")
+                    .append(DIR).append('/').append(move[1]).append("'; ");
+            held.add(move[0].substring(0, move[0].length() - ENABLED.length()));
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+        FabricatedValues.disable(held);
+        return held;
+    }
+
+    /**
+     * Release held overlays: the module loads them again from the next start of their targets.
+     * Root.
+     */
+    public static List<String> release(Context context, Collection<String> names) {
+        List<String[]> moves = ClassicRoute.markerMoves(listing(), names, false);
+        List<String> released = new ArrayList<>();
+        StringBuilder command = new StringBuilder();
+        for (String[] move : moves) {
+            command.append("mv -f '").append(DIR).append('/').append(move[0]).append("' '")
+                    .append(DIR).append('/').append(move[1]).append("'; ");
+            released.add(move[0].substring(0, move[0].length() - HELD.length()));
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+        if (!released.isEmpty()) enable(context, released);
+        return released;
+    }
+
+    /**
+     * Drop the held marker of overlays (they are then simply off). Root.
+     */
+    public static void forgetHeld(Collection<String> names) {
+        StringBuilder command = new StringBuilder();
+        for (String name : names) {
+            command.append("rm -f '").append(DIR).append('/').append(name).append(HELD)
+                    .append("'; ");
+        }
+        if (command.length() != 0) Root.runCommand(command.toString());
+    }
+
+    private static List<String> listing() {
+        String[] files = new File(DIR).list();
+        return files == null ? new ArrayList<>() : java.util.Arrays.asList(files);
+    }
+
+    /**
+     * What the module attributed the last crash of an app to, read from the app's
+     * device-protected data (root), or null
+     */
+    public static CrashAttribution.Recorded readCrash(String pkg) {
+        if (pkg == null || !pkg.matches("[A-Za-z0-9_.]+")) return null;
+        String out = Root.runCommand("cat /data/user_de/0/" + pkg + '/' + CRASH_FILE +
+                " 2>/dev/null");
+        return CrashAttribution.Recorded.parse(out);
     }
 
     public static boolean isStored(String name) {

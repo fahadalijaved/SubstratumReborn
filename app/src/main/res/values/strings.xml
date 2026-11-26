@@ -530,6 +530,17 @@
     </plurals>
     <string name="apply_summary_done">Done</string>
     <string name="apply_summary_log">Error log</string>
+    <plurals name="apply_summary_pruned">
+        <item quantity="one">Skipped %1$d line that %2$s no longer has</item>
+        <item quantity="other">Skipped %1$d lines that %2$s no longer has</item>
+    </plurals>
+    <string name="apply_summary_pruned_android">this Android version</string>
+    <string name="apply_summary_pruned_show">%1$s  ▾</string>
+    <string name="apply_summary_pruned_hide">%1$s  ▴</string>
+    <string name="classic_apply_busy">Still applying the last selection. It finishes on its own.</string>
+    <string name="classic_dark_only">Dark mode only (recommended for classic themes)</string>
+    <string name="classic_dark_only_on">Dark mode only: light mode stays stock. Applies the next time you apply its overlays.</string>
+    <string name="classic_dark_only_off">The overlays apply in light mode too, the next time you apply them.</string>
 
     <!-- Manager rows -->
     <string name="manager_chip_enabled">Enabled</string>

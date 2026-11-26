@@ -167,6 +167,19 @@ public final class RebornStatus {
         public String android;
         public boolean hooksPaused;
         public long readAt;
+        /**
+         * When System UI's guard tripped: the classic part its last crash points at, or null
+         */
+        public ClassicParts.Part crashPart;
+        /**
+         * When System UI's guard tripped: the classic parts System UI loads (to pause them all
+         * when the crash points at none)
+         */
+        public List<String> classicSystemUiParts = new ArrayList<>();
+        /**
+         * The theme name of {@link #crashPart}
+         */
+        public String crashTheme;
     }
 
     /**
@@ -181,8 +194,27 @@ public final class RebornStatus {
         s.oneUi = oneUi();
         s.android = "Android " + Build.VERSION.RELEASE;
         s.hooksPaused = hooksPaused();
+        if (s.root.granted && s.heartbeat.guardTripped()) readCrash(context, s);
         s.readAt = System.currentTimeMillis();
         return s;
+    }
+
+    /**
+     * Which classic part System UI's last crash points at (the module's record), and which
+     * classic parts it loads
+     */
+    private static void readCrash(Context context, Snapshot s) {
+        try {
+            s.classicSystemUiParts.addAll(ClassicParts.enabledFor(SYSTEMUI));
+            CrashAttribution.Recorded crash = XposedBackend.readCrash(SYSTEMUI);
+            if (crash == null || !XposedBackend.isStored(crash.overlay)) return;
+            ClassicParts.Part part = ClassicParts.part(context, crash.overlay);
+            if (part == null || part.held) return;
+            s.crashPart = part;
+            s.crashTheme = ClassicParts.themeName(context, part.themePkg);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "crash record unreadable", e);
+        }
     }
 
     // Root

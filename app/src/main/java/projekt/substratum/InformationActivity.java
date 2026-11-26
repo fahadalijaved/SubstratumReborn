@@ -86,6 +86,7 @@ import projekt.substratum.common.Packages;
 import projekt.substratum.common.References;
 import projekt.substratum.common.Resources;
 import projekt.substratum.common.Systems;
+import projekt.substratum.common.platform.ClassicDarkMode;
 import projekt.substratum.common.Theming;
 import projekt.substratum.common.commands.ElevatedCommands;
 import projekt.substratum.common.commands.FileOperations;
@@ -945,6 +946,12 @@ public class InformationActivity extends AppCompatActivity {
         if (Packages.isSystemApp(context, themePid)) {
             menu.findItem(R.id.uninstall).setVisible(false);
         }
+        // Classic themes on the LSPosed engine apply in dark mode only unless turned off here
+        MenuItem darkOnly = menu.findItem(R.id.dark_only);
+        if (darkOnly != null && Systems.isXposedBackend(context)) {
+            darkOnly.setVisible(true);
+            darkOnly.setChecked(ClassicDarkMode.isOn(context, themePid));
+        }
         return true;
     }
 
@@ -958,7 +965,14 @@ public class InformationActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         int switchId = id;
-        if (switchId == R.id.favorite) {
+        if (switchId == R.id.dark_only) {
+            boolean on = !item.isChecked();
+            ClassicDarkMode.set(themePid, on);
+            item.setChecked(on);
+            Toast.makeText(this, on ? R.string.classic_dark_only_on :
+                    R.string.classic_dark_only_off, Toast.LENGTH_LONG).show();
+            return true;
+        } else if (switchId == R.id.favorite) {
             if (prefs.contains("app_shortcut_theme")) {
                 if (prefs.getString("app_shortcut_theme", "").equals(themePid)) {
                     new AppShortcutClearer(this).execute("");

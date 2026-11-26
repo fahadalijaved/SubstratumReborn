@@ -178,7 +178,7 @@ public class ThemeManager {
                     XposedBackend.disable(others);
                 }
             }
-            XposedBackend.enable(overlays);
+            XposedBackend.enable(context, overlays);
             XposedBackend.restartTargets(context, overlays);
             return;
         }

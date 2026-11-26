@@ -406,28 +406,43 @@ public final class SystemAmoled {
      */
     static int register(Context context, String pkg, List<String[]> items, Set<String> rejected,
                         long since) {
-        String name = pkg + SUFFIX;
+        List<String[]> kept = registerChecked(context, pkg, pkg + SUFFIX, items, rejected, since);
+        return kept == null ? 0 : colorCount(kept);
+    }
+
+    /**
+     * Register and enable a fabricated overlay of {@code target} named {@code name}; while
+     * idmap2 refuses it as a whole (STATE_NO_IDMAP), drop the entries it names and register the
+     * rest again. Shared by AMOLED and classic overlays ({@link ClassicRoute}).
+     *
+     * @param rejected Filled with the targets ({@code type/name}) idmap2 refused
+     * @param since    Wall time before the first attempt: only idmap2d's log from then on is read
+     * @return The items in place, or null when none could be registered
+     */
+    static List<String[]> registerChecked(Context context, String target, String name,
+                                          List<String[]> items, Set<String> rejected,
+                                          long since) {
         List<String> names = new ArrayList<>();
         names.add(name);
         // idmap2d names at most 50 rejected resources per attempt, so keep trying while each
         // attempt reveals new ones. Only the log since this package started is read: scanning
         // the whole buffer took 20 s to many minutes per call on One UI 9.
         for (int attempt = 0; attempt < MAX_REGISTER_ATTEMPTS && !items.isEmpty(); attempt++) {
-            if (FabricatedValues.registerItems(context, pkg, name, items) == 0) return 0;
+            if (FabricatedValues.registerItems(context, target, name, items) == 0) return null;
             FabricatedValues.enable(names);
             String state = Root.runCommand(
                     "cmd overlay dump com.android.shell:" + name + " | grep mState");
-            if (state == null || !state.contains("NO_IDMAP")) return colorCount(items);
+            if (state == null || !state.contains("NO_IDMAP")) return items;
             int known = rejected.size();
             rejected.addAll(rejectedByIdmap(name, since));
-            if (rejected.size() == known) return 0;
+            if (rejected.size() == known) return null;
             List<String[]> kept = new ArrayList<>();
             for (String[] item : items) if (!rejected.contains(item[0])) kept.add(item);
-            if (kept.size() == items.size()) return 0;
-            Log.i(TAG, pkg + ": " + rejected.size() + " colors are not overlayable, retrying");
+            if (kept.size() == items.size()) return null;
+            Log.i(TAG, target + ": " + rejected.size() + " values are not overlayable, retrying");
             items = kept;
         }
-        return 0;
+        return null;
     }
 
     private static final int MAX_REGISTER_ATTEMPTS = 12;
@@ -441,7 +456,7 @@ public final class SystemAmoled {
         return targets.size();
     }
 
-    private static Set<String> rejectedByIdmap(String overlayName, long sinceMillis) {
+    static Set<String> rejectedByIdmap(String overlayName, long sinceMillis) {
         Set<String> rejected = new HashSet<>();
         String since = (sinceMillis / 1000) + "." + String.format(java.util.Locale.US, "%03d",
                 sinceMillis % 1000);
@@ -1205,7 +1220,7 @@ public final class SystemAmoled {
      * that ends in one without passing a theme attribute or a Monet role of the framework
      * ({@code android:color/system_*}, which follow the wallpaper).
      */
-    private static boolean fixed(Resources res, TypedValue raw) {
+    static boolean fixed(Resources res, TypedValue raw) {
         TypedValue value = new TypedValue();
         value.setTo(raw);
         for (int hop = 0; hop < 12; hop++) {

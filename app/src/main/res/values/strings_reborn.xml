@@ -840,4 +840,48 @@
     <string name="reborn_colour_indigo">indigo</string>
     <string name="reborn_colour_violet">violet</string>
     <string name="reborn_colour_pink">pink</string>
+
+    <!-- Classic themes: parts, dark mode only, turning a theme off, the part that crashed System UI -->
+    <string name="reborn_part_navbars">navigation bar icons</string>
+    <string name="reborn_part_statusbars">status bar icons</string>
+    <string name="reborn_part_tiles">Quick Settings tile icons</string>
+    <string name="reborn_part_headers">Quick Settings headers</string>
+    <string name="reborn_part_settings_icons">Settings icons</string>
+    <string name="reborn_part_systemui">System UI</string>
+    <string name="reborn_part_paused">Paused: crashed System UI</string>
+    <string name="reborn_part_on">On</string>
+    <string name="reborn_part_off">Off</string>
+    <string name="reborn_issue_part_title">%1$s crashed System UI</string>
+    <string name="reborn_issue_part_text">After repeated crashes the module left System UI stock. The fix holds this part of the theme back and restarts System UI; the rest of the theme stays on.</string>
+    <string name="reborn_fix_pause_part">Pause %1$s and restart System UI</string>
+    <plurals name="reborn_issue_guard_classic_text">
+        <item quantity="one">After repeated crashes the module left System UI stock. The crash names no theme part, so the fix pauses the classic part System UI loads and restarts it.</item>
+        <item quantity="other">After repeated crashes the module left System UI stock. The crash names no theme part, so the fix pauses the %1$d classic parts System UI loads and restarts it.</item>
+    </plurals>
+    <string name="reborn_fix_pause_classic">Pause classic System UI parts</string>
+    <plurals name="reborn_parts_paused">
+        <item quantity="one">Paused %1$d part. System UI is restarting.</item>
+        <item quantity="other">Paused %1$d parts. System UI is restarting.</item>
+    </plurals>
+    <string name="reborn_theme_classic_options">Classic overlays</string>
+    <string name="reborn_classic_dark_only_on">Light mode stays stock. Takes effect the next time you apply its overlays.</string>
+    <string name="reborn_classic_dark_only_off">Its overlays change light mode too, from the next time you apply them.</string>
+    <string name="reborn_theme_turn_off">Turn off this theme</string>
+    <string name="reborn_theme_turn_off_title">Turn off %1$s?</string>
+    <string name="reborn_theme_turn_off_text">This removes its overlays: every overlay and module part of the theme is switched off, and what needs it restarts once. They stay installed, so Undo or Applied turns them on again.</string>
+    <string name="reborn_theme_turn_off_sheet_text">Remove its overlays, with Undo</string>
+    <string name="reborn_theme_turn_off_none">%1$s has nothing on</string>
+    <string name="reborn_theme_turn_off_hint">Turning the theme off removes its overlays from every app at once.</string>
+    <plurals name="reborn_theme_turned_off">
+        <item quantity="one">%1$s is off (%2$d part)</item>
+        <item quantity="other">%1$s is off (%2$d parts)</item>
+    </plurals>
+    <plurals name="reborn_part_skipped">
+        <item quantity="one">%1$d item kept stock (it would crash the app)</item>
+        <item quantity="other">%1$d items kept stock (they would crash the app)</item>
+    </plurals>
+    <plurals name="reborn_theme_parts_on">
+        <item quantity="one">%1$d part on this phone</item>
+        <item quantity="other">%1$d parts on this phone</item>
+    </plurals>
 </resources>

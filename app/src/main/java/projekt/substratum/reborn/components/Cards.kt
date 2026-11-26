@@ -215,25 +215,9 @@ fun FixBanner(
         color = container,
         border = if (colors.dark) BorderStroke(1.dp, status.accent.copy(alpha = 0.35f)) else null,
     ) {
-        Row(
-            modifier = Modifier.padding(start = 18.dp, end = 14.dp, top = 16.dp, bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(if (warning) R.drawable.ic_reborn_warning else R.drawable.ic_reborn_error),
-                contentDescription = stringResource(if (warning) R.string.reborn_state_warn else R.string.reborn_state_error),
-                tint = status.accent,
-                modifier = Modifier.size(24.dp),
-            )
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(title, style = MaterialTheme.typography.titleSmallEmphasized, color = onContainer)
-                Text(text, style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.86f))
-            }
+        // A long fix ("Pause navigation bar icons and restart System UI") goes under the text
+        val stacked = fixLabel.length > 18
+        val fixButton: @Composable () -> Unit = {
             Button(
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.Confirm)
@@ -254,7 +238,31 @@ fun FixBanner(
                 },
                 contentPadding = PaddingValues(horizontal = 18.dp),
             ) {
-                BusyLabel(working) { Text(fixLabel, maxLines = 1) }
+                BusyLabel(working) { Text(fixLabel, maxLines = if (stacked) 2 else 1) }
+            }
+        }
+        Column(Modifier.padding(start = 18.dp, end = 14.dp, top = 16.dp, bottom = 16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(if (warning) R.drawable.ic_reborn_warning else R.drawable.ic_reborn_error),
+                    contentDescription = stringResource(if (warning) R.string.reborn_state_warn else R.string.reborn_state_error),
+                    tint = status.accent,
+                    modifier = Modifier.size(24.dp),
+                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(title, style = MaterialTheme.typography.titleSmallEmphasized, color = onContainer)
+                    Text(text, style = MaterialTheme.typography.bodyMedium, color = onContainer.copy(alpha = 0.86f))
+                }
+                if (!stacked) fixButton()
+            }
+            if (stacked) {
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { fixButton() }
             }
         }
     }

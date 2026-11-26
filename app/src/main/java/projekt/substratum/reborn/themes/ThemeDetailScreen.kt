@@ -264,6 +264,9 @@ private fun ThemePage(
 
     var replaceAsk by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var confirmRemove by rememberSaveable { mutableStateOf(false) }
+    var confirmTurnOff by rememberSaveable { mutableStateOf(false) }
+    var partsVersion by remember { mutableIntStateOf(0) }
+    val resumes = rememberResumeCount()
     val installer = rememberThemeInstaller(onChanged = onChanged, onOpen = { })
 
     // Job results and confirmations in the shell's snackbar (as the Studio shows them)
@@ -367,6 +370,21 @@ private fun ThemePage(
                 item(key = "options_header") { SectionLabel(stringResource(R.string.reborn_theme_options), Modifier.padding(horizontal = 20.dp)) }
                 item(key = "options") { EngineOptions(onOpenStudio, Modifier.padding(horizontal = 16.dp)) }
             }
+            if (theme.kind.classic) {
+                // Classic themes: dark mode only, and the parts on this phone with their switches
+                item(key = "classic_options_header") {
+                    SectionLabel(stringResource(R.string.reborn_theme_classic_options), Modifier.padding(horizontal = 20.dp))
+                }
+                item(key = "classic_options") { ClassicOptions(theme, Modifier.padding(horizontal = 16.dp)) }
+                item(key = "classic_parts") {
+                    ClassicPartsCard(
+                        theme = theme,
+                        refresh = partsVersion * 1000 + resumes,
+                        onTurnOff = { confirmTurnOff = true },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+            }
             if (theme.kind == ThemeKind.HYBRID) {
                 item(key = "classic") {
                     ClassicOverlaysCard(
@@ -436,6 +454,19 @@ private fun ThemePage(
                 apply(keep)
             },
             onDismiss = { replaceAsk = null },
+        )
+    }
+    if (confirmTurnOff) {
+        TurnOffDialog(
+            themeName = theme.name,
+            onConfirm = {
+                confirmTurnOff = false
+                ClassicThemeActions.turnOffWithUndo(scope, context, theme, snackbar) {
+                    partsVersion++
+                    onChanged()
+                }
+            },
+            onDismiss = { confirmTurnOff = false },
         )
     }
     if (confirmRemove) {

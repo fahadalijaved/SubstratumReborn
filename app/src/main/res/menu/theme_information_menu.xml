@@ -23,6 +23,11 @@
         android:visible="false"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/dark_only"
+        android:checkable="true"
+        android:title="@string/classic_dark_only"
+        android:visible="false" />
+    <item
         android:id="@+id/clean"
         android:title="@string/menu_clean" />
     <item

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import projekt.substratum.R;
 import projekt.substratum.Substratum;
+import projekt.substratum.common.platform.RebornStatus;
 import projekt.substratum.common.platform.SystemAmoled;
 import projekt.substratum.common.platform.XposedBackend;
 
@@ -43,6 +44,10 @@ final class ApplySummary {
     final Set<String> closed = new LinkedHashSet<>();
     final Set<String> restartNeeded = new LinkedHashSet<>();
     CharSequence errorLog = "";
+    // Lines of the theme the self-healing compile left out ("App · file: name (reference)")
+    final List<String> pruned = new ArrayList<>();
+    // "One UI 9.0" on One UI, else null (read on the background thread)
+    String system;
     // Overlays switched off for these ('Disable other themes', auto-disable)
     int turnedOff;
 
@@ -58,6 +63,7 @@ final class ApplySummary {
         ApplySummary summary = new ApplySummary();
         summary.failed.addAll(failed);
         summary.errorLog = errorLog == null ? "" : errorLog;
+        summary.system = RebornStatus.oneUi();
         List<String> stored = new ArrayList<>();
         for (String name : built) {
             if (XposedBackend.isStored(name)) {
@@ -87,7 +93,7 @@ final class ApplySummary {
         }
 
         // Also switches the fabricated values back on: a rebuild registers them again
-        XposedBackend.enable(stored);
+        XposedBackend.enable(context, stored);
         // One restart per target, covering rebuilt overlays that were on already (their targets
         // still hold the old build) and whatever was turned off for them
         List<String> restart = new ArrayList<>(stored);
@@ -123,6 +129,7 @@ final class ApplySummary {
      */
     static ApplySummary failedOnly(List<String> failed, CharSequence errorLog) {
         ApplySummary summary = new ApplySummary();
+        summary.system = RebornStatus.oneUi();
         summary.failed.addAll(failed);
         summary.errorLog = errorLog == null ? "" : errorLog;
         return summary;
@@ -153,6 +160,30 @@ final class ApplySummary {
             names.setText(activity.getString(R.string.apply_summary_failed_names,
                     String.join(", ", failed)));
             names.setVisibility(View.VISIBLE);
+        }
+
+        if (!pruned.isEmpty()) {
+            // "Skipped N lines that One UI 9 no longer has", the list behind a tap
+            TextView header = view.findViewById(R.id.summary_pruned);
+            TextView list = view.findViewById(R.id.summary_pruned_list);
+            String name = system != null ? system :
+                    activity.getString(R.string.apply_summary_pruned_android);
+            String title = activity.getResources().getQuantityString(
+                    R.plurals.apply_summary_pruned, pruned.size(), pruned.size(), name);
+            StringBuilder lines = new StringBuilder();
+            for (String line : pruned) {
+                if (lines.length() > 0) lines.append('\n');
+                lines.append("•  ").append(line);
+            }
+            list.setText(lines);
+            header.setText(activity.getString(R.string.apply_summary_pruned_show, title));
+            header.setVisibility(View.VISIBLE);
+            header.setOnClickListener(v -> {
+                boolean open = list.getVisibility() != View.VISIBLE;
+                list.setVisibility(open ? View.VISIBLE : View.GONE);
+                header.setText(activity.getString(open ? R.string.apply_summary_pruned_hide :
+                        R.string.apply_summary_pruned_show, title));
+            });
         }
 
         List<String> notes = new ArrayList<>();

@@ -423,6 +423,61 @@ kill $(pidof com.android.systemui)
 
 For another app, use its package in the path and force-stop it instead.
 
+When a crash comes from a classic theme's part, the module names it: it remembers what it
+forwarded in the process and, when the process dies, matches the stack trace against it (a
+`Drawable <overlay>:drawable/<name>` in the text, a class cast from a forwarded drawable's class,
+a forwarded name). The result is in `reborn_guard_crash` next to the guard files. The Engine
+screen then offers **Pause \<part\> and restart System UI**: the part is held, the guard is reset
+and System UI restarts without it, while the rest of the theme stays on. When the crash names no
+part, **Pause classic System UI parts** holds every classic part System UI loads. A held part
+keeps its files; its marker is renamed from `<overlay>.enabled` to `<overlay>.enabled.held`, which
+the module never loads. By hand:
+
+```
+cd /data/resource-cache/substratum
+mv <overlay>.enabled <overlay>.enabled.held
+rm -f /data/user_de/0/com.android.systemui/reborn_guard_*
+kill $(pidof com.android.systemui)
+```
+
+The theme's page lists its parts with a switch each (a held one says "Paused: crashed System UI";
+switching it on loads it again), and **Turn off this theme** switches all of them off at once,
+with Undo.
+
+### Classic themes
+
+Classic Substratum themes compile on the phone and apply through the same engine. On One UI 9
+(tested on a Galaxy A36, Android 17; AOSP-based ROMs are a target that has not been tested yet):
+
+- **Dark mode only** is on by default for classic themes ("Dark mode only (recommended for
+  classic themes)" on the theme's page and in Classic's theme menu). Classic themes were made for
+  phones that are always dark, so their plain `values/` colours used to apply in light mode too
+  (white heads-up notification text on white). With it on, every value the engine writes for
+  the theme uses the night configuration, and the day configuration carries the app's own stock
+  value where that is fixed; values that follow the wallpaper get no day entry. A value made for
+  light mode only (`values-notnight`) is left out and reported, never written for both modes.
+  What the module applies for such a theme (values and files) applies only while the
+  configuration is night. A theme that is made for light mode as well can say so with the
+  manifest meta-data `Reborn_LightMode` = `true`; the setting then starts off.
+- **Self-healing compile.** When aapt fails because a line references something this system no
+  longer has, only that line goes: a style's `<item>`, a value that is the missing reference, a
+  style's missing parent (then the style), or a layout or drawable attribute (the file, when it
+  cannot do without it). The overlay compiles again, up to 8 rounds, stopping when a round prunes
+  nothing new. The apply summary shows "Skipped N lines that One UI 9.0 no longer has" with the
+  list; `files/classic/report/<overlay>.json` keeps it.
+- **Refused overlays go through the module.** idmap2 refuses a shell-owned fabricated overlay as a
+  whole when one entry is outside a PUBLIC `<overlayable>` of an app not signed like the shell
+  (`---` in `cmd overlay list`). The engine predicts those entries from the app's resource table
+  and leaves them to the module (`keep:` lines in the index); one refused anyway is registered
+  again without what idmap2 named, and that is learned for the app's version.
+- **Bools and integers**: when the shell refuses a definition with them ("For input string"),
+  it is registered again without them and the module applies them by value.
+- **Safe forwarding.** The module checks each forwarded drawable on its first lookup: one that does
+  not load, or whose class differs from an app class the app casts to (One UI's
+  `SeslRecoilDrawable` notification backgrounds), stays stock. Layouts and colour state lists are
+  parsed before they are forwarded. What stays stock is listed in
+  `/data/user_de/0/<app>/reborn_skipped_<overlay>`.
+
 ### AMOLED overlays
 
 AMOLED for every app also registers fabricated overlays. They are not hooks, so the kill switch

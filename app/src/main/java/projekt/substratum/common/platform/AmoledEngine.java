@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +71,6 @@ public final class AmoledEngine {
     public static final String ENGINE_V2 = "v2";
     static final int THREADS = 4;
     static final int BATCH = 16;
-    private static final String SHELL = "com.android.shell";
     private static final String ANDROID = "android";
     private static final String SYSTEMUI = "com.android.systemui";
     /**
@@ -594,26 +594,10 @@ public final class AmoledEngine {
          * read (idmap2 decides then).
          */
         private Set<String> predict(String pkg, PackageInfo info, List<AmoledChange> changes) {
-            Set<String> rejected = new LinkedHashSet<>();
-            if (changes.isEmpty()) return rejected;
-            try {
-                if (pm.checkSignatures(SHELL, pkg) == PackageManager.SIGNATURE_MATCH) {
-                    return rejected;
-                }
-            } catch (RuntimeException e) {
-                return rejected;
-            }
-            Map<Integer, Integer> declared = ArscOverlayable.read(
-                    info.applicationInfo.sourceDir, info.applicationInfo.splitSourceDirs);
-            if (declared == null) {
-                Log.w(TAG, pkg + ": resource table unreadable, idmap2 decides");
-                return rejected;
-            }
-            for (AmoledChange change : changes) {
-                if (!ArscOverlayable.accepted(declared, change.id, false)) {
-                    rejected.add("color/" + change.name);
-                }
-            }
+            Map<String, Integer> nameToId = new LinkedHashMap<>();
+            for (AmoledChange change : changes) nameToId.put("color/" + change.name, change.id);
+            Set<String> rejected = ArscOverlayable.refusedByShell(pm, info.applicationInfo,
+                    nameToId);
             if (!rejected.isEmpty()) {
                 Log.i(TAG, pkg + ": " + rejected.size() + " of " + changes.size() +
                         " colours are not overlayable by a shell overlay");
