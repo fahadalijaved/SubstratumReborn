@@ -169,13 +169,17 @@ public class AmoledSettingsActivity extends AppCompatActivity {
     };
 
     /**
-     * AMOLED for every app: AMOLED Studio (the Reborn shell's AMOLED tab), applying with the rules
-     * of {@code themePackage} (null keeps the Studio's choice).
+     * A Reborn engine theme in Reborn: with {@code themePackage}, its page in Themes (a rules
+     * theme tapped in Classic); without, the Studio of the engine theme in use.
      */
     public static void launch(Context context, String themePackage, CharSequence themeName) {
         Intent intent = new Intent(context, projekt.substratum.reborn.RebornActivity.class)
                 .putExtra(projekt.substratum.reborn.RebornActivity.EXTRA_TAB, "amoled")
                 .putExtra(projekt.substratum.reborn.RebornActivity.EXTRA_THEME, themePackage);
+        if (themePackage != null) {
+            intent.putExtra(projekt.substratum.reborn.RebornActivity.EXTRA_OPEN,
+                    projekt.substratum.reborn.nav.RebornLinks.OPEN_DETAIL);
+        }
         if (!(context instanceof android.app.Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }

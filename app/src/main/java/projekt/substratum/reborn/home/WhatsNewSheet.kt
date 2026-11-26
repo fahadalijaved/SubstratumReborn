@@ -54,21 +54,27 @@ import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.design.overline
 import androidx.graphics.shapes.RoundedPolygon
 
-/** The "What's new" sheet: shown once per version, after the setup checklist. */
+/**
+ * The "What's new" sheet: shown once per [RELEASE], after the setup checklist. A build that only
+ * bumps the version code does not show it again; a release with news raises [RELEASE].
+ */
 object WhatsNew {
 
-    /** The version code the sheet was last shown for */
+    /** The release whose news the sheet shows ("Themes first") */
+    const val RELEASE = 2100
+
+    /** The release the sheet was last shown for */
     const val PREF_SEEN = "reborn_whats_new_seen"
 
-    /** This version's highlights were not shown yet. */
+    /** This release's highlights were not shown yet. */
     fun isNew(): Boolean {
         val prefs = Substratum.getPreferences() ?: return false
-        return prefs.getInt(PREF_SEEN, 0) < BuildConfig.VERSION_CODE
+        return prefs.getInt(PREF_SEEN, 0) < RELEASE
     }
 
-    /** Shown: not again until the next version. */
+    /** Shown: not again until the next release. */
     fun markSeen() {
-        Substratum.getPreferences()?.edit()?.putInt(PREF_SEEN, BuildConfig.VERSION_CODE)?.apply()
+        Substratum.getPreferences()?.edit()?.putInt(PREF_SEEN, RELEASE)?.apply()
     }
 }
 
@@ -82,37 +88,25 @@ private class Highlight(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val highlights: List<Highlight> by lazy {
     listOf(
-        // This version's own change, then 2.0's: the engine first (Reborn is a theme engine,
-        // AMOLED one of its built-in themes)
-        Highlight(R.drawable.ic_reborn_palette, R.string.reborn_new_design, R.string.reborn_new_design_text,
+        Highlight(R.drawable.ic_reborn_themes, R.string.reborn_new_pages, R.string.reborn_new_pages_text,
             MaterialShapes.Flower),
-        Highlight(R.drawable.ic_reborn_layers, R.string.reborn_new_engine, R.string.reborn_new_engine_text,
-            MaterialShapes.Burst),
         Highlight(R.drawable.ic_reborn_amoled, R.string.reborn_new_builtin, R.string.reborn_new_builtin_text,
             MaterialShapes.Clover4Leaf),
-        Highlight(R.drawable.ic_reborn_engine, R.string.reborn_new_faster, R.string.reborn_new_faster_text,
+        Highlight(R.drawable.ic_reborn_create, R.string.reborn_new_create, R.string.reborn_new_create_text,
             MaterialShapes.Cookie9Sided),
-        Highlight(R.drawable.ic_reborn_palette, R.string.reborn_new_look, R.string.reborn_new_look_text,
+        Highlight(R.drawable.ic_reborn_shortcut, R.string.reborn_new_shortcuts, R.string.reborn_new_shortcuts_text,
             MaterialShapes.Cookie6Sided),
-        Highlight(R.drawable.ic_reborn_search, R.string.reborn_new_inspector, R.string.reborn_new_inspector_text,
-            MaterialShapes.Pentagon),
-        Highlight(R.drawable.ic_reborn_undo, R.string.reborn_new_applied, R.string.reborn_new_applied_text,
-            MaterialShapes.Cookie4Sided),
-        Highlight(R.drawable.ic_reborn_check, R.string.reborn_new_safety, R.string.reborn_new_safety_text,
-            MaterialShapes.Sunny),
-        Highlight(R.drawable.ic_reborn_restart, R.string.reborn_new_retheme, R.string.reborn_new_retheme_text,
-            MaterialShapes.SoftBurst),
     )
 }
 
 /**
- * This version's highlights (and 2.0's) in a bottom sheet, with a way into AMOLED Studio.
+ * This release's highlights in a bottom sheet, with a way into Themes.
  *
  * @param onDismiss The sheet is gone (closed by a button, a swipe or back)
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
+fun WhatsNewSheet(onDismiss: () -> Unit, onExploreThemes: () -> Unit) {
     // Opens straight to full height: no half-open stop
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
@@ -195,11 +189,11 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
                 Button(
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                        close(onOpenStudio)
+                        close(onExploreThemes)
                     },
                     shapes = ButtonDefaults.shapes(),
                 ) {
-                    Text(stringResource(R.string.reborn_new_open_studio))
+                    Text(stringResource(R.string.reborn_explore_themes))
                 }
             }
         }

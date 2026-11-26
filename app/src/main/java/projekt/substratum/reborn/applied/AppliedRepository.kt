@@ -66,6 +66,8 @@ data class AppliedEntry(
     /** QS: which option, and its value while on (the rows' aspect, the tile option) */
     val qs: QsOption? = null,
     val value: String? = null,
+    /** THEME_OVERLAY: the theme package it came from, when known */
+    val themePkg: String? = null,
 ) {
     val key: String = when (source) {
         AppliedSource.THEME_OVERLAY -> "overlay:$overlay"
@@ -201,6 +203,7 @@ object AppliedRepository {
                 detail = if (meta.fabricated) context.getString(R.string.reborn_applied_overlay_fabricated, name) else name,
                 overlay = name,
                 fabricated = meta.fabricated,
+                themePkg = meta.parent,
             )
         }
 
@@ -267,6 +270,19 @@ object AppliedRepository {
             amoled = amoledSummaryOf(context, state),
             readAt = System.currentTimeMillis(),
         )
+    }
+
+    /**
+     * The classic themes some of whose compiled overlays are on now (their parent packages).
+     * Blocking: the cache folder (metadata read once per file).
+     */
+    fun themesInUse(context: Context): Set<String> {
+        val themes = HashSet<String>()
+        for (name in XposedBackend.listAll()) {
+            if (!XposedBackend.isEnabled(name)) continue
+            overlayMeta(context, name).parent?.let(themes::add)
+        }
+        return themes
     }
 
     private fun qsEntry(option: QsOption, on: Boolean, title: String, detail: String, value: String?) =

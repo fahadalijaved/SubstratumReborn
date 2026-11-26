@@ -124,12 +124,21 @@ private class RowCallbacks(
 )
 
 /**
- * Every app AMOLED covers: search (name and package), filters, and a row per app with its route,
- * colours, restart state and switch. A tap opens the [Inspector].
+ * Every app the engine covers: search (name and package), filters, and a row per app with its
+ * route, colours, restart state and switch. A tap opens the [Inspector].
+ *
+ * @param onPick Pick mode (Create › Inspect an app): rows have no switch or menu, and a tap hands
+ *   the app to the caller, which opens its colours
+ * @param title The bar's title (the Studio's "Apps" when null)
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
+fun AppList(
+    initialFilter: AppFilter,
+    onBack: () -> Unit,
+    onPick: ((StudioState.AppRow) -> Unit)? = null,
+    title: String? = null,
+) {
     val context = LocalContext.current
     val apps by StudioState.apps.collectAsStateWithLifecycle()
     val scope by StudioState.lsposedScope.collectAsStateWithLifecycle()
@@ -198,7 +207,7 @@ fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
 
     val background = MaterialTheme.colorScheme.background
     RebornFlexibleScaffold(
-        title = stringResource(R.string.reborn_studio_apps),
+        title = title ?: stringResource(R.string.reborn_studio_apps),
         subtitle = apps?.let { list -> stringResource(R.string.reborn_studio_themed, list.count { it.themed }, list.size) },
         large = false,
         navigationIcon = { BackIcon(onBack) },
@@ -279,13 +288,17 @@ fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
                 }
                 // One segmented list: rows 2 dp apart, the first and last with the large corners
                 else -> segmentedItems(visible, key = { it.pkg }) { row, shapes, segment ->
-                    AppRowItem(
-                        row = row,
-                        needsScope = needsScope(row, scope),
-                        callbacks = callbacks,
-                        shapes = shapes,
-                        modifier = segment.padding(horizontal = 16.dp),
-                    )
+                    if (onPick != null) {
+                        PickRow(row, needsScope(row, scope), shapes, segment.padding(horizontal = 16.dp)) { onPick(row) }
+                    } else {
+                        AppRowItem(
+                            row = row,
+                            needsScope = needsScope(row, scope),
+                            callbacks = callbacks,
+                            shapes = shapes,
+                            modifier = segment.padding(horizontal = 16.dp),
+                        )
+                    }
                 }
             }
         }
@@ -316,6 +329,47 @@ private fun EmptyCard(@StringRes title: Int, @StringRes text: Int) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** A row of the pick mode: the app, its route and colours, and a chevron; a tap picks it. */
+@Composable
+private fun PickRow(
+    row: StudioState.AppRow,
+    needsScope: Boolean,
+    shapes: ListItemShapes,
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+    val colors = LocalRebornColors.current
+    val scheme = MaterialTheme.colorScheme
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = shapes,
+        colors = rebornSegmentColors(),
+        modifier = modifier,
+        leadingContent = { AppIcon(row.pkg, size = 40.dp, shape = MaterialTheme.shapes.medium) },
+        supportingContent = {
+            Column {
+                Text(row.pkg, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    RouteChip(row.route)
+                    when {
+                        needsScope -> MiniChip(stringResource(R.string.reborn_studio_needs_scope), R.drawable.ic_reborn_warning, colors.error)
+                        row.colors > 0 -> Text(
+                            pluralStringResource(R.plurals.reborn_studio_colours, row.colors, row.colors),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        },
+        trailingContent = { Icon(painterResource(R.drawable.ic_reborn_chevron), contentDescription = null, tint = scheme.onSurfaceVariant) },
+    ) {
+        Text(row.label, style = MaterialTheme.typography.bodyLargeEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

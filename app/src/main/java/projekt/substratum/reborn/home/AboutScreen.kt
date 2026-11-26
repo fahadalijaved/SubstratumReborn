@@ -69,7 +69,7 @@ import projekt.substratum.reborn.theme.LocalRebornColors
 /** This fork's repository (the git remote it is published from; public) */
 private const val SOURCE_URL = "https://github.com/fahadalijaved/SubstratumReborn"
 /** The theme format and the engine, for themers */
-private const val THEMERS_URL = "$SOURCE_URL/blob/oneui9-root/docs/oneui9/README.md"
+internal const val THEMERS_URL = "$SOURCE_URL/blob/oneui9-root/docs/oneui9/README.md"
 /** The project it is based on */
 private const val UPSTREAM_URL = "https://github.com/substratum/substratum"
 private const val TAG = "RebornAbout"
@@ -326,7 +326,7 @@ private fun LinkRow(link: Link, shapes: ListItemShapes) {
     }
 }
 
-private fun openUrl(context: Context, url: String) {
+internal fun openUrl(context: Context, url: String) {
     try {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     } catch (e: Exception) {

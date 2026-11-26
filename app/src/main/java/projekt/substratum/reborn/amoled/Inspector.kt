@@ -88,6 +88,13 @@ import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.theme.StatusColors
 import java.util.Locale
 
+/** Copies a resource name for a themer's rules, and says so. */
+internal fun copyName(context: android.content.Context, name: String) {
+    val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+    clipboard?.setPrimaryClip(android.content.ClipData.newPlainText(name, name))
+    android.widget.Toast.makeText(context, context.getString(R.string.reborn_inspect_copied, name), android.widget.Toast.LENGTH_SHORT).show()
+}
+
 private fun hex(color: Int): String =
     if (color ushr 24 == 0xff) String.format(Locale.ROOT, "#%06X", color and 0xffffff)
     else String.format(Locale.ROOT, "#%08X", color)
@@ -404,7 +411,16 @@ private fun ChangeRow(entry: Entry, onKeep: () -> Unit, onPin: () -> Unit, onRes
             // A keep or pin goes by name: with an obfuscated name it would change every colour
             // that shares it, so only a rule set earlier can be reset. The group label says so.
             val ownName = entry.shared <= 1
+            val context = LocalContext.current
             listOf(
+                // For themers: the name to write in rules
+                MenuGroup(
+                    listOf(
+                        MenuAction(stringResource(R.string.reborn_inspect_copy_name), R.drawable.ic_reborn_file) {
+                            copyName(context, entry.name)
+                        },
+                    ),
+                ),
                 MenuGroup(
                     label = if (ownName) null
                     else pluralStringResource(R.plurals.reborn_studio_shared_name, entry.shared, entry.shared),

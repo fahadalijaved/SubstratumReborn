@@ -6,18 +6,21 @@
   -->
 
 <!--
-  Reborn's launcher shortcuts. AMOLED Studio and Applied open the Reborn shell on that tab:
-  LauncherActivity (the exported entry) passes the "tab" extra on to RebornActivity.
+  Reborn's launcher shortcuts: Themes, Create a theme, Applied and Rescue Me!. The first three open
+  the Reborn shell on that tab: LauncherActivity (the exported entry) passes the "tab" extra on to
+  RebornActivity. "Customize <theme>" is a dynamic shortcut (RebornShortcuts), published after an
+  apply. The id "studio" (an earlier static shortcut) is never used again: Android refuses to
+  update an id that was a manifest shortcut.
   -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/app_shortcut_amoled"
-        android:shortcutDisabledMessage="@string/shortcut_studio_disabled"
-        android:shortcutId="studio"
-        android:shortcutLongLabel="@string/shortcut_studio"
-        android:shortcutShortLabel="@string/shortcut_studio"
+        android:icon="@drawable/app_shortcut_themes"
+        android:shortcutDisabledMessage="@string/shortcut_themes_disabled"
+        android:shortcutId="themes"
+        android:shortcutLongLabel="@string/shortcut_themes"
+        android:shortcutShortLabel="@string/shortcut_themes"
         tools:targetApi="n_mr1">
         <intent
             android:action="android.intent.action.VIEW"
@@ -25,7 +28,24 @@
             android:targetPackage="projekt.substratum">
             <extra
                 android:name="tab"
-                android:value="amoled" />
+                android:value="themes" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/app_shortcut_create"
+        android:shortcutDisabledMessage="@string/shortcut_create_disabled"
+        android:shortcutId="create"
+        android:shortcutLongLabel="@string/shortcut_create"
+        android:shortcutShortLabel="@string/shortcut_create_short"
+        tools:targetApi="n_mr1">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="projekt.substratum.LauncherActivity"
+            android:targetPackage="projekt.substratum">
+            <extra
+                android:name="tab"
+                android:value="create" />
         </intent>
     </shortcut>
     <shortcut

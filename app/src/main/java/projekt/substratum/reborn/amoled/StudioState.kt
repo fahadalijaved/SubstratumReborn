@@ -64,8 +64,6 @@ import java.util.concurrent.ConcurrentHashMap
 object StudioState {
 
     private const val TAG = "RebornStudio"
-    /** A job asked for and not reported started yet */
-    private const val PENDING_JOB = -1
 
     /** The active quick settings tile options, in the order the designer shows them */
     val TILE_OPTIONS = listOf(AmoledRules.TILE_WHITE, AmoledRules.TILE_ACCENT, AmoledRules.TILE_BLUE,
@@ -85,20 +83,6 @@ object StudioState {
         val appliedLevel: String?,
         val appliedAccent: Int?,
     )
-
-    @Immutable
-    data class JobUi(
-        val id: Int,
-        val kind: AmoledJobs.Kind,
-        val label: String?,
-        val done: Int,
-        val total: Int,
-        val queued: Int,
-    ) {
-        /** Progress has been reported */
-        val started: Boolean get() = total > 0
-        val fraction: Float get() = if (total > 0) (done.toFloat() / total).coerceIn(0f, 1f) else 0f
-    }
 
     @Immutable
     data class AppRow(
@@ -161,8 +145,8 @@ object StudioState {
 
     private val _summary = MutableStateFlow<Summary?>(null)
     val summary: StateFlow<Summary?> = _summary.asStateFlow()
-    private val _job = MutableStateFlow<JobUi?>(null)
-    val job: StateFlow<JobUi?> = _job.asStateFlow()
+    /** The running job and its progress ([JobsFlow], process-wide) */
+    val job: StateFlow<JobUi?> get() = JobsFlow.job
     private val _apps = MutableStateFlow<List<AppRow>?>(null)
     val apps: StateFlow<List<AppRow>?> = _apps.asStateFlow()
     private val _look = MutableStateFlow<Look?>(null)
@@ -213,29 +197,27 @@ object StudioState {
     private val previewReads = Channel<Unit>(Channel.CONFLATED)
     private val otherReads = Channel<Unit>(Channel.CONFLATED)
 
-    private val listener = object : AmoledJobs.Listener {
-        override fun onJobStarted(job: AmoledJobs.Job) {
-            _job.value = JobUi(job.id, job.kind, null, 0, 0, AmoledJobs.snapshot().queued)
-        }
-
-        override fun onProgress(job: AmoledJobs.Job, pkg: String?, done: Int, total: Int) {
-            _job.value = JobUi(job.id, job.kind, pkg?.let { AmoledJobs.labelOf(it) }, done, total,
-                AmoledJobs.snapshot().queued)
-        }
-
+    // Job progress comes from JobsFlow. This one listens for the whole process (a theme's page
+    // applies without a Studio attached): what an apply settles, and its result message.
+    private val always = object : AmoledJobs.Listener {
         override fun onJobFinished(job: AmoledJobs.Job, ok: Boolean, message: String?) {
             if (ok && job.kind == AmoledJobs.Kind.APPLY_ALL) {
                 _lookDirty.value = false
                 themeChosen = false
             }
             if (message != null) _events.tryEmit(Event(message, job.kind, job.packageName()))
+            if (::app.isInitialized) summaryReads.trySend(Unit)
+        }
+    }
+
+    // While a Studio is attached: its app rows and change records are read again when jobs end
+    private val listener = object : AmoledJobs.Listener {
+        override fun onJobFinished(job: AmoledJobs.Job, ok: Boolean, message: String?) {
             _records.value++
-            summaryReads.trySend(Unit)
             appReads.trySend(Unit)
         }
 
         override fun onQueueIdle() {
-            _job.value = null
             // The device's own stock colours may be known now
             stock = null
             refreshAll(scope = false)
@@ -243,6 +225,7 @@ object StudioState {
     }
 
     init {
+        AmoledJobs.addListener(always)
         consume(summaryReads) { readSummary() }
         consume(appReads) { readApps() }
         consume(previewReads) { readPreviews() }
@@ -305,24 +288,29 @@ object StudioState {
         previewReads.trySend(Unit)
     }
 
-    /** A screen asked for a rules theme (a theme's card, the Classic menu). */
+    /**
+     * The Studio route of a theme was opened: Apply uses [pkg]'s rules (null: the built-in ones,
+     * which the bundled starter APK carries too).
+     */
     fun requestTheme(pkg: String?) {
-        if (pkg == null) return
-        _theme.value = pkg
+        val wanted = pkg?.takeIf { it.isNotBlank() && it != RebornActions.AMOLED_THEME }
         themeChosen = true
+        if (_theme.value == wanted) return
+        _theme.value = wanted
         if (::app.isInitialized) previewReads.trySend(Unit)
     }
 
-    private fun syncJob() {
-        val snapshot = AmoledJobs.snapshot()
-        val current = snapshot.current
-        when {
-            current != null -> if (_job.value?.id != current.id) {
-                _job.value = JobUi(current.id, current.kind, null, 0, 0, snapshot.queued)
-            }
-            snapshot.queued == 0 && _job.value?.id != PENDING_JOB -> _job.value = null
-        }
+    /**
+     * A theme's page is shown: what it needs of this state (the summary and the look) without
+     * following the queue's apps like an attached Studio. Main thread.
+     */
+    fun bind(context: Context) {
+        if (!::app.isInitialized) app = context.applicationContext
+        if (_look.value == null) _look.value = readLook()
+        summaryReads.trySend(Unit)
     }
+
+    private fun syncJob() = JobsFlow.sync()
 
     // Reads (IO, results set on the main thread)
 
@@ -550,6 +538,54 @@ object StudioState {
         previewReads.trySend(Unit)
     }
 
+    /** Two rules themes are the same (none and the starter APK are both the built-in rules). */
+    fun sameTheme(a: String?, b: String?): Boolean {
+        fun norm(p: String?) = p?.takeIf { it.isNotBlank() && it != RebornActions.AMOLED_THEME }
+        return norm(a) == norm(b)
+    }
+
+    /** A level or an accent was ever chosen here (a theme's own look is otherwise used). */
+    fun lookChosen(): Boolean {
+        val look = AmoledPresets.look(prefs())
+        return look.level != null || look.accent != null
+    }
+
+    /** The chosen look's preferences, to put back after [clearLook]. */
+    @Immutable
+    class LookSnapshot internal constructor(internal val values: Map<String, Any?>)
+
+    private val lookKeys = listOf(AmoledPresets.PREF_PRESET, AmoledPresets.PREF_LEVEL, AmoledPresets.PREF_ACCENT,
+        AmoledPresets.PREF_ACCENT_LIGHT)
+
+    /** Forgets the chosen level and accent, so a theme's own apply; returns what they were. Main thread. */
+    fun clearLook(): LookSnapshot {
+        val prefs = prefs()
+        val all = prefs.all
+        val snapshot = LookSnapshot(lookKeys.associateWith { all[it] })
+        val edit = prefs.edit()
+        lookKeys.forEach { edit.remove(it) }
+        edit.apply()
+        if (::app.isInitialized) lookChanged()
+        return snapshot
+    }
+
+    /** Puts a look back that [clearLook] took away (the next apply uses it). Main thread. */
+    fun restoreLook(snapshot: LookSnapshot) {
+        val edit = prefs().edit()
+        snapshot.values.forEach { (key, value) ->
+            when (value) {
+                null -> edit.remove(key)
+                is String -> edit.putString(key, value)
+                is Boolean -> edit.putBoolean(key, value)
+                is Int -> edit.putInt(key, value)
+                is Long -> edit.putLong(key, value)
+                is Float -> edit.putFloat(key, value)
+            }
+        }
+        edit.apply()
+        if (::app.isInitialized) lookChanged()
+    }
+
     /**
      * The saved look differs from the one last applied (as far as the state file tells: level and
      * accent), another rules theme was chosen, or something the state file cannot tell changed
@@ -559,7 +595,8 @@ object StudioState {
     fun pending(summary: Summary?, look: Look?, dirty: Boolean, theme: String?): Boolean {
         if (summary == null || !summary.enabled) return false
         if (dirty) return true
-        if (themeChosen && theme != summary.rulesTheme) return true
+        // The starter APK carries the built-in rules: the same theme either way
+        if (themeChosen && sameTheme(theme, summary.rulesTheme).not()) return true
         if (look == null || summary.appliedLevel == null) return false
         if (look.levelChosen && summary.appliedLevel != look.level.key()) return true
         if (!look.accentChosen) return false
@@ -599,15 +636,15 @@ object StudioState {
      * starts), then queues it with [start] on IO.
      */
     private suspend fun queue(kind: AmoledJobs.Kind, start: () -> Unit) {
-        if (_job.value == null) _job.value = JobUi(PENDING_JOB, kind, null, 0, 0, 0)
+        JobsFlow.pending(kind)
         scope.launch {
             delay(10_000)
-            if (_job.value?.id == PENDING_JOB && AmoledJobs.snapshot().isIdle) _job.value = null
+            if (JobsFlow.isPending && AmoledJobs.snapshot().isIdle) JobsFlow.clearPending()
         }
         try {
             withContext(Dispatchers.IO) { start() }
         } catch (t: Throwable) {
-            if (_job.value?.id == PENDING_JOB) _job.value = null
+            JobsFlow.clearPending()
             throw t
         }
     }

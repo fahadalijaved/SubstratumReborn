@@ -9,20 +9,21 @@ the engine registers their colours as fabricated overlays with root and applies 
 cannot reach through its LSPosed module. It is tested on One UI 9 (Galaxy A36, Android 17); the
 same standard pieces make AOSP-based ROMs a target too, but they have not been tested yet.
 
-Its first built-in theme is **Reborn AMOLED**: true black for every app, set up in AMOLED
-Studio. Pick a look, compare it on a live before and after preview drawn with the engine's real
-colours, apply it in one tap, and inspect every colour it changed in every app. Everything
-applied shows in one place, with one Undo.
+Open **Themes** and every theme has its own page: a preview drawn with the engine's real colours,
+the apps it changes on this phone, and **Apply**. The first built-in theme is **Reborn AMOLED**,
+true black for every app; **Customize** opens its Studio, where you pick a look, compare it on a
+live before and after preview and inspect every colour it changed in every app. **Create** holds
+the tools for themers. Everything applied shows in one place, with one Undo.
 
 <!--
   Screenshot slots. The images are not in the repository yet: they are captured in demo mode and
   reviewed by the owner first (docs/showcase/SHOTLIST.md lists the shots and the capture rules).
-  TODO: uncomment once docs/showcase/home.png, studio.png and inspector.png are reviewed and added.
+  TODO: uncomment once docs/showcase/themes.png, detail.png and studio.png are reviewed and added.
 
 <p align="center">
-  <img src="docs/showcase/home.png" width="31%" alt="Home: system status and the See the difference carousel">
-  <img src="docs/showcase/studio.png" width="31%" alt="AMOLED Studio: looks, accent and the live before and after preview">
-  <img src="docs/showcase/inspector.png" width="31%" alt="Inspector: every colour an app changes, stock to AMOLED">
+  <img src="docs/showcase/themes.png" width="31%" alt="Themes: the built-in themes as cards">
+  <img src="docs/showcase/detail.png" width="31%" alt="Reborn AMOLED's page: preview, what it changes, Apply and Customize">
+  <img src="docs/showcase/studio.png" width="31%" alt="The Studio of Reborn AMOLED: looks, accent and the live before and after preview">
 </p>
 -->
 
@@ -30,14 +31,16 @@ applied shows in one place, with one Undo.
 
 | Feature | What you get |
 |---|---|
-| **Theme engine** | For themers: classic Substratum themes and rules themes (`assets/amoled/rules.json`) that read each app's own colours on the phone, so one theme fits every app; colours go out as fabricated overlays (native) or through the LSPosed module (by resource id). The format is in [docs/oneui9/README.md](docs/oneui9/README.md) |
-| **Reborn AMOLED** (built-in theme) | True black for every app, from AMOLED Studio |
-| **AMOLED Studio** | Looks (Pure black, Elevated cards, Dim), a live before/after preview of Quick Settings and Settings drawn from the engine's computed colours, one-tap Apply with progress you can watch |
+| **Themes** | Built-in themes first, then every installed theme as a full-width card (Reborn engine and classic), filters, search, install from an APK file. Each theme has its own page: a before/after preview, the apps it changes on this phone, Apply (with progress you can watch) and Customize |
+| **Theme engine** | For themers: Reborn engine themes (rules, `assets/amoled/rules.json`) that read each app's own colours on the phone, so one theme fits every app, and classic Substratum themes; colours apply natively as fabricated overlays or through the LSPosed module (by resource id). The format is in [docs/oneui9/README.md](docs/oneui9/README.md) |
+| **Reborn AMOLED** (built-in theme) | True black for every app; Customize opens its Studio |
+| **Studio** | A theme's looks (Pure black, Elevated cards, Dim), a live before/after preview of Quick Settings and Settings drawn from the engine's computed colours, one-tap Apply |
+| **Create** | Tools for themers: inspect any app's colours (resource names, values and the rule behind each), the resource names the previews read, and the theming guide |
 | **Levels and accent** | Pure, Dim, Elevated or Tinted surfaces; accent none, Monet (the wallpaper's), One UI blue, white or any colour; optionally in light mode too |
-| **Per-app inspector** | Every covered app with search, filters, its route (native overlay or module) and a *Restart needed* state; each colour that changed, stock to AMOLED, and the rule that decided it; long-press to keep a colour stock or pin your own |
-| **Applied and Undo everything** | Compiled theme overlays, AMOLED and Quick Settings tweaks in one list; swipe one off, or put everything back to stock in one go |
+| **Per-app inspector** | Every covered app with search, filters, its route (native overlay or module) and a *Restart needed* state; each colour that changed, stock to themed, and the rule that decided it; long-press to keep a colour stock, pin your own or copy its name |
+| **Applied and Undo everything** | Compiled theme overlays, the engine theme and Quick Settings tweaks in one list; swipe one off, or put everything back to stock in one go |
 | **Quick Settings designer** (One UI only) | Opaque shade, near-black slider tracks, the active tile colour and a compact row height, carried out in One UI 9's System UI by the module |
-| **Themes** | Full-width cards and one-tap Apply, install a theme from an APK file, rules themes open in the Studio; compatible legacy Substratum themes still work, and Classic Substratum is one tap away |
+| **Classic** | Compatible legacy Substratum themes still work (their page's Choose overlays opens Classic's theme screen), and Classic Substratum is one tap away |
 | **Safety** | A kill switch, a crash-loop guard for System UI and every hooked app, no restarts of the phone, Bluetooth or keyboard processes, boot restore, and snapshots on Remove |
 | **Engine** | Fabricated overlays + LSPosed: cached, batched and flicker-free, and apps you update are re-themed on their own |
 
@@ -53,27 +56,28 @@ nothing changed a few seconds (the classic engine, still selectable, needs about
     them so far.
   - **One UI only:** the Quick Settings designer and the One UI 9 design-token rules.
 - **Root.** KernelSU is tested; Magisk and APatch should work but are untested.
-- **LSPosed** with the Substratum Reborn module enabled. Its scope needs **System UI**,
-  **Settings** and **Substratum Reborn** itself, plus the apps AMOLED Studio marks *Needs scope*
-  (Play Store and other Google apps, and apps that refuse overlays).
+- **LSPosed** with the Substratum Reborn module enabled. Its scope needs **System UI** and
+  **Settings**, plus the apps the Studio marks *Needs scope* (Play Store and other Google apps,
+  and apps that refuse overlays).
 
 ## Setup
 
 1. Install the APK (`./gradlew :app:assembleDebug` builds `app/build/outputs/apk/debug/app-debug.apk`;
    it needs the Android SDK with platform 37.1 and a recent JDK).
 2. Open Substratum Reborn and grant it root in your root manager (KernelSU is the tested one).
-3. In LSPosed, enable the module and add System UI, Settings and Substratum Reborn to its scope.
+3. In LSPosed, enable the module and add System UI and Settings to its scope.
 4. Follow the **Setup checklist** that opens on the first launch: four live checks (root, module,
    scope, System UI hooked), each with a Fix button, and unrestricted battery use as a
    recommendation so long applies finish with the screen off.
-5. Open **AMOLED Studio**, pick a look and tap **Apply**. Apps marked *Needs scope* go into the
-   module's scope; the Studio's filter lists them.
+5. Open **Themes**, pick **Reborn AMOLED** (or any theme) and tap **Apply**. **Customize** opens
+   its Studio for the look and Quick Settings. Apps marked *Needs scope* go into the module's
+   scope; the Studio's app list filters them.
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    Studio["AMOLED Studio<br/>look, accent, your rules"] --> Queue["Job queue<br/>foreground service"]
+    Studio["A theme's page and Studio<br/>rules, look, accent, your rules"] --> Queue["Job queue<br/>foreground service"]
     Watch["Auto re-theme<br/>updated apps"] --> Queue
     Queue --> Compute["Compute<br/>each app's dark colours<br/>through the rules"]
     Cache[("Per-app cache")] -.-> Compute
@@ -111,8 +115,8 @@ Mildest first; none of these needs a reinstall.
 3. **Reset the crash-loop guard.** After repeated crashes the module leaves System UI (or an app)
    stock and Home shows *Guard tripped*; its Fix clears the guard and restarts System UI. By hand:
    `rm -f /data/user_de/0/com.android.systemui/reborn_guard_*`.
-4. **Undo everything** (Home or Applied): AMOLED, theme overlays and Quick Settings tweaks back to
-   stock, with a snapshot of the AMOLED colours kept.
+4. **Undo everything** (Home or Applied): the engine theme, theme overlays and Quick Settings
+   tweaks back to stock, with a snapshot of the engine's colours kept.
 5. **Disable the module** in LSPosed (Modules, Substratum Reborn off), then restart System UI.
 6. **Full reboot**, the last resort: with temporary root, a full reboot drops root and LSPosed
    for that boot, so nothing of Reborn loads; set root up again afterwards.
@@ -138,7 +142,7 @@ yet, so expect rough edges and report what you find. The Quick Settings designer
 design-token rules are One UI only; the Studio says so on other devices.
 
 **Does it change light mode?**
-No. AMOLED colours are night-only; where an app's light value is a fixed colour, the stock light
+No. Engine theme colours are night-only; where an app's light value is a fixed colour, the stock light
 value is registered next to it, and the wallpaper (Monet) colours are never touched.
 
 **What happens when an app updates?**
@@ -148,7 +152,8 @@ hour, or at once from the Studio's *Re-apply changed apps only*.
 
 **Will my old themes work?**
 Compatible legacy Substratum themes install from their APK and apply through fabricated
-overlays and the module. Themes that ship AMOLED rules open in AMOLED Studio.
+overlays and the module. Reborn engine themes (rules) open their page in Themes; Customize opens
+their Studio.
 
 ## Credits and licence
 

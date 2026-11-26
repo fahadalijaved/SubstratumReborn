@@ -6,6 +6,7 @@ package projekt.substratum.reborn.applied
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -109,6 +110,9 @@ import projekt.substratum.reborn.components.design.rebornSegmentColors
 import projekt.substratum.reborn.components.design.rememberRefreshableRoot
 import projekt.substratum.reborn.components.onIo
 import projekt.substratum.reborn.components.rememberResumeCount
+import projekt.substratum.reborn.home.amoledName
+import projekt.substratum.reborn.nav.OnReselect
+import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.reborn.theme.LocalRebornColors
 
 /** The entries of one target app, as Applied shows them. */
@@ -124,7 +128,13 @@ private val entryOrder = compareBy<AppliedEntry>({ it.source.ordinal }, { it.qs?
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
+fun AppliedScreen(
+    onOpenTheme: (ThemeId) -> Unit,
+    onOpenStudio: (ThemeId) -> Unit,
+    onOpenThemes: () -> Unit,
+    onOpenCreate: () -> Unit,
+    reselect: Int = 0,
+) {
     val context = LocalContext.current
     val resume = rememberResumeCount()
     val version by AppliedRepository.version.collectAsStateWithLifecycle()
@@ -233,6 +243,20 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
             pluralStringResource(R.plurals.reborn_applied_apps, apps, apps))
     } else null
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    OnReselect(reselect) {
+        scrollBehavior.state.heightOffset = 0f
+        listState.animateScrollToItem(0)
+    }
+    // A row's source chip opens where it came from: its theme's page, or the engine theme's Studio
+    val engineTheme = ThemeId.ofPackage(data?.amoled?.theme)
+    val engineName = amoledName(data?.amoled)
+    val onSource: (AppliedEntry) -> Unit = { entry ->
+        when (entry.source) {
+            AppliedSource.THEME_OVERLAY -> entry.themePkg?.let { onOpenTheme(ThemeId.ofPackage(it)) }
+            AppliedSource.AMOLED -> onOpenStudio(engineTheme)
+            AppliedSource.QS -> onOpenStudio(engineTheme)
+        }
+    }
     RebornFlexibleScaffold(
         title = stringResource(R.string.reborn_tab_applied),
         subtitle = subtitle,
@@ -337,7 +361,7 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
                 when {
                     data == null -> item(key = "loading") { PageLoading(height = 320.dp) }
                     data.entries.isEmpty() -> item(key = "empty") {
-                        EmptyApplied(onOpenAmoled, onOpenThemes, Modifier.padding(horizontal = 16.dp))
+                        EmptyApplied(onOpenThemes, onOpenCreate, Modifier.padding(horizontal = 16.dp))
                     }
                     groups.isEmpty() -> item(key = "no_match") {
                         NoMatch(Modifier.padding(horizontal = 16.dp))
@@ -357,6 +381,8 @@ fun AppliedScreen(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit) {
                         items(groups, key = { it.targetPkg }, contentType = { "group" }) { group ->
                             GroupCard(
                                 group = group,
+                                engineName = engineName,
+                                onSource = onSource,
                                 onTurnOff = ::turnOff,
                                 onInspect = { inspecting = it.targetPkg },
                                 modifier = Modifier
@@ -443,6 +469,8 @@ private fun Filters(
 @Composable
 private fun GroupCard(
     group: AppliedGroup,
+    engineName: String,
+    onSource: (AppliedEntry) -> Unit,
     onTurnOff: (AppliedEntry) -> Unit,
     onInspect: (AppliedEntry) -> Unit,
     modifier: Modifier = Modifier,
@@ -484,7 +512,7 @@ private fun GroupCard(
         }
         SegmentedGroup(group.entries.size) { i, shapes ->
             val entry = group.entries[i]
-            key(entry.key) { EntryRow(entry, shapes, onTurnOff, onInspect) }
+            key(entry.key) { EntryRow(entry, engineName, shapes, onSource, onTurnOff, onInspect) }
         }
     }
 }
@@ -493,7 +521,9 @@ private fun GroupCard(
 @Composable
 private fun EntryRow(
     entry: AppliedEntry,
+    engineName: String,
     shapes: ListItemShapes,
+    onSource: (AppliedEntry) -> Unit,
     onTurnOff: (AppliedEntry) -> Unit,
     onInspect: (AppliedEntry) -> Unit,
 ) {
@@ -535,7 +565,7 @@ private fun EntryRow(
                         stringResource(if (entry.enabled) R.string.reborn_applied_state_on else R.string.reborn_applied_state_off),
                         if (entry.enabled) ChipState.OK else ChipState.Off,
                     )
-                    SourceChip(entry)
+                    SourceChip(entry, engineName, Modifier.clip(CircleShape).clickable { onSource(entry) })
                 }
             }
         }
@@ -570,22 +600,23 @@ private fun EntryRow(
     }
 }
 
+/** Where an entry comes from: a classic theme, the engine theme (by name) or Quick Settings. */
 @Composable
-private fun SourceChip(entry: AppliedEntry) {
+private fun SourceChip(entry: AppliedEntry, engineName: String, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     when (entry.source) {
         AppliedSource.THEME_OVERLAY -> TagChip(
             entry.themeLabel?.let { stringResource(R.string.reborn_applied_source_theme, it) }
                 ?: stringResource(R.string.reborn_applied_source_overlay),
-            R.drawable.ic_reborn_layers, scheme.secondaryContainer, scheme.onSecondaryContainer,
+            R.drawable.ic_reborn_layers, scheme.secondaryContainer, scheme.onSecondaryContainer, modifier,
         )
         AppliedSource.AMOLED -> TagChip(
-            stringResource(R.string.reborn_applied_source_amoled),
-            R.drawable.ic_reborn_amoled, scheme.primaryContainer, scheme.onPrimaryContainer,
+            engineName,
+            R.drawable.ic_reborn_amoled, scheme.primaryContainer, scheme.onPrimaryContainer, modifier,
         )
         AppliedSource.QS -> TagChip(
             stringResource(R.string.reborn_applied_source_qs),
-            R.drawable.ic_reborn_tune, scheme.tertiaryContainer, scheme.onTertiaryContainer,
+            R.drawable.ic_reborn_tune, scheme.tertiaryContainer, scheme.onTertiaryContainer, modifier,
         )
     }
 }
@@ -639,7 +670,7 @@ private fun AppliedInspector(entry: AppliedEntry, label: String, onDismiss: () -
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun EmptyApplied(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit, modifier: Modifier = Modifier) {
+private fun EmptyApplied(onOpenThemes: () -> Unit, onOpenCreate: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     HeroCard(modifier) {
         Box(
@@ -666,13 +697,13 @@ private fun EmptyApplied(onOpenAmoled: () -> Unit, onOpenThemes: () -> Unit, mod
         )
         Spacer(Modifier.height(22.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick = onOpenAmoled, shapes = ButtonDefaults.shapes()) {
-                Icon(painterResource(R.drawable.ic_reborn_amoled), null, Modifier.size(18.dp))
+            Button(onClick = onOpenThemes, shapes = ButtonDefaults.shapes()) {
+                Icon(painterResource(R.drawable.ic_reborn_themes), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.reborn_applied_open_studio))
+                Text(stringResource(R.string.reborn_explore_themes))
             }
-            OutlinedButton(onClick = onOpenThemes, shapes = ButtonDefaults.shapes()) {
-                Text(stringResource(R.string.reborn_applied_open_themes))
+            OutlinedButton(onClick = onOpenCreate, shapes = ButtonDefaults.shapes()) {
+                Text(stringResource(R.string.reborn_create_a_theme))
             }
         }
     }

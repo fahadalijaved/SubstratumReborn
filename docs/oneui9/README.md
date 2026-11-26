@@ -105,14 +105,19 @@ Weather, Software update and DressRoom.
 
 Every value in the samples is the stock One UI 9 value.
 
-## Rules themes (AMOLED for every app)
+<a id="rules-themes-amoled-for-every-app"></a>
 
-A theme can also be a set of **rules** instead of a list of overlays. SubstratumReborn then looks
-at every installed app that the rules cover, reads the app's own dark-mode colors on the device,
-and turns them into a night-only fabricated overlay. It works for whatever apps each user has
-and on any One UI release, with nothing to regenerate. Tapping such a theme opens AMOLED Studio
-(the AMOLED tab) with its rules instead of the overlay list; the work runs in the background
-with a progress notification. The Studio uses the built-in rules when no rules theme is chosen.
+## Reborn engine themes (rules)
+
+A theme can also be a set of **rules** instead of a list of overlays: a *Reborn engine theme*.
+SubstratumReborn then looks at every installed app that the rules cover, reads the app's own
+dark-mode colors on the device, and turns them into a night-only fabricated overlay. It works
+for whatever apps each user has and on any One UI release, with nothing to regenerate. Reborn
+engine themes open their page in **Themes** (a preview, the apps they change on this phone,
+Apply); **Customize** on that page opens their Studio, where the look, Quick Settings and the
+apps are set. The work runs in the background with a progress notification. The built-in
+**Reborn AMOLED** is the engine's own rules; only one engine theme is on at a time, and classic
+overlay themes stay on top of it.
 [The AMOLED engine](#the-amoled-engine) describes the pipeline and where everything is kept.
 
 A rules theme is an ordinary Substratum theme (manifest metadata, `SubstratumLauncher`, hero
@@ -256,7 +261,7 @@ change. While AMOLED for every app is applied, the module (scoped to System UI) 
 | Brightness / volume track | 15% white drawn twice (grey) | the rules' `qsTrack` (6% white, near black) |
 | Panel row height | `cell width x 0.917` | `cell width x` the chosen value (for example `0.65`) |
 
-All of it is set in AMOLED Studio's **Quick Settings designer**: panel row height, active tile
+All of it is set in the Studio's **Quick Settings designer** (a theme's page › Customize): panel row height, active tile
 color (white, accent, blue, stock), solid shade and dark tracks; the Studio's app list has a
 switch per app. The options live in
 `/data/resource-cache/substratum/qs-options` (`aspect=0.650`, `shade=1`, `track=#10ffffff`, the
@@ -428,8 +433,8 @@ cmd overlay list | grep RebornSystemAmoled
 cmd overlay disable --user 0 com.android.shell:<package>.RebornSystemAmoled
 ```
 
-The next boot registers them again until **Remove** runs in AMOLED Studio (or **Undo
-everything** on Home or Applied).
+The next boot registers them again until **Remove** runs (the theme's page or its Studio, or
+**Undo everything** on Home or Applied).
 
 ### LSPosed
 

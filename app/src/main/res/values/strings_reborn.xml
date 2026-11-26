@@ -4,7 +4,7 @@
   ~ SPDX-License-Identifier: GPL-3.0-Or-Later
   -->
 
-<!-- The Reborn shell: Home, setup checklist, AMOLED, Themes and Applied -->
+<!-- The Reborn shell: Home, Themes, Create and Applied, the setup checklist and About -->
 <resources>
     <string name="reborn_classic_title">Reborn Classic</string>
     <string name="reborn_classic">Classic Substratum</string>
@@ -25,8 +25,10 @@
 
     <!-- Tabs -->
     <string name="reborn_tab_home">Home</string>
+    <!-- Not shown any more (AMOLED is the built-in theme Reborn AMOLED); kept for one release -->
     <string name="reborn_tab_amoled">AMOLED</string>
     <string name="reborn_tab_themes">Themes</string>
+    <string name="reborn_tab_create">Create</string>
     <string name="reborn_tab_applied">Applied</string>
 
     <!-- Status chip states, read out with the chip text -->
@@ -115,7 +117,6 @@
     <string name="reborn_restart_confirm">Restart</string>
 
     <string name="reborn_applied_now">Applied now</string>
-    <string name="reborn_amoled_title">AMOLED for every app</string>
     <string name="reborn_amoled_summary">%1$d of %2$d apps · applied %3$s</string>
     <string name="reborn_amoled_off_summary">Not applied: apps use their own colours</string>
     <string name="reborn_amoled_summary_no_time">%1$d of %2$d apps · applied, time unknown</string>
@@ -150,7 +151,7 @@
     <string name="reborn_no_lsposed">LSPosed did not open: use the LSPosed notification</string>
 
     <string name="reborn_pause_title">Pause hooks?</string>
-    <string name="reborn_pause_text">The module stops changing SystemUI and apps, and SystemUI restarts. Resume brings AMOLED back.</string>
+    <string name="reborn_pause_text">The module stops changing SystemUI and apps, and SystemUI restarts. Resume brings your theme back.</string>
     <string name="reborn_pause">Pause</string>
     <string name="reborn_resume_title">Resume hooks?</string>
     <string name="reborn_resume_text">The module hooks SystemUI and apps again, and SystemUI restarts.</string>
@@ -163,9 +164,9 @@
 
     <!-- Home: the showcase carousel -->
     <string name="reborn_showcase_title">See the difference</string>
-    <string name="reborn_showcase_subtitle">Reborn AMOLED, a built-in theme, in your look\'s real colours: fabricated overlays + LSPosed</string>
-    <string name="reborn_showcase_open">Open AMOLED Studio</string>
-    <string name="reborn_showcase_page_description">%1$s, stock and AMOLED side by side. Opens AMOLED Studio.</string>
+    <string name="reborn_showcase_subtitle">Reborn AMOLED, a built-in theme, in your look\'s real colours</string>
+    <string name="reborn_showcase_open">Explore themes</string>
+    <string name="reborn_showcase_page_description">%1$s, stock and %2$s side by side. Opens the theme\'s page.</string>
     <string name="reborn_showcase_page_of">Page %1$d of %2$d</string>
     <string name="reborn_showcase_qs">Quick Settings</string>
     <string name="reborn_showcase_qs_text">Black panel and tiles, with a hairline so nothing floats</string>
@@ -178,33 +179,24 @@
     <string name="reborn_showcase_try">Try a look</string>
     <string name="reborn_showcase_yours">Your look</string>
     <string name="reborn_showcase_saved">Your saved look</string>
-    <string name="reborn_showcase_try_preview">Only a preview: nothing is saved or applied. Choose it in AMOLED Studio to use it.</string>
+    <string name="reborn_showcase_try_preview">Only a preview: nothing is saved or applied. Choose it in the Studio to use it.</string>
     <string name="reborn_showcase_try_saved">Your saved look. Tap another one to preview it here.</string>
 
     <!-- What's new (once per version, and from About) -->
     <string name="reborn_new_overline">What\'s new</string>
-    <string name="reborn_new_headline">A theme engine rebuilt for One UI 9 and AOSP</string>
-    <string name="reborn_new_lead">Substratum\'s engine, rebuilt on fabricated overlays and an LSPosed module, for themers to build on. Reborn AMOLED, a built-in theme, shows what it can do.</string>
-    <string name="reborn_new_design">A new look</string>
-    <string name="reborn_new_design_text">Material 3 Expressive throughout: Google Sans Flex, a shorter navigation bar, grouped menus, pull to refresh and the shape-morphing loading indicators of Google\'s own apps.</string>
-    <string name="reborn_new_engine">The engine</string>
-    <string name="reborn_new_engine_text">Fabricated overlays + LSPosed instead of overlay APKs. Rules themes read each app\'s own colours on the phone, so one theme fits every app. Compatible legacy Substratum themes still apply.</string>
-    <string name="reborn_new_builtin">Built-in theme: Reborn AMOLED</string>
-    <string name="reborn_new_builtin_text">True black for every app. Pick a look in AMOLED Studio, compare it on a live before and after preview, and apply it in one tap.</string>
-    <string name="reborn_new_look">Levels and accent</string>
-    <string name="reborn_new_look_text">Pure, Dim, Elevated or Tinted surfaces, with the wallpaper\'s colours, a preset or your own accent.</string>
-    <string name="reborn_new_inspector">Inspector</string>
-    <string name="reborn_new_inspector_text">Every colour an app changes, stock to AMOLED, with the rule behind it. Keep one stock or pin your own.</string>
-    <string name="reborn_new_applied">Applied and Undo everything</string>
-    <string name="reborn_new_applied_text">Theme overlays, AMOLED and Quick Settings tweaks in one list, and one Undo for all of it.</string>
-    <string name="reborn_new_safety">Safe by design</string>
-    <string name="reborn_new_safety_text">A kill switch, a crash-loop guard for System UI, and no restarts of the phone, Bluetooth or keyboard processes.</string>
-    <string name="reborn_new_faster">A faster apply</string>
-    <string name="reborn_new_faster_text">Cached and batched. Measured on a Galaxy A36: about 100 s for a first run, a few seconds after that.</string>
-    <string name="reborn_new_retheme">Auto re-theme</string>
-    <string name="reborn_new_retheme_text">Apps you update get their theme colours back on their own.</string>
+    <string name="reborn_new_headline">Themes first</string>
+    <string name="reborn_new_lead">Reborn is a theme engine. Every theme now has its own page, Reborn AMOLED is one of the built-in themes, and Create gathers the tools for themers.</string>
+    <string name="reborn_new_pages">A page for every theme</string>
+    <string name="reborn_new_pages_text">Every theme gets its own page: preview, what it changes, Apply and Customize.</string>
+    <string name="reborn_new_builtin">Reborn AMOLED, built in</string>
+    <string name="reborn_new_builtin_text">Reborn AMOLED is a built-in theme: Customize opens its Studio.</string>
+    <string name="reborn_new_create">Create</string>
+    <string name="reborn_new_create_text">Tools for themers, starting with the app inspector and the preview roles.</string>
+    <string name="reborn_new_shortcuts">Launcher shortcuts</string>
+    <string name="reborn_new_shortcuts_text">Long-press the app icon for Themes and Create, and for Customize after an apply.</string>
     <string name="reborn_new_done">Got it</string>
-    <string name="reborn_new_open_studio">Open AMOLED Studio</string>
+    <string name="reborn_explore_themes">Explore themes</string>
+    <string name="reborn_create_a_theme">Create a theme</string>
 
     <!-- About -->
     <string name="reborn_about_title">About</string>
@@ -229,7 +221,7 @@
     <string name="reborn_about_upstream">Original Substratum</string>
     <string name="reborn_about_based_on">Based on Substratum (GPL-3.0) by Projekt Substratum</string>
     <string name="reborn_about_licence_text">Substratum Reborn is free software under the GNU General Public License, version 3 or later, and comes with no warranty.</string>
-    <string name="reborn_about_themes_text">Compatible legacy Substratum themes still install and apply; rules themes open in AMOLED Studio.</string>
+    <string name="reborn_about_themes_text">Compatible legacy Substratum themes still install and apply; Reborn engine themes open their page in Themes.</string>
 
     <!-- The platform, named in copy about the stock look -->
     <string name="reborn_platform_stock_oneui">stock One UI</string>
@@ -238,10 +230,16 @@
     <string name="reborn_platform_accent_aosp">the system accent</string>
 
     <!-- Launcher shortcuts -->
-    <string name="shortcut_studio">AMOLED Studio</string>
-    <string name="shortcut_studio_disabled">AMOLED Studio</string>
+    <string name="shortcut_studio_disabled">Open a theme in Themes, then Customize</string>
     <string name="shortcut_applied">Applied</string>
     <string name="shortcut_applied_disabled">Applied</string>
+    <string name="shortcut_themes">Themes</string>
+    <string name="shortcut_themes_disabled">Themes</string>
+    <string name="shortcut_create">Create a theme</string>
+    <string name="shortcut_create_short">Create</string>
+    <string name="shortcut_create_disabled">Create a theme</string>
+    <string name="shortcut_customize">Customize %1$s</string>
+    <string name="shortcut_customize_short">Customize</string>
 
     <!-- Setup checklist -->
     <string name="reborn_setup_title">Set up Reborn</string>
@@ -262,41 +260,47 @@
     <string name="reborn_step_hooks">SystemUI hooked</string>
     <string name="reborn_step_hooks_text">SystemUI reports the module after it starts. A restart of SystemUI loads it.</string>
     <string name="reborn_step_battery">Battery: unrestricted (recommended)</string>
-    <string name="reborn_step_battery_text">With the screen off, Android pauses background work. Unrestricted battery use lets an AMOLED apply, and the hourly re-theme of updated apps, finish with the screen off. Reborn uses no battery while nothing runs.</string>
+    <string name="reborn_step_battery_text">With the screen off, Android pauses background work. Unrestricted battery use lets a theme apply, and the hourly re-theme of updated apps, finish with the screen off. Reborn uses no battery while nothing runs.</string>
     <string name="reborn_step_recommended">Recommended</string>
     <string name="reborn_value_unrestricted">Unrestricted</string>
     <string name="reborn_value_optimized">Optimized</string>
     <string name="reborn_no_battery_settings">Could not open the battery setting</string>
 
-    <!-- AMOLED tab -->
-    <string name="reborn_amoled_apps">%1$d of %2$d apps themed</string>
-    <string name="reborn_amoled_rules">Rules</string>
-    <string name="reborn_amoled_no_rules">Not installed</string>
-    <string name="reborn_amoled_applied">Applied</string>
-    <string name="reborn_amoled_restored">Restored</string>
-    <string name="reborn_amoled_unsupported">%1$d apps refuse it</string>
-    <string name="reborn_amoled_open">Open AMOLED settings</string>
 
     <!-- Themes tab -->
     <plurals name="reborn_themes_count">
-        <item quantity="one">%d theme installed</item>
-        <item quantity="other">%d themes installed</item>
+        <item quantity="one">%d theme · Reborn engine and classic</item>
+        <item quantity="other">%d themes · Reborn engine and classic</item>
     </plurals>
-    <string name="reborn_themes_empty">No themes yet</string>
+    <string name="reborn_themes_empty">No themes installed yet</string>
     <string name="reborn_theme_failed">This theme did not open</string>
-    <string name="reborn_themes_empty_text">Install the bundled Reborn AMOLED, or a Substratum theme APK you already have on this phone.</string>
+    <string name="reborn_themes_empty_text">Install a theme from a file, or build your own</string>
     <string name="reborn_themes_search">Search themes</string>
     <string name="reborn_themes_no_match">No themes match</string>
     <string name="reborn_themes_no_match_text">Nothing installed matches “%1$s”.</string>
+    <string name="reborn_themes_filter_all">All</string>
+    <string name="reborn_themes_filter_engine">Reborn engine</string>
+    <string name="reborn_themes_filter_classic">Classic</string>
+    <string name="reborn_themes_filter_in_use">In use</string>
+    <string name="reborn_themes_filter_none">No installed theme is in “%1$s”.</string>
+    <string name="reborn_themes_builtin">Built in</string>
+    <string name="reborn_themes_installed">Installed</string>
+    <string name="reborn_themes_get_more">Get more</string>
+    <string name="reborn_themes_build_own">Build your own</string>
+    <string name="reborn_themes_build_own_text">Make a theme for the Reborn engine with the tools in Create.</string>
+    <string name="reborn_themes_build_own_action">Open Create</string>
+    <string name="reborn_theme_chip_builtin">Built in</string>
+    <string name="reborn_theme_open_page">Its page: preview, what it changes, Apply</string>
+    <string name="reborn_theme_open_classic">Open in Classic</string>
+    <string name="reborn_theme_shortcut_add">Add to home screen</string>
     <string name="reborn_theme_by">by %1$s</string>
     <string name="reborn_theme_by_version">by %1$s · %2$s</string>
     <string name="reborn_theme_package_version">%1$s · %2$s</string>
-    <string name="reborn_theme_chip_rules">Rules theme: every app</string>
-    <string name="reborn_theme_chip_overlays">Overlays</string>
+    <string name="reborn_theme_chip_rules">Reborn engine</string>
+    <string name="reborn_theme_chip_overlays">Classic overlays</string>
     <string name="reborn_theme_chip_wallpapers">Wallpapers</string>
     <string name="reborn_theme_open">Open</string>
-    <string name="reborn_theme_open_rules">Opens in AMOLED Studio</string>
-    <string name="reborn_theme_open_overlays">Pick overlays, then Build &amp; Enable</string>
+    <string name="reborn_theme_open_overlays">Its overlays in Classic: pick them, then Build &amp; Enable</string>
     <string name="reborn_theme_app_info">App info</string>
     <string name="reborn_theme_app_info_text">Storage, permissions and version in Settings</string>
     <string name="reborn_theme_shortcut">Create shortcut</string>
@@ -305,10 +309,6 @@
     <string name="reborn_theme_uninstall">Uninstall</string>
     <string name="reborn_theme_uninstall_text">Removes the theme app. Overlays it applied stay until you turn them off in Applied.</string>
     <string name="reborn_theme_shortcut_label">%1$s (%2$s)</string>
-    <string name="reborn_discover">Discover</string>
-    <string name="reborn_discover_starter_title">Reborn AMOLED</string>
-    <string name="reborn_discover_starter_text">True black for every app, built into Reborn. Installs in seconds and opens in AMOLED Studio.</string>
-    <string name="reborn_discover_install">Install</string>
     <string name="reborn_discover_file_title">Install theme from file</string>
     <string name="reborn_discover_file_text">Pick a Substratum theme APK on this phone. Reborn checks that it is a theme, then installs it with root.</string>
     <string name="reborn_discover_file_action">Choose APK…</string>
@@ -331,7 +331,7 @@
     <string name="reborn_applied_search">Search apps and themes</string>
     <string name="reborn_applied_filter_all">All</string>
     <string name="reborn_applied_filter_overlays">Theme overlays</string>
-    <string name="reborn_applied_filter_amoled">AMOLED</string>
+    <string name="reborn_applied_filter_amoled">Engine theme</string>
     <string name="reborn_applied_filter_qs">Quick Settings</string>
     <string name="reborn_applied_filter_on">Enabled</string>
     <string name="reborn_applied_filter_off">Off</string>
@@ -339,13 +339,12 @@
     <string name="reborn_applied_state_off">Off</string>
     <string name="reborn_applied_source_theme">Theme: %1$s</string>
     <string name="reborn_applied_source_overlay">Compiled overlay</string>
-    <string name="reborn_applied_source_amoled">AMOLED</string>
     <string name="reborn_applied_source_qs">Quick Settings</string>
     <string name="reborn_applied_android">Android system</string>
     <string name="reborn_applied_group_counts">%1$d on · %2$d off</string>
     <string name="reborn_applied_overlay_title">Compiled overlay</string>
     <string name="reborn_applied_overlay_fabricated">Fabricated values · %1$s</string>
-    <string name="reborn_applied_amoled_title">AMOLED colours</string>
+    <string name="reborn_applied_amoled_title">Theme colours</string>
     <string name="reborn_applied_route_overlay">Fabricated overlay</string>
     <string name="reborn_applied_route_module">LSPosed module</string>
     <string name="reborn_applied_detail_join">%1$s · %2$s</string>
@@ -364,19 +363,17 @@
     <string name="reborn_applied_restart_title">System UI restart needed</string>
     <string name="reborn_applied_restart_text">Quick Settings changes apply after a System UI restart.</string>
     <string name="reborn_applied_restart">Restart</string>
-    <string name="reborn_applied_swipe_hint">Swipe a row to turn it off · tap AMOLED rows to inspect</string>
+    <string name="reborn_applied_swipe_hint">Swipe a row to turn it off · tap theme colour rows to inspect</string>
     <string name="reborn_applied_empty">Everything is stock</string>
-    <string name="reborn_applied_empty_text">Nothing is applied right now. Apply AMOLED in the Studio, or a theme from Themes.</string>
-    <string name="reborn_applied_open_studio">AMOLED Studio</string>
-    <string name="reborn_applied_open_themes">Browse themes</string>
+    <string name="reborn_applied_empty_text">Nothing is applied right now. Pick a theme in Themes, or build your own in Create.</string>
     <string name="reborn_applied_no_match">Nothing matches</string>
     <string name="reborn_applied_no_match_text">Try another filter or search.</string>
     <string name="reborn_see_all">See all</string>
 
     <!-- Undo everything (Applied and Home) -->
     <string name="reborn_undo_title">Undo everything?</string>
-    <string name="reborn_undo_text">All of this goes back to stock. AMOLED keeps a snapshot of its colours, and you can apply it again from AMOLED Studio.</string>
-    <string name="reborn_undo_amoled">AMOLED for every app</string>
+    <string name="reborn_undo_text">All of this goes back to stock. The engine keeps a snapshot of its colours, and you can apply the theme again from its page.</string>
+    <string name="reborn_undo_amoled">The engine theme</string>
     <plurals name="reborn_undo_amoled_count">
         <item quantity="one">On %d app</item>
         <item quantity="other">On %d apps</item>
@@ -396,12 +393,12 @@
     <string name="reborn_undo_systemui_text">Restarts to load stock</string>
     <string name="reborn_undo_confirm">Undo everything</string>
     <string name="reborn_undo_running">Undoing everything</string>
-    <string name="reborn_undo_step_amoled">Remove AMOLED</string>
+    <string name="reborn_undo_step_amoled">Remove the engine theme</string>
     <string name="reborn_undo_step_overlays">Turn off theme overlays</string>
     <string name="reborn_undo_step_qs">Reset Quick Settings</string>
     <string name="reborn_undo_step_systemui">Restart System UI</string>
     <string name="reborn_undo_done_title">Back to stock</string>
-    <string name="reborn_undo_done_amoled">AMOLED removal queued: it finishes in the background</string>
+    <string name="reborn_undo_done_amoled">Theme removal queued: it finishes in the background</string>
     <plurals name="reborn_undo_done_overlays">
         <item quantity="one">%d overlay turned off</item>
         <item quantity="other">%d overlays turned off</item>
@@ -413,16 +410,16 @@
     </plurals>
     <string name="reborn_undo_done_qs">Quick Settings back to stock</string>
     <string name="reborn_undo_done_restart">System UI restarted</string>
-    <string name="reborn_undo_done_note">To bring AMOLED back, apply it again in AMOLED Studio and set the Quick Settings options there.</string>
+    <string name="reborn_undo_done_note">To bring it back, apply the theme again from its page and set the Quick Settings options in its Studio.</string>
     <string name="reborn_undo_failed_step">%1$s did not work</string>
     <string name="reborn_undo_no_root">Reborn needs root to undo anything</string>
     <string name="reborn_done">Done</string>
     <string name="reborn_action_undo_all">Undo everything</string>
-    <string name="reborn_action_undo_all_text">AMOLED, theme overlays and Quick Settings back to stock, in one go</string>
+    <string name="reborn_action_undo_all_text">The engine theme, theme overlays and Quick Settings back to stock, in one go</string>
 
-    <!-- AMOLED Studio: hero -->
+    <!-- Studio: hero -->
     <string name="reborn_studio_subtitle">Studio</string>
-    <string name="reborn_studio_overline">AMOLED for every app</string>
+    <string name="reborn_studio_overline">Reborn engine</string>
     <string name="reborn_studio_themed">%1$d of %2$d apps themed</string>
     <string name="reborn_studio_applied">Applied %1$s</string>
     <string name="reborn_studio_never_applied">Never applied</string>
@@ -431,24 +428,24 @@
     <string name="reborn_studio_apply">Apply</string>
     <string name="reborn_studio_reapply">Re-apply</string>
     <string name="reborn_studio_apply_changes">Apply changes</string>
-    <string name="reborn_studio_more_actions">More AMOLED actions</string>
-    <string name="reborn_studio_remove">Remove AMOLED</string>
+    <string name="reborn_studio_more_actions">More apply options</string>
+    <string name="reborn_studio_remove">Remove</string>
     <string name="reborn_studio_reapply_changed">Re-apply changed apps only</string>
-    <string name="reborn_studio_classic">Classic AMOLED screen</string>
-    <string name="reborn_studio_rules">Rules</string>
-    <string name="reborn_studio_rules_builtin">Built-in</string>
+    <string name="reborn_studio_classic">Classic screen</string>
+    <string name="reborn_studio_theme_row">Theme: %1$s</string>
+    <string name="reborn_studio_theme_change">Change</string>
     <string name="reborn_studio_starting">Starting…</string>
     <string name="reborn_studio_progress">%1$d of %2$d · %3$s</string>
     <string name="reborn_studio_progress_count">%1$d of %2$d</string>
-    <string name="reborn_studio_job_apply">Applying AMOLED</string>
+    <string name="reborn_studio_job_apply">Applying the theme</string>
     <string name="reborn_studio_job_apply_one">Reading colours again</string>
-    <string name="reborn_studio_job_remove">Removing AMOLED</string>
+    <string name="reborn_studio_job_remove">Removing the theme</string>
     <string name="reborn_studio_job_restore">Restoring after reboot</string>
     <string name="reborn_studio_job_systemui">Updating Quick Settings</string>
     <string name="reborn_studio_job_switch">Switching an app</string>
     <string name="reborn_studio_queued">%1$d more waiting</string>
-    <string name="reborn_studio_applying">Applying AMOLED to every app…</string>
-    <string name="reborn_studio_removing">Removing AMOLED from every app…</string>
+    <string name="reborn_studio_applying">Applying the theme to every app…</string>
+    <string name="reborn_studio_removing">Removing the theme from every app…</string>
     <string name="reborn_studio_reapplying_changed">Reading %1$d changed apps again…</string>
     <string name="reborn_studio_nothing_changed">Every app is up to date</string>
     <string name="reborn_studio_engine_classic">Engine: classic</string>
@@ -458,21 +455,20 @@
     <string name="reborn_studio_auto_theme_on">Updated apps get re-themed on their own</string>
     <string name="reborn_studio_auto_theme_off">Updated apps stay stock until you re-apply</string>
 
-    <!-- AMOLED: re-theme after updates -->
+    <!-- Re-theme after updates -->
     <string name="amoled_auto_rethemed_one">Re-themed %1$s after an update</string>
     <string name="amoled_auto_rethemed_more">Re-themed %1$s and %2$d more after updates</string>
-    <string name="amoled_ota_title">System updated: re-apply AMOLED</string>
-    <string name="amoled_ota_text">The phone was updated since AMOLED was applied. Re-apply so every app is read again.</string>
+    <string name="amoled_ota_title">System updated: re-apply your theme</string>
+    <string name="amoled_ota_text">The phone was updated since the theme was applied. Re-apply so every app is read again.</string>
     <string name="amoled_ota_reapply">Re-apply</string>
     <string name="reborn_studio_apps_loading">Still reading the app list</string>
 
-    <!-- AMOLED Studio: look -->
+    <!-- Studio: look -->
     <string name="reborn_studio_look">Look</string>
     <string name="reborn_studio_preview">Live preview</string>
     <string name="reborn_studio_preview_hint">Drag the divider: %1$s on the left, your look on the right. Nothing is applied until you tap Apply.</string>
     <string name="reborn_studio_preview_description">Before and after preview of Quick Settings and Settings</string>
     <string name="reborn_studio_stock">Stock</string>
-    <string name="reborn_studio_amoled">AMOLED</string>
     <string name="reborn_studio_surfaces">Surfaces</string>
     <string name="reborn_studio_accent">Accent</string>
     <string name="reborn_studio_accent_light">Also in light mode</string>
@@ -482,7 +478,7 @@
     <string name="reborn_studio_use">Use</string>
     <string name="reborn_studio_selected">Selected</string>
 
-    <!-- AMOLED Studio: Quick Settings designer -->
+    <!-- Studio: Quick Settings designer -->
     <string name="reborn_studio_qs">Quick Settings</string>
     <string name="reborn_studio_qs_title">Quick Settings designer</string>
     <string name="reborn_studio_qs_text">One UI 9 draws these in code: the LSPosed module carries them out in System UI.</string>
@@ -501,14 +497,14 @@
     <string name="reborn_studio_qs_confirm_title">Apply to Quick Settings?</string>
     <string name="reborn_studio_qs_confirm_text">System UI restarts for a moment.</string>
     <string name="reborn_studio_qs_confirm">Apply</string>
-    <string name="reborn_studio_qs_off">Shade, tracks and tile colours act on top of AMOLED: apply it first. The row height applies without it.</string>
+    <string name="reborn_studio_qs_off">Shade, tracks and tile colours act on top of an engine theme: apply it first. The row height applies without it.</string>
     <string name="reborn_studio_qs_applied">Quick Settings saved · restarting System UI…</string>
     <string name="reborn_studio_qs_waiting">Quick Settings apply after the running job</string>
 
-    <!-- AMOLED Studio: apps -->
+    <!-- Studio: apps -->
     <string name="reborn_studio_apps">Apps</string>
     <string name="reborn_studio_manage_apps">Manage apps (%1$d)</string>
-    <string name="reborn_studio_apps_text">Search, switch, restart and inspect every app AMOLED covers.</string>
+    <string name="reborn_studio_apps_text">Search, switch, restart and inspect every app the theme covers.</string>
     <string name="reborn_studio_search">Search apps</string>
     <string name="reborn_studio_clear_search">Clear search</string>
     <string name="reborn_studio_filter_all">All</string>
@@ -535,7 +531,7 @@
     <string name="reborn_studio_no_apps">No apps match</string>
     <string name="reborn_studio_no_apps_text">Try another filter or search.</string>
     <string name="reborn_studio_apps_empty">Nothing themed yet</string>
-    <string name="reborn_studio_apps_empty_text">Apply AMOLED once and every app it covers is listed here.</string>
+    <string name="reborn_studio_apps_empty_text">Apply the theme once and every app it covers is listed here.</string>
     <string name="reborn_studio_open_app">Open app</string>
     <string name="reborn_studio_reapply_app">Re-apply</string>
     <string name="reborn_studio_restart_app">Restart app</string>
@@ -544,18 +540,18 @@
     <string name="reborn_studio_add_scope">Add to LSPosed scope</string>
     <string name="reborn_studio_inspect">Inspect colours</string>
     <string name="reborn_studio_undo">Undo</string>
-    <string name="reborn_studio_app_on">%1$s: AMOLED on</string>
-    <string name="reborn_studio_app_off">%1$s: AMOLED off</string>
+    <string name="reborn_studio_app_on">%1$s: theme on</string>
+    <string name="reborn_studio_app_off">%1$s: theme off</string>
     <string name="reborn_studio_reapplying_app">Reading %1$s again…</string>
     <string name="reborn_studio_restarted">%1$s restarted</string>
     <string name="reborn_studio_restart_failed">%1$s was not restarted</string>
     <string name="reborn_studio_no_launch">%1$s has no screen to open</string>
     <string name="reborn_studio_scope_hint">Add %1$s to Reborn\'s scope in LSPosed</string>
 
-    <!-- AMOLED Studio: inspector -->
+    <!-- Studio: inspector -->
     <string name="reborn_studio_inspector_search">Search colours</string>
     <string name="reborn_studio_inspector_empty">Apply once to see this app\'s colours</string>
-    <string name="reborn_studio_inspector_empty_text">The inspector lists every colour AMOLED changes in this app, stock to AMOLED, with the rule that decided it.</string>
+    <string name="reborn_studio_inspector_empty_text">The inspector lists every colour the theme changes in this app, stock to themed, with the rule that decided it.</string>
     <string name="reborn_studio_inspector_hint">Long-press a colour to keep it stock or pin your own.</string>
     <string name="reborn_studio_your_rules">Your rules</string>
     <string name="reborn_studio_keep_stock">Keep stock</string>
@@ -577,6 +573,86 @@
         <item quantity="one">This app hides its colour names: %d colour shares this one, so it cannot be kept or pinned alone.</item>
         <item quantity="other">This app hides its colour names: %d colours share this one, so it cannot be kept or pinned alone.</item>
     </plurals>
+
+    <!-- Built-in themes -->
+    <string name="reborn_builtin_amoled_name">Reborn AMOLED</string>
+    <string name="reborn_builtin_amoled_text">True black for every app, with surface levels, an accent and Quick Settings options.</string>
+    <string name="reborn_builtin_author">Substratum Reborn</string>
+    <string name="reborn_builtin_byline">Built in · Reborn engine</string>
+
+    <!-- A theme's page -->
+    <string name="reborn_theme_gone">This theme is not installed</string>
+    <string name="reborn_theme_gone_text">It may have been uninstalled. Go back to Themes for the ones on this phone.</string>
+    <string name="reborn_theme_in_use">In use</string>
+    <string name="reborn_theme_preview">Preview</string>
+    <string name="reborn_theme_preview_description">%1$s against stock, Quick Settings and Settings. Drag the divider to compare.</string>
+    <string name="reborn_theme_preview_caption">Only a preview: nothing is applied</string>
+    <string name="reborn_theme_changes">What it changes</string>
+    <string name="reborn_theme_counting">Counting apps…</string>
+    <plurals name="reborn_theme_changes_apps">
+        <item quantity="one">%d app on this phone</item>
+        <item quantity="other">%d apps on this phone</item>
+    </plurals>
+    <string name="reborn_theme_changes_more">+%1$d</string>
+    <string name="reborn_theme_changes_engine">Each app\'s own colours are read on this phone. Tap to see them all.</string>
+    <string name="reborn_theme_changes_classic">The apps its overlays are made for</string>
+    <plurals name="reborn_theme_not_installed">
+        <item quantity="one">%d not installed</item>
+        <item quantity="other">%d not installed</item>
+    </plurals>
+    <string name="reborn_theme_options">Options</string>
+    <string name="reborn_theme_option_look">Look</string>
+    <string name="reborn_theme_option_look_text">Presets, surfaces and accent</string>
+    <string name="reborn_theme_option_qs">Quick Settings</string>
+    <string name="reborn_theme_option_qs_text">Shade, sliders, active tiles and row height</string>
+    <string name="reborn_theme_option_apps">Apps</string>
+    <string name="reborn_theme_option_apps_text">Every app it covers, its colours and its switch</string>
+    <string name="reborn_theme_hybrid_classic_text">This theme also has classic overlays, chosen app by app.</string>
+    <string name="reborn_theme_choose_overlays">Choose overlays</string>
+    <string name="reborn_theme_about">About</string>
+    <string name="reborn_theme_author">Author</string>
+    <string name="reborn_theme_version">Version</string>
+    <string name="reborn_theme_package">Package</string>
+    <string name="reborn_theme_updated">Updated</string>
+    <string name="reborn_theme_builtin_row">Built into Reborn</string>
+    <string name="reborn_theme_builtin_row_text">Always here: nothing to install</string>
+    <string name="reborn_theme_starter_installed">Also installed as an app</string>
+    <string name="reborn_theme_starter_install">Install as an app</string>
+    <string name="reborn_theme_starter_install_text">The same theme as a theme APK, for apps that list installed themes</string>
+    <string name="reborn_theme_starter_uninstall_text">Removes the app copy. Reborn AMOLED stays built in.</string>
+    <string name="reborn_theme_customize">Customize</string>
+    <string name="reborn_theme_more_apply">More apply options</string>
+    <string name="reborn_theme_apply_own_look">Apply with the theme\'s own look</string>
+    <string name="reborn_theme_apply_own_look_text">Forgets the surfaces and accent chosen in the Studio</string>
+    <string name="reborn_theme_applying_own_look">Applying %1$s with its own look</string>
+    <string name="reborn_theme_applying_count">Applying · %1$d / %2$d</string>
+    <string name="reborn_theme_removing">Removing…</string>
+    <string name="reborn_theme_remove_text">%1$s comes off every app: each one goes back to its stock dark mode and System UI restarts. The current colours are kept in a snapshot on the device.</string>
+    <string name="reborn_theme_replace_title">Replace %1$s with %2$s?</string>
+    <string name="reborn_theme_replace_text">Only one engine theme is on at a time. Classic overlays stay.</string>
+    <string name="reborn_theme_keep_look">Keep my look (surfaces and accent)</string>
+    <string name="reborn_theme_keep_look_text">Off: the new theme\'s own surfaces and accent</string>
+    <string name="reborn_theme_replace">Replace</string>
+
+    <!-- Create -->
+    <string name="reborn_create_subtitle">Build themes for the Reborn engine</string>
+    <string name="reborn_create_overline">For themers</string>
+    <string name="reborn_create_headline">Your theme on every app</string>
+    <string name="reborn_create_step_start">Start</string>
+    <string name="reborn_create_step_test">Test on this phone</string>
+    <string name="reborn_create_step_share">Share</string>
+    <string name="reborn_create_design">Design in the Studio</string>
+    <string name="reborn_create_tools">Tools</string>
+    <string name="reborn_create_inspect">Inspect an app</string>
+    <string name="reborn_create_inspect_text">Resource names, values and the rule behind each colour</string>
+    <string name="reborn_create_roles">Preview roles</string>
+    <string name="reborn_create_roles_text">The resource names Reborn\'s previews read</string>
+    <string name="reborn_create_roles_sheet_text">%1$d roles: the app and resource each preview colour comes from, with its stock dark value. Tap one to copy its name.</string>
+    <string name="reborn_create_roles_code">Drawn in code</string>
+    <string name="reborn_create_guide">Theming guide</string>
+    <string name="reborn_create_guide_text">How One UI 9 and AOSP take themes</string>
+    <string name="reborn_inspect_copy_name">Copy name</string>
+    <string name="reborn_inspect_copied">Copied %1$s</string>
 
     <!-- Mock Quick Settings and Settings drawn in the preview -->
     <string name="reborn_mock_time" translatable="false">12:45</string>

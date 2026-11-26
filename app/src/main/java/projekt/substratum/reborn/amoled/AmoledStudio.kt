@@ -28,7 +28,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +48,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,7 +61,6 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -119,7 +116,13 @@ import projekt.substratum.common.platform.AmoledLevel
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.common.platform.AmoledState
 import projekt.substratum.common.platform.QsOptions
+import projekt.substratum.common.Packages
 import projekt.substratum.reborn.RebornActions
+import projekt.substratum.reborn.RebornCache
+import projekt.substratum.reborn.components.rememberRoot
+import projekt.substratum.reborn.nav.StudioSection
+import projekt.substratum.reborn.nav.ThemeId
+import projekt.substratum.reborn.nav.enginePackage
 import projekt.substratum.reborn.components.stockAccentName
 import projekt.substratum.reborn.components.stockLookName
 import projekt.substratum.reborn.components.ChipState
@@ -137,6 +140,7 @@ import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.reborn.components.mock.MockSide
 import projekt.substratum.reborn.components.mock.QsMock
 import projekt.substratum.reborn.components.mock.SettingsMock
+import projekt.substratum.reborn.components.design.BackIcon
 import projekt.substratum.reborn.components.design.HeroCard
 import projekt.substratum.reborn.components.design.HueTrack
 import projekt.substratum.reborn.components.design.MenuAction
@@ -153,16 +157,26 @@ import projekt.substratum.reborn.theme.StatusColors
 import java.util.Locale
 
 /**
- * AMOLED Studio, the AMOLED tab: the state and Apply (with its progress), the look (presets,
- * surfaces, accent) over a live before/after preview, the Quick Settings designer, and the apps,
- * each with its colours in an inspector. Everything it shows lives in [StudioState].
+ * The Studio of an engine theme ([id]), pushed over its page: the state and Apply (with its
+ * progress), the look (presets, surfaces, accent) over a live before/after preview, the Quick
+ * Settings designer, and the apps, each with its colours in an inspector. Everything it shows
+ * lives in [StudioState]; [section] scrolls to a part of it once, when the route opens.
+ *
+ * @param onOpenThemes "Change" on the theme row: the Themes tab
  */
 @Composable
-fun AmoledStudio() {
+fun AmoledStudio(id: ThemeId, section: StudioSection?, onBack: () -> Unit, onOpenThemes: () -> Unit) {
     val context = LocalContext.current
+    // Counted: a Studio still composed by a route transition never detaches the next one
     DisposableEffect(Unit) {
         StudioState.attach(context)
         onDispose { StudioState.detach() }
+    }
+    // Apply uses this theme's rules (the built-in ones for Reborn AMOLED)
+    LaunchedEffect(id) { StudioState.requestTheme(id.enginePackage) }
+    val builtInName = stringResource(R.string.reborn_builtin_amoled_name)
+    val name by rememberRoot(id, initial = RebornCache.themes?.find(id)?.name ?: id.enginePackage ?: builtInName) {
+        id.enginePackage?.let { Packages.getPackageName(context, it) ?: it } ?: builtInName
     }
     val resume = projekt.substratum.reborn.components.rememberResumeCount()
     LaunchedEffect(resume) { if (resume > 0) StudioState.refreshAll() }
@@ -182,6 +196,8 @@ fun AmoledStudio() {
     }
 
     var appsPage by rememberSaveable { mutableStateOf<String?>(null) }
+    // The section is scrolled to once, when the route opens (not again after the app list)
+    var sectionShown by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = appsPage != null) { appsPage = null }
     // Kept out here, so coming back from the app list finds the Studio where it was
     val mainList = rememberLazyListState()
@@ -211,9 +227,14 @@ fun AmoledStudio() {
             )
         } else {
             StudioMain(
+                name = name ?: builtInName,
+                section = section.takeIf { !sectionShown },
+                onSectionShown = { sectionShown = true },
                 listState = mainList,
                 barState = mainBar,
                 animate = animate,
+                onBack = onBack,
+                onOpenThemes = onOpenThemes,
                 onOpenApps = { appsPage = it.name },
             )
         }
@@ -221,6 +242,10 @@ fun AmoledStudio() {
 }
 
 private val Levels = listOf(AmoledLevel.PURE, AmoledLevel.DIM, AmoledLevel.ELEVATED, AmoledLevel.TINTED)
+
+/** The Studio's list items in their order (keys), for scrolling to a section */
+private val STUDIO_ITEMS = listOf("hero", "look_header", "presets", "preview", "surfaces", "accent", "qs_header", "qs",
+    "apps_header", "apps")
 
 @StringRes
 internal fun levelLabel(level: AmoledLevel): Int = when (level) {
@@ -264,9 +289,14 @@ private fun accentText(accent: String?): String = stringResource(accentLabel(acc
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun StudioMain(
+    name: String,
+    section: StudioSection?,
+    onSectionShown: () -> Unit,
     listState: LazyListState,
     barState: TopAppBarState,
     animate: Boolean,
+    onBack: () -> Unit,
+    onOpenThemes: () -> Unit,
     onOpenApps: (AppFilter) -> Unit,
 ) {
     val context = LocalContext.current
@@ -287,9 +317,22 @@ private fun StudioMain(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(barState)
     val gutter = Modifier.padding(horizontal = 16.dp)
+    // Opened from a page's Options row: scroll to that part once (not again when coming back)
+    LaunchedEffect(section) {
+        if (section == null) return@LaunchedEffect
+        onSectionShown()
+        val index = when (section) {
+            StudioSection.Look -> STUDIO_ITEMS.indexOf("look_header")
+            StudioSection.QuickSettings -> STUDIO_ITEMS.indexOf("qs_header")
+            StudioSection.Apps -> STUDIO_ITEMS.indexOf("apps_header")
+        }
+        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
+        listState.animateScrollToItem(index)
+    }
     RebornFlexibleScaffold(
-        title = stringResource(R.string.reborn_tab_amoled),
+        title = name,
         subtitle = stringResource(R.string.reborn_studio_subtitle),
+        navigationIcon = { BackIcon(onBack) },
         scrollBehavior = scrollBehavior,
     ) { padding ->
         LazyColumn(
@@ -308,8 +351,7 @@ private fun StudioMain(
                         apps = apps,
                         job = job,
                         pending = pending,
-                        themes = themes,
-                        theme = theme,
+                        themeName = name,
                         modifier = gutter,
                         onApply = StudioState::applyAll,
                         onRemove = StudioState::remove,
@@ -317,7 +359,7 @@ private fun StudioMain(
                         onClassic = {
                             RebornActions.openClassicAmoled(context, theme, themes.firstOrNull { it.pkg == theme }?.label)
                         },
-                        onTheme = StudioState::chooseTheme,
+                        onChangeTheme = onOpenThemes,
                         options = EngineOptions(
                             classic = engineClassic,
                             autoTheme = autoTheme,
@@ -348,7 +390,7 @@ private fun StudioMain(
                 }
             }
             item(key = "preview") {
-                Entrance(3, animate) { PreviewCard(look, previews, qs, gutter) }
+                Entrance(3, animate) { PreviewCard(name, look, previews, qs, gutter) }
             }
             item(key = "surfaces") {
                 Entrance(4, animate) { SurfacesCard(look, gutter, StudioState::chooseLevel) }
@@ -387,16 +429,15 @@ private fun StudioMain(
 private fun StudioHeroCard(
     summary: StudioState.Summary?,
     apps: List<StudioState.AppRow>?,
-    job: StudioState.JobUi?,
+    job: JobUi?,
     pending: Boolean,
-    themes: List<StudioState.RulesTheme>,
-    theme: String?,
+    themeName: String,
     modifier: Modifier,
     onApply: () -> Unit,
     onRemove: () -> Unit,
     onReapplyChanged: () -> Unit,
     onClassic: () -> Unit,
-    onTheme: (String?) -> Unit,
+    onChangeTheme: () -> Unit,
     options: EngineOptions,
 ) {
     val colors = LocalRebornColors.current
@@ -496,10 +537,10 @@ private fun StudioHeroCard(
         Spacer(Modifier.height(18.dp))
         HorizontalDivider(color = if (colors.dark) colors.cardBorder else scheme.outlineVariant)
         Spacer(Modifier.height(14.dp))
-        RulesPicker(themes, theme, enabled = !running, onTheme = onTheme)
+        ThemeRow(themeName, enabled = !running, onChange = onChangeTheme)
         Spacer(Modifier.height(18.dp))
         // The last job stays on screen while its progress fades out
-        val last = remember { arrayOfNulls<StudioState.JobUi>(1) }
+        val last = remember { arrayOfNulls<JobUi>(1) }
         if (job != null) last[0] = job
         AnimatedContent(
             targetState = running,
@@ -542,40 +583,28 @@ private fun relativeTime(time: Long): String =
     if (time <= 0L) stringResource(R.string.reborn_never)
     else DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
 
+/** "Theme: Reborn AMOLED · Change": the theme is chosen in Themes, which Change opens. */
 @Composable
-private fun RulesPicker(
-    themes: List<StudioState.RulesTheme>,
-    theme: String?,
-    enabled: Boolean,
-    onTheme: (String?) -> Unit,
-) {
+private fun ThemeRow(name: String, enabled: Boolean, onChange: () -> Unit) {
     val haptics = LocalHapticFeedback.current
-    Text(
-        stringResource(R.string.reborn_studio_rules),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(8.dp))
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        val options = listOf<Pair<String?, String>>(null to stringResource(R.string.reborn_studio_rules_builtin)) +
-            themes.map { it.pkg to it.label }
-        options.forEach { (pkg, label) ->
-            val selected = theme == pkg
-            FilterChip(
-                selected = selected,
-                enabled = enabled,
-                onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    onTheme(pkg)
-                },
-                label = { Text(label, maxLines = 1) },
-                leadingIcon = if (selected) {
-                    { Icon(painterResource(R.drawable.ic_reborn_check), null, Modifier.size(18.dp)) }
-                } else null,
-            )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            stringResource(R.string.reborn_studio_theme_row, name),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(
+            onClick = {
+                haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                onChange()
+            },
+            enabled = enabled,
+            shapes = ButtonDefaults.shapes(),
+        ) {
+            Text(stringResource(R.string.reborn_studio_theme_change))
         }
     }
 }
@@ -720,7 +749,7 @@ private fun ApplyButtons(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun JobProgress(job: StudioState.JobUi) {
+private fun JobProgress(job: JobUi) {
     val scheme = MaterialTheme.colorScheme
     val motion = MaterialTheme.motionScheme
     val progress by animateFloatAsState(
@@ -919,6 +948,7 @@ private fun PresetCard(
 
 @Composable
 private fun PreviewCard(
+    themeName: String,
     look: StudioState.Look?,
     previews: StudioState.Previews?,
     qs: StudioState.QsSaved?,
@@ -947,7 +977,7 @@ private fun PreviewCard(
         }
         BeforeAfter(
             beforeLabel = stringResource(R.string.reborn_studio_stock),
-            afterLabel = stringResource(R.string.reborn_studio_amoled),
+            afterLabel = themeName,
             description = stringResource(R.string.reborn_studio_preview_description),
             modifier = Modifier.fillMaxWidth(),
             frameShape = RoundedCornerShape(22.dp),

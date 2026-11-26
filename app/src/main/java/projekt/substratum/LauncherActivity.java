@@ -26,8 +26,12 @@ public class LauncherActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, RebornActivity.class);
         Intent from = getIntent();
-        if (from != null && from.hasExtra(RebornActivity.EXTRA_TAB)) {
-            intent.putExtra(RebornActivity.EXTRA_TAB, from.getStringExtra(RebornActivity.EXTRA_TAB));
+        if (from != null) {
+            // A tab, a theme and what of it to open (RebornLinks resolves them)
+            for (String extra : new String[]{RebornActivity.EXTRA_TAB, RebornActivity.EXTRA_THEME,
+                    RebornActivity.EXTRA_OPEN}) {
+                if (from.hasExtra(extra)) intent.putExtra(extra, from.getStringExtra(extra));
+            }
         }
         this.startActivity(intent);
         this.overridePendingTransition(0, 0);

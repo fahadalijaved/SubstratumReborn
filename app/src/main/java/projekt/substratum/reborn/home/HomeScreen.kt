@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -101,6 +102,8 @@ import projekt.substratum.reborn.components.design.heroNumber
 import projekt.substratum.reborn.components.design.overline
 import projekt.substratum.reborn.components.design.rememberRefreshableRoot
 import projekt.substratum.reborn.components.rememberRoot
+import projekt.substratum.reborn.nav.OnReselect
+import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.reborn.showcase.ShowcaseCarousel
 import projekt.substratum.reborn.theme.LocalRebornColors
 import java.util.Locale
@@ -111,11 +114,17 @@ private enum class Confirm { Pause, Resume, SoftReboot, RestartSystemUi }
 @Composable
 fun HomeScreen(
     onOpenSetup: () -> Unit,
-    onOpenAmoled: () -> Unit,
+    /** The Studio of the engine theme in use (Reborn AMOLED when none) */
+    onOpenStudio: () -> Unit,
+    /** A theme's page (the showcase opens Reborn AMOLED's) */
+    onOpenTheme: (ThemeId) -> Unit,
+    onOpenThemes: () -> Unit,
     onOpenApplied: () -> Unit,
     onOpenAbout: () -> Unit,
     /** Nothing covers Home (About, a sheet): its showcase may page on its own */
     active: Boolean = true,
+    /** The tab's reselect count: scrolls to the top and expands the bar */
+    reselect: Int = 0,
 ) {
     val context = LocalContext.current
     val snackbar = rememberSnackbar()
@@ -209,6 +218,11 @@ fun HomeScreen(
     }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val list = rememberLazyListState()
+    OnReselect(reselect) {
+        scrollBehavior.state.heightOffset = 0f
+        list.animateScrollToItem(0)
+    }
     RebornFlexibleScaffold(
         title = stringResource(R.string.reborn_home_title),
         subtitle = stringResource(R.string.reborn_home_subtitle),
@@ -248,6 +262,7 @@ fun HomeScreen(
             scrollConnection = scrollBehavior.nestedScrollConnection,
         ) {
             LazyColumn(
+                state = list,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 16.dp,
@@ -286,7 +301,13 @@ fun HomeScreen(
                 }
                 item(key = "showcase") {
                     Entrance(1, animate) {
-                        ShowcaseCarousel(theme = applied?.amoled?.theme, onOpenStudio = onOpenAmoled, active = active)
+                        ShowcaseCarousel(
+                            theme = applied?.amoled?.theme,
+                            themeName = amoledName(applied?.amoled),
+                            onOpen = { onOpenTheme(ThemeId.RebornAmoled) },
+                            onExplore = onOpenThemes,
+                            active = active,
+                        )
                     }
                 }
                 item(key = "applied_header") {
@@ -302,7 +323,7 @@ fun HomeScreen(
                     }
                 }
                 item(key = "amoled") {
-                    Entrance(3, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
+                    Entrance(3, animate) { AmoledCard(applied?.amoled, onOpenStudio) }
                 }
                 item(key = "applied_tiles") {
                     Entrance(4, animate) { AppliedTiles(applied, onOpenApplied) }
@@ -514,6 +535,15 @@ private fun StatusHero(model: HomeStatus?, readAt: Long) {
     }
 }
 
+/** The engine theme's name: the one in use, else the built-in Reborn AMOLED (also for its starter APK). */
+@Composable
+internal fun amoledName(amoled: AmoledSummary?): String {
+    val theme = amoled?.theme
+    return if (amoled == null || theme == null || theme == RebornActions.AMOLED_THEME || amoled.themeName.isNullOrBlank()) {
+        stringResource(R.string.reborn_builtin_amoled_name)
+    } else amoled.themeName.toString()
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
@@ -531,7 +561,7 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.reborn_amoled_title),
+                    amoledName(amoled),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                 )
                 Text(

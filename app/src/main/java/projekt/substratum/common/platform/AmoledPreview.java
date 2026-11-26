@@ -87,18 +87,25 @@ public final class AmoledPreview {
      * call off the main thread (and keep the result: it only changes with an apply).
      */
     public static Stock stock(Context context) {
-        Stock stock;
-        try (InputStream in = context.getAssets().open(ASSET)) {
-            stock = Stock.fromJson(new String(readAll(in), StandardCharsets.UTF_8));
-        } catch (IOException | JSONException | RuntimeException e) {
-            Log.w(TAG, "No preview colors: " + e);
-            stock = new Stock();
-        }
+        Stock stock = assetStock(context);
         for (String pkg : stock.packages()) {
             AmoledChange.Record record = AmoledChange.read(context, pkg);
             if (record != null) stock.use(record);
         }
         return stock;
+    }
+
+    /**
+     * The stock colors as shipped ({@link #ASSET}), without the device's own: what a themer's
+     * resource names refer to. Reads an asset: call off the main thread.
+     */
+    public static Stock assetStock(Context context) {
+        try (InputStream in = context.getAssets().open(ASSET)) {
+            return Stock.fromJson(new String(readAll(in), StandardCharsets.UTF_8));
+        } catch (IOException | JSONException | RuntimeException e) {
+            Log.w(TAG, "No preview colors: " + e);
+            return new Stock();
+        }
     }
 
     /**
@@ -195,6 +202,22 @@ public final class AmoledPreview {
         public Integer stock(String role) {
             Role r = roles.get(role);
             return r == null ? null : r.stock;
+        }
+
+        /**
+         * The app that paints a role, or null
+         */
+        public String packageOf(String role) {
+            Role r = roles.get(role);
+            return r == null ? null : r.packageName;
+        }
+
+        /**
+         * The color resource a role is read from, or null (unknown role, or drawn in code)
+         */
+        public String nameOf(String role) {
+            Role r = roles.get(role);
+            return r == null ? null : r.name;
         }
 
         int primary50(String pkg) {

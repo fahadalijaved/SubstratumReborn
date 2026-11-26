@@ -11,14 +11,16 @@ demo data and show nothing personal.
 
 | File | Screen and state | Crop |
 |---|---|---|
-| `home.png` | Reborn Home, dark mode, AMOLED applied. Status hero all green, the *See the difference* carousel on its Quick Settings page with the divider near the middle. No snackbar. | Full screen, status bar included only in demo mode. Keep the *Try a look* row out of frame. |
-| `studio.png` | AMOLED tab (AMOLED Studio), scrolled so the Look presets and the Live preview show, preset *Pure black* or *Elevated cards* selected, nothing pending. | Full screen. Only the first two preset cards in view. |
-| `inspector.png` | AMOLED Studio, Manage apps, the inspector of **Settings** (`com.android.settings`): its colour list, stock to AMOLED, with rules. | Full screen. The app list behind it must not be visible. |
-| `qs-before.png` | The real Quick Settings panel, fully expanded, **AMOLED removed** (stock One UI 9 dark mode). | The panel only, from the top of the tiles to the media card. |
-| `qs-after.png` | The same panel with AMOLED applied (Pure black, opaque shade, dark tracks). Same tiles in the same order as `qs-before.png`. | Same crop as `qs-before.png`, pixel for pixel. |
-| `settings-before.png` | Settings > **Display**, AMOLED removed. Not the main Settings page (it shows the account card). | From the page title to the fourth row. |
-| `settings-after.png` | Settings > Display with AMOLED applied, scrolled to the same position. | Same crop as `settings-before.png`. |
-| `applied.png` | Applied tab, filter *Quick Settings* or *AMOLED* with the search set to a system app, so only system entries show (Android system, System UI, Settings). | Full screen. |
+| `home.png` | Reborn Home, dark mode, Reborn AMOLED applied. Status hero all green, the *See the difference* carousel on its Quick Settings page with the divider near the middle. No snackbar. | Full screen, status bar included only in demo mode. Keep the *Try a look* row out of frame. |
+| `themes.png` | Themes tab, dark mode, scrolled so only the **Built in** section shows (Reborn AMOLED). No installed theme in frame. | Full screen. Crop above the *Installed* header if it shows. |
+| `detail.png` | Themes › **Reborn AMOLED**: its page at the top, the hero, the Preview and the floating toolbar (Apply or Customize). | Full screen. |
+| `studio.png` | Themes › Reborn AMOLED › **Customize** (its Studio), scrolled so the Look presets and the Live preview show, preset *Pure black* or *Elevated cards* selected, nothing pending. | Full screen. Only the first two preset cards in view. |
+| `inspector.png` | Create › **Inspect an app** › **Settings** (`com.android.settings`): its colour list, stock to themed, with rules. | Full screen. The app list behind it must not be visible. |
+| `qs-before.png` | The real Quick Settings panel, fully expanded, **Reborn AMOLED removed** (stock One UI 9 dark mode). | The panel only, from the top of the tiles to the media card. |
+| `qs-after.png` | The same panel with Reborn AMOLED applied (Pure black, opaque shade, dark tracks). Same tiles in the same order as `qs-before.png`. | Same crop as `qs-before.png`, pixel for pixel. |
+| `settings-before.png` | Settings > **Display**, Reborn AMOLED removed. Not the main Settings page (it shows the account card). | From the page title to the fourth row. |
+| `settings-after.png` | Settings > Display with Reborn AMOLED applied, scrolled to the same position. | Same crop as `settings-before.png`. |
+| `applied.png` | Applied tab, filter *Quick Settings* or *Engine theme* with the search set to a system app, so only system entries show (Android system, System UI, Settings). | Full screen. |
 
 `qs-before.png` and `qs-after.png` (and the two Settings shots) are a pair: take them back to
 back, with the same wallpaper, brightness, tiles and scroll position, so the README can show
@@ -59,8 +61,9 @@ demo command, crop the status bar out instead of capturing the real one.
 - Wi-Fi network names, Bluetooth device names, carrier names, IMEI or serial numbers.
 - Location, maps or anything that reveals a place.
 - Personal app lists: a list of installed apps is only shown filtered to system apps.
-- Third-party themes: no shots of the Themes tab, and no third-party theme, or a look named
-  after one, in any shot. Use the Pure black, Elevated cards or Dim look.
+- Third-party themes: the Themes tab only with its built-in themes in frame (`themes.png`), and
+  no third-party theme, or a look named after one, in any shot. Use the Pure black, Elevated
+  cards or Dim look.
 
 ### The files
 

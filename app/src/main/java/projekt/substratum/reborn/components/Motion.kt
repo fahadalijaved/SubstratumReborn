@@ -65,8 +65,8 @@ fun Entrance(index: Int, animate: Boolean = true, content: @Composable () -> Uni
     }
 }
 
-/** The pair of shapes the status hero breathes between. */
-enum class HeroShape { Calm, Alert, Alarm, Idle }
+/** The pair of shapes the status hero breathes between. Bloom is Create's flower. */
+enum class HeroShape { Calm, Alert, Alarm, Idle, Bloom }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun shapesOf(shape: HeroShape): Pair<RoundedPolygon, RoundedPolygon> = when (shape) {
@@ -74,6 +74,7 @@ private fun shapesOf(shape: HeroShape): Pair<RoundedPolygon, RoundedPolygon> = w
     HeroShape.Alert -> MaterialShapes.SoftBurst to MaterialShapes.Cookie6Sided
     HeroShape.Alarm -> MaterialShapes.Burst to MaterialShapes.SoftBoom
     HeroShape.Idle -> MaterialShapes.Circle to MaterialShapes.Cookie4Sided
+    HeroShape.Bloom -> MaterialShapes.Flower to MaterialShapes.SoftBurst
 }
 
 /**

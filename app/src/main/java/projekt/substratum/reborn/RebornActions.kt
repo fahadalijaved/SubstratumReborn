@@ -87,7 +87,15 @@ object RebornActions {
         start(context, Intent(context, RebornSettingsActivity::class.java))
     }
 
-    /** The AMOLED rules theme in use (or the bundled one) and its name, read on IO. */
+    /**
+     * The package the engine theme in use applies with: null when the engine is off or uses the
+     * built-in rules (Reborn AMOLED). Reads the state file on IO.
+     */
+    suspend fun engineThemeInUse(context: Context): String? = onIo {
+        runCatching { AmoledState.read(context).takeIf { it.enabled }?.rulesTheme }.getOrNull()
+    }
+
+    /** The engine theme in use (or the bundled one) and its name, read on IO. */
     fun amoledTheme(context: Context, state: AmoledState?): Pair<String?, CharSequence?> {
         val theme = state?.rulesTheme?.takeIf { Packages.isPackageInstalled(context, it) }
             ?: AMOLED_THEME.takeIf { Packages.isPackageInstalled(context, it) }
@@ -100,7 +108,7 @@ object RebornActions {
         AmoledSettingsActivity.launch(context, theme, name)
     }
 
-    /** The AMOLED screen of earlier versions, kept as "Classic AMOLED screen". */
+    /** The engine screen of earlier versions, kept as the Studio menu's "Classic screen". */
     fun openClassicAmoled(context: Context, theme: String?, name: CharSequence?) {
         AmoledSettingsActivity.launchClassic(context, theme, name)
     }

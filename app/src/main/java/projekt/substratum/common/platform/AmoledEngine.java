@@ -160,6 +160,39 @@ public final class AmoledEngine {
      * first.
      */
     static List<String> targets(Context context, AmoledRules rules) {
+        Set<String> list = selection(context, rules);
+        List<String> targets = new ArrayList<>(list);
+        // Applied before: kept up to date, or cleaned up when gone or no longer covered
+        for (Map.Entry<String, AmoledState.App> entry :
+                AmoledState.read(context).perApp.entrySet()) {
+            if (entry.getValue().route != Route.NONE && !list.contains(entry.getKey())) {
+                targets.add(entry.getKey());
+            }
+        }
+        sortFirst(targets);
+        return targets;
+    }
+
+    /**
+     * The installed apps these rules cover, as an apply selects them (the planner's own selection,
+     * without the clean-up of apps applied before), the most looked at first. For a theme's page
+     * ("229 apps on this phone"). Blocking (the package manager); needs no root.
+     */
+    public static List<String> coveredPackages(Context context, AmoledRules rules) {
+        List<String> covered = new ArrayList<>(selection(context, rules));
+        sortFirst(covered);
+        return covered;
+    }
+
+    private static void sortFirst(List<String> targets) {
+        targets.sort((a, b) -> {
+            int ia = FIRST.indexOf(a), ib = FIRST.indexOf(b);
+            return Integer.compare(ia < 0 ? FIRST.size() : ia, ib < 0 ? FIRST.size() : ib);
+        });
+    }
+
+    /** Covered apps with an activity, the framework, System UI, input methods and widget providers. */
+    private static Set<String> selection(Context context, AmoledRules rules) {
         PackageManager pm = context.getPackageManager();
         Set<String> list = new LinkedHashSet<>();
         List<PackageInfo> installed;
@@ -205,19 +238,7 @@ public final class AmoledEngine {
         for (String pkg : extra) {
             if (rules.covers(pkg) && SystemAmoled.installed(context, pkg)) list.add(pkg);
         }
-        List<String> targets = new ArrayList<>(list);
-        // Applied before: kept up to date, or cleaned up when gone or no longer covered
-        for (Map.Entry<String, AmoledState.App> entry :
-                AmoledState.read(context).perApp.entrySet()) {
-            if (entry.getValue().route != Route.NONE && !list.contains(entry.getKey())) {
-                targets.add(entry.getKey());
-            }
-        }
-        targets.sort((a, b) -> {
-            int ia = FIRST.indexOf(a), ib = FIRST.indexOf(b);
-            return Integer.compare(ia < 0 ? FIRST.size() : ia, ib < 0 ? FIRST.size() : ib);
-        });
-        return targets;
+        return list;
     }
 
     /**

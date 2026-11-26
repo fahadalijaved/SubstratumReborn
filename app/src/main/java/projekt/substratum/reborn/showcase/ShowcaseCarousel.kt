@@ -119,7 +119,7 @@ private fun loadLooks(context: Context, theme: String?): ShowcaseLooks {
  * Home's "See the difference": a before/after carousel of Quick Settings, Settings, an app and
  * notifications with a popup, drawn with the engine's own colours for the saved look. It pages on
  * its own (paused while touched, while the app is in the background, and with animations off);
- * the divider drags from its handle, and a tap opens AMOLED Studio. "Try a look" previews a
+ * the divider drags from its handle, and a tap opens the theme's page. "Try a look" previews a
  * preset in place: nothing is saved or applied.
  *
  * @param theme The rules theme AMOLED uses (null: the built-in rules)
@@ -130,7 +130,9 @@ private fun loadLooks(context: Context, theme: String?): ShowcaseLooks {
 @Composable
 fun ShowcaseCarousel(
     theme: String?,
-    onOpenStudio: () -> Unit,
+    themeName: String,
+    onOpen: () -> Unit,
+    onExplore: () -> Unit,
     modifier: Modifier = Modifier,
     active: Boolean = true,
 ) {
@@ -204,7 +206,7 @@ fun ShowcaseCarousel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            FilledTonalIconButton(onClick = onOpenStudio) {
+            FilledTonalIconButton(onClick = onExplore) {
                 Icon(
                     painterResource(R.drawable.ic_reborn_chevron),
                     contentDescription = stringResource(R.string.reborn_showcase_open),
@@ -222,10 +224,10 @@ fun ShowcaseCarousel(
             val page = pages[index]
             BeforeAfter(
                 beforeLabel = stringResource(R.string.reborn_studio_stock),
-                afterLabel = stringResource(R.string.reborn_studio_amoled),
-                description = stringResource(R.string.reborn_showcase_page_description, stringResource(page.title)),
+                afterLabel = themeName,
+                description = stringResource(R.string.reborn_showcase_page_description, stringResource(page.title), themeName),
                 frameShape = RoundedCornerShape(22.dp),
-                onClick = onOpenStudio,
+                onClick = onOpen,
                 handleOnly = true,
                 // Each page sweeps its divider across as it comes into view
                 sweep = motion && pager.settledPage == index,

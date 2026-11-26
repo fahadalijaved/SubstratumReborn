@@ -113,7 +113,7 @@ fun PaletteStrip(
  * The theme card: art (16:9) with a scrim, avatar, name and byline over it; chips and the
  * palette below. Corners spring 28 to 20 dp and the card scales to 0.97 while pressed. Long
  * press = LongPress haptic + [onLongClick] (anchor a RebornMenu to the card for it).
- * [artModifier] lets E1 attach Modifier.sharedBounds(...) for the card-to-detail transition.
+ * [artModifier] and [nameModifier] carry the shared bounds of the card-to-page transition.
  * [supporting] is a quiet line above the chips (package and version for namesakes). The chips
  * wrap onto a second line when they do not fit.
  */
@@ -126,6 +126,7 @@ fun ThemeCard(
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
     artModifier: Modifier = Modifier,
+    nameModifier: Modifier = Modifier,
     inUse: Boolean = false,
     palette: List<Color> = emptyList(),
     supporting: String? = null,
@@ -198,6 +199,7 @@ fun ThemeCard(
                             color = Color.White,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
+                            modifier = nameModifier,
                         )
                         Text(
                             byline,

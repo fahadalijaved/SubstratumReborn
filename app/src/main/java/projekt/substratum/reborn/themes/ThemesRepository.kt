@@ -21,7 +21,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import projekt.substratum.common.Packages
 import projekt.substratum.common.References
 import projekt.substratum.common.platform.AmoledRules
+import projekt.substratum.common.platform.AmoledState
 import projekt.substratum.reborn.RebornActions
+import projekt.substratum.reborn.RebornCache
+import projekt.substratum.reborn.applied.AppliedRepository
+import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.util.helpers.Root
 import java.io.File
 import java.util.Locale
@@ -30,10 +34,35 @@ import kotlin.math.roundToInt
 
 private const val TAG = "RebornThemes"
 
+/** What a theme is to the engine: built into Reborn, a Reborn engine (rules) APK, a classic overlay APK, or both. */
+enum class ThemeKind {
+    BUILT_IN,
+    /** An APK with assets/amoled/rules.json */
+    ENGINE,
+    /** An APK with assets/overlays */
+    CLASSIC,
+    /** Both of the above */
+    HYBRID;
+
+    /** Applied by the engine (one at a time) */
+    val engine: Boolean get() = this != CLASSIC
+    /** Has overlays to choose (InformationActivity) */
+    val classic: Boolean get() = this == CLASSIC || this == HYBRID
+
+    companion object {
+        fun of(rules: Boolean, overlays: Boolean): ThemeKind = when {
+            rules && overlays -> HYBRID
+            rules -> ENGINE
+            else -> CLASSIC
+        }
+    }
+}
+
 /**
- * An installed theme. [rules] marks an AMOLED rules theme (opens AMOLED Studio). [namesake]: another
- * installed theme has the same name (a port next to its original), so the card also shows the
- * package and version.
+ * A theme: built in ([ThemeKind.BUILT_IN], whose [pkg] is its id key) or installed. [rules] marks a
+ * Reborn engine theme (assets/amoled/rules.json). [inUse]: the engine applies with it now, or
+ * (classic) some of its overlays are on. [namesake]: another installed theme has the same name (a
+ * port next to its original), so the card also shows the package and version.
  */
 @Immutable
 data class ThemeItem(
@@ -49,28 +78,61 @@ data class ThemeItem(
     /** A user app: can be uninstalled */
     val removable: Boolean,
     val namesake: Boolean = false,
+    val kind: ThemeKind = ThemeKind.of(rules, overlays),
+    val id: ThemeId = ThemeId.ofPackage(pkg),
+    val inUse: Boolean = false,
 ) {
     /** Lower case name, author and package, for search */
     val search: String = (name + '\n' + author + '\n' + pkg).lowercase(Locale.ROOT)
+
+    val builtIn: Boolean get() = kind == ThemeKind.BUILT_IN
 }
 
-/** The Themes tab's read: the themes, and whether the bundled starter is installed. */
+/**
+ * The Themes tab's read: built-ins first, then the installed themes; whether the bundled starter
+ * APK is installed (it is shown as the built-in Reborn AMOLED, not again under Installed), and
+ * the engine theme in use.
+ */
 @Immutable
-data class ThemesSnapshot(val themes: List<ThemeItem>, val starterInstalled: Boolean)
+data class ThemesSnapshot(
+    val themes: List<ThemeItem>,
+    val starterInstalled: Boolean,
+    /** The engine theme applied now, or null when the engine is off */
+    val engineInUse: ThemeId? = null,
+) {
+    val builtIns: List<ThemeItem> get() = themes.filter { it.builtIn }
+    val installed: List<ThemeItem> get() = themes.filter { !it.builtIn }
 
-/** Blocking: PackageManager and each theme's asset folders. */
+    fun find(id: ThemeId): ThemeItem? = themes.firstOrNull { it.id == id }
+}
+
+/** Blocking: PackageManager, each theme's asset folders, the engine's state and the applied overlays. */
 fun loadThemes(context: Context): ThemesSnapshot {
     val pm = context.packageManager
-    val items = Packages.listSubstratumThemes(context).map { info -> themeOf(context, pm, info) }
+    val state = runCatching { AmoledState.read(context) }.getOrNull()
+    val engineInUse = state?.takeIf { it.enabled }?.let { ThemeId.ofPackage(it.rulesTheme) }
+    val classicInUse = runCatching { AppliedRepository.themesInUse(context) }.getOrDefault(emptySet())
+    val starter = runCatching { pm.getPackageInfo(RebornActions.AMOLED_THEME, 0) }.getOrNull()
+    val items = Packages.listSubstratumThemes(context)
+        // The starter APK is the built-in Reborn AMOLED: one card
+        .filter { it.packageName != RebornActions.AMOLED_THEME }
+        .map { info -> themeOf(context, pm, info, engineInUse, classicInUse) }
     // Two themes may share a name (a ported theme next to the original): both are listed
     val names = items.groupingBy { it.name.lowercase(Locale.ROOT) }.eachCount()
     val themes = items
         .map { if ((names[it.name.lowercase(Locale.ROOT)] ?: 0) > 1) it.copy(namesake = true) else it }
         .sortedWith(compareBy<ThemeItem>({ it.name.lowercase(Locale.ROOT) }, { it.pkg }))
-    return ThemesSnapshot(themes, Packages.isPackageInstalled(context, RebornActions.AMOLED_THEME))
+    val builtIns = BuiltInThemes.items(context, engineInUse == ThemeId.RebornAmoled, starter?.lastUpdateTime ?: 0L)
+    return ThemesSnapshot(builtIns + themes, starter != null, engineInUse)
 }
 
-private fun themeOf(context: Context, pm: PackageManager, info: ApplicationInfo): ThemeItem {
+private fun themeOf(
+    context: Context,
+    pm: PackageManager,
+    info: ApplicationInfo,
+    engineInUse: ThemeId?,
+    classicInUse: Set<String>,
+): ThemeItem {
     val pkg = info.packageName
     val meta = info.metaData
     val packageInfo = runCatching { pm.getPackageInfo(pkg, 0) }.getOrNull()
@@ -78,18 +140,26 @@ private fun themeOf(context: Context, pm: PackageManager, info: ApplicationInfo)
         context.createPackageContext(pkg, 0).assets.list("")?.toSet()
     }.getOrNull().orEmpty()
     val mask = ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
+    val rules = AmoledRules.isRulesTheme(context, pkg)
+    val overlays = References.overlaysFolder in folders
+    val id = ThemeId.Apk(pkg)
     return ThemeItem(
         pkg = pkg,
         name = meta?.getString(References.metadataName) ?: pkg,
         author = meta?.getString(References.metadataAuthor).orEmpty(),
         version = packageInfo?.versionName,
         updated = packageInfo?.lastUpdateTime ?: 0L,
-        rules = AmoledRules.isRulesTheme(context, pkg),
-        overlays = References.overlaysFolder in folders,
+        rules = rules,
+        overlays = overlays,
         wallpapers = !meta?.get(References.metadataWallpapers)?.toString().isNullOrBlank(),
         removable = (info.flags and mask) == 0,
+        id = id,
+        inUse = (rules && engineInUse == id) || pkg in classicInUse,
     )
 }
+
+/** Blocking: the themes read again (and cached), for one theme's page. */
+fun loadThemesCached(context: Context): ThemesSnapshot = loadThemes(context).also { RebornCache.themes = it }
 
 // Hero images
 
