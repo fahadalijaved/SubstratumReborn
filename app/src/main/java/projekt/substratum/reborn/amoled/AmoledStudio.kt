@@ -172,8 +172,10 @@ fun AmoledStudio(id: ThemeId, section: StudioSection?, onBack: () -> Unit, onOpe
         StudioState.attach(context)
         onDispose { StudioState.detach() }
     }
-    // Apply uses this theme's rules (the built-in ones for Reborn AMOLED)
-    LaunchedEffect(id) { StudioState.requestTheme(id.enginePackage) }
+    // Apply uses this theme's rules (the built-in ones for Reborn AMOLED), also when something
+    // else moved the shared choice meanwhile (another theme's page applied, a re-read after a job)
+    val chosen by StudioState.theme.collectAsStateWithLifecycle()
+    LaunchedEffect(id, chosen) { StudioState.requestTheme(id.enginePackage) }
     val builtInName = stringResource(R.string.reborn_builtin_amoled_name)
     val name by rememberRoot(id, initial = RebornCache.themes?.find(id)?.name ?: id.enginePackage ?: builtInName) {
         id.enginePackage?.let { Packages.getPackageName(context, it) ?: it } ?: builtInName
@@ -320,7 +322,6 @@ private fun StudioMain(
     // Opened from a page's Options row: scroll to that part once (not again when coming back)
     LaunchedEffect(section) {
         if (section == null) return@LaunchedEffect
-        onSectionShown()
         val index = when (section) {
             StudioSection.Look -> STUDIO_ITEMS.indexOf("look_header")
             StudioSection.QuickSettings -> STUDIO_ITEMS.indexOf("qs_header")
@@ -328,6 +329,9 @@ private fun StudioMain(
         }
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
         listState.animateScrollToItem(index)
+        // Only once it got there: marking it first changes this effect's key, which cancels the
+        // scroll on the next frame
+        onSectionShown()
     }
     RebornFlexibleScaffold(
         title = name,

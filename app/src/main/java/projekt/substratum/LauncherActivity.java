@@ -33,6 +33,9 @@ public class LauncherActivity extends AppCompatActivity {
                 if (from.hasExtra(extra)) intent.putExtra(extra, from.getStringExtra(extra));
             }
         }
+        // A link into a running Reborn (a pinned theme icon, the Customize shortcut) goes to that
+        // instance (onNewIntent) instead of stacking a second shell over it
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         this.startActivity(intent);
         this.overridePendingTransition(0, 0);
         this.finish();

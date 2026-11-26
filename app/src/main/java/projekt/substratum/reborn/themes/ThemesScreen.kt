@@ -18,8 +18,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -77,8 +82,10 @@ import projekt.substratum.reborn.components.ShapedIcon
 import projekt.substratum.reborn.components.design.ActionIcon
 import projekt.substratum.reborn.components.design.BusyLabel
 import projekt.substratum.reborn.components.design.FabMenuItem
+import projekt.substratum.reborn.components.design.LocalNavBarFab
 import projekt.substratum.reborn.components.design.MenuAction
 import projekt.substratum.reborn.components.design.MenuGroup
+import projekt.substratum.reborn.components.design.NavBarFab
 import projekt.substratum.reborn.components.design.PageLoading
 import projekt.substratum.reborn.components.design.RebornFabMenu
 import projekt.substratum.reborn.components.design.RebornFlexibleScaffold
@@ -111,9 +118,10 @@ private enum class ThemeFilter(val label: Int) {
 private const val FILTERS_FROM = 3
 
 /**
- * The Themes tab, the heart of Reborn: the built-in themes first, then every installed theme as a
- * full-width card (Reborn engine and classic), and ways to get more. A tap opens the theme's
- * page ([onOpenTheme]); a long press, an installed theme's sheet. Search opens over the list.
+ * The Themes tab, the heart of Reborn: the built-in themes first, then every installed theme
+ * (Reborn engine and classic) as compact tiles in a grid, two columns on a phone, and ways to get
+ * more. A tap opens the theme's page ([onOpenTheme]); a long press, an installed theme's sheet.
+ * Search opens over the list. "Add a theme" sits beside the floating bar.
  *
  * @param onOpenCreate Selects the Create tab ("Build your own")
  * @param reselect The tab's reselect count: scrolls to the top and expands the bar
@@ -136,10 +144,25 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
         onChanged = { refresh++ },
         onOpen = { pkg -> onOpenTheme(ThemeId.ofPackage(pkg)) },
     )
-    val list = rememberLazyListState()
+    val list = rememberLazyGridState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    // The Add FAB shows while the list is at its top, like Google's apps
+    // In this screen's own Scaffold (outside the shell) the Add FAB shows while the list is at its
+    // top, like Google's apps. Beside the floating bar it stays (the bar is centred with it) and
+    // leaves only while a theme installs, so the bar centres alone meanwhile.
     val fabVisible by remember { derivedStateOf { list.firstVisibleItemIndex == 0 } }
+    val fabBesideBar = LocalNavBarFab.current != null
+    val addTheme: @Composable () -> Unit = {
+        RebornFabMenu(
+            items = listOf(
+                FabMenuItem(stringResource(R.string.reborn_install_file), R.drawable.ic_reborn_file, installer::pickFile),
+                FabMenuItem(stringResource(R.string.reborn_themes_build_own), R.drawable.ic_reborn_create, onOpenCreate),
+            ),
+            icon = R.drawable.ic_reborn_create,
+            contentDescription = stringResource(R.string.reborn_add_theme),
+            visible = (fabBesideBar || fabVisible) && installer.installing == null,
+        )
+    }
+    if (fabBesideBar && installer.installing == null) NavBarFab(addTheme)
     OnReselect(reselect) {
         scrollBehavior.state.heightOffset = 0f
         list.animateScrollToItem(0)
@@ -213,17 +236,7 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                 )
             }
         },
-        floatingActionButton = {
-            RebornFabMenu(
-                items = listOf(
-                    FabMenuItem(stringResource(R.string.reborn_install_file), R.drawable.ic_reborn_file, installer::pickFile),
-                    FabMenuItem(stringResource(R.string.reborn_themes_build_own), R.drawable.ic_reborn_create, onOpenCreate),
-                ),
-                icon = R.drawable.ic_reborn_create,
-                contentDescription = stringResource(R.string.reborn_add_theme),
-                visible = fabVisible && installer.installing == null,
-            )
-        },
+        floatingActionButton = { if (!fabBesideBar) addTheme() },
     ) { padding ->
         val data = snapshot
         val showFilters = (data?.themes?.size ?: 0) > FILTERS_FROM
@@ -236,55 +249,56 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
             modifier = Modifier.padding(top = padding.calculateTopPadding()),
             scrollConnection = scrollBehavior.nestedScrollConnection,
         ) {
-            LazyColumn(
+            // Compact tiles, two columns on a phone; search, filters and section headers span the row
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 156.dp),
                 state = list,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
                     top = 4.dp,
-                    // Room for the Add FAB over the last card
-                    bottom = padding.calculateBottomPadding() + 96.dp,
+                    bottom = padding.calculateBottomPadding() + 16.dp,
                 ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                item(key = "search", contentType = "search") {
+                fullLine(key = "search", contentType = "search") {
                     SearchBar(
                         state = searchState,
                         inputField = searchField,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 if (showFilters) {
-                    item(key = "filters", contentType = "filters") {
+                    fullLine(key = "filters", contentType = "filters") {
                         Filters(filter, data?.themes.orEmpty()) { filter = it }
                     }
                 }
                 if (data == null) {
-                    item(key = "loading") { PageLoading(height = 320.dp) }
+                    fullLine(key = "loading") { PageLoading(height = 320.dp) }
                 } else {
                     if (builtIns.isNotEmpty()) {
-                        item(key = "builtin_header") { SectionLabel(stringResource(R.string.reborn_themes_builtin), Modifier.padding(horizontal = 16.dp)) }
+                        fullLine(key = "builtin_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_builtin)) }
                         items(builtIns, key = { it.id.key }, contentType = { "theme" }) { theme ->
                             Entrance(0, animate) {
-                                ThemeItemCard(
+                                ThemeTile(
                                     theme = theme,
                                     onOpen = { onOpenTheme(theme.id) },
                                     onLongPress = null,
-                                    modifier = Modifier.padding(horizontal = 16.dp),
                                 )
                             }
                         }
                     }
-                    item(key = "installed_header") { SectionLabel(stringResource(R.string.reborn_themes_installed), Modifier.padding(horizontal = 16.dp)) }
+                    fullLine(key = "installed_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_installed)) }
                     when {
-                        data.installed.isEmpty() -> item(key = "empty") {
+                        data.installed.isEmpty() -> fullLine(key = "empty") {
                             NoThemes(
                                 title = stringResource(R.string.reborn_themes_empty),
                                 text = stringResource(R.string.reborn_themes_empty_text),
                             )
                         }
-                        installed.isEmpty() -> item(key = "no_match") {
+                        installed.isEmpty() -> fullLine(key = "no_match") {
                             NoThemes(
                                 title = stringResource(R.string.reborn_themes_no_match),
                                 text = stringResource(R.string.reborn_themes_filter_none, stringResource(shown.label)),
@@ -292,18 +306,17 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                         }
                         else -> items(installed, key = { it.id.key }, contentType = { "theme" }) { theme ->
                             val index = data.installed.indexOf(theme) + 1
-                            Entrance(index.coerceAtMost(4), animate) {
-                                ThemeItemCard(
+                            Entrance(index.coerceAtMost(6), animate) {
+                                ThemeTile(
                                     theme = theme,
                                     onOpen = { onOpenTheme(theme.id) },
                                     onLongPress = { sheetFor = theme.pkg },
-                                    modifier = Modifier.padding(horizontal = 16.dp),
                                 )
                             }
                         }
                     }
-                    item(key = "more_header") { SectionLabel(stringResource(R.string.reborn_themes_get_more), Modifier.padding(horizontal = 16.dp)) }
-                    item(key = "more_file") {
+                    fullLine(key = "more_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_get_more)) }
+                    fullLine(key = "more_file") {
                         DiscoverCard(
                             icon = R.drawable.ic_reborn_file,
                             shape = MaterialShapes.Cookie6Sided.toShape(),
@@ -316,10 +329,9 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                             busy = installer.installing == Installing.File,
                             enabled = installer.installing == null,
                             onClick = installer::pickFile,
-                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                    item(key = "more_create") {
+                    fullLine(key = "more_create") {
                         DiscoverCard(
                             icon = R.drawable.ic_reborn_create,
                             shape = MaterialShapes.Flower.toShape(),
@@ -332,7 +344,6 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                             busy = false,
                             enabled = true,
                             onClick = onOpenCreate,
-                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
                 }
@@ -393,13 +404,21 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
     }
 }
 
+/** A grid item across the whole row (search, filters, headers, cards). */
+private fun LazyGridScope.fullLine(key: Any, contentType: Any? = null, content: @Composable () -> Unit) {
+    item(key = key, span = { GridItemSpan(maxLineSpan) }, contentType = contentType) { content() }
+}
+
+/** A section's header in the grid, a little air above it. */
+@Composable
+private fun Header(text: String) {
+    SectionLabel(text, Modifier.padding(top = 6.dp))
+}
+
 @Composable
 private fun Filters(selected: ThemeFilter, themes: List<ThemeItem>, onSelect: (ThemeFilter) -> Unit) {
     val haptics = LocalHapticFeedback.current
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(ThemeFilter.entries, key = { it.name }) { f ->
             val isSelected = f == selected
             FilterChip(
@@ -427,7 +446,6 @@ private fun SearchResults(results: List<ThemeItem>, query: String, onOpen: (Them
             NoThemes(
                 title = stringResource(R.string.reborn_themes_no_match),
                 text = stringResource(R.string.reborn_themes_no_match_text, query),
-                gutter = false,
             )
         }
         return
@@ -508,8 +526,8 @@ private fun DiscoverCard(
 /** No installed themes (or none matching): what to do instead. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun NoThemes(title: String, text: String, gutter: Boolean = true) {
-    SectionCard(modifier = if (gutter) Modifier.padding(horizontal = 16.dp) else Modifier) {
+private fun NoThemes(title: String, text: String) {
+    SectionCard {
         ShapedIcon(
             icon = R.drawable.ic_reborn_themes,
             container = MaterialTheme.colorScheme.secondaryContainer,

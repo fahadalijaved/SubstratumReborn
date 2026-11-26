@@ -31,7 +31,7 @@ the tools for themers. Everything applied shows in one place, with one Undo.
 
 | Feature | What you get |
 |---|---|
-| **Themes** | Built-in themes first, then every installed theme as a full-width card (Reborn engine and classic), filters, search, install from an APK file. Each theme has its own page: a before/after preview, the apps it changes on this phone, Apply (with progress you can watch) and Customize |
+| **Themes** | Built-in themes first, then every installed theme as a compact card in a two-column grid (Reborn engine and classic), filters, search, install from an APK file. Each theme has its own page: a before/after preview, the apps it changes on this phone, Apply (with progress you can watch) and Customize |
 | **Theme engine** | For themers: Reborn engine themes (rules, `assets/amoled/rules.json`) that read each app's own colours on the phone, so one theme fits every app, and classic Substratum themes; colours apply natively as fabricated overlays or through the LSPosed module (by resource id). The format is in [docs/oneui9/README.md](docs/oneui9/README.md) |
 | **Reborn AMOLED** (built-in theme) | True black for every app; Customize opens its Studio |
 | **Studio** | A theme's looks (Pure black, Elevated cards, Dim), a live before/after preview of Quick Settings and Settings drawn from the engine's computed colours, one-tap Apply |

@@ -5,20 +5,35 @@
 package projekt.substratum.reborn.themes
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -30,11 +45,18 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.RoundedPolygon
@@ -42,12 +64,12 @@ import kotlinx.coroutines.withContext
 import projekt.substratum.R
 import projekt.substratum.Substratum
 import projekt.substratum.common.platform.AmoledPresets
+import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.components.AppIcon
-import projekt.substratum.reborn.components.ChipState
-import projekt.substratum.reborn.components.StatusChip
 import projekt.substratum.reborn.components.TagChip
 import projekt.substratum.reborn.components.design.ThemeAvatar
-import projekt.substratum.reborn.components.design.ThemeCard
+import projekt.substratum.reborn.components.design.pressScale
+import projekt.substratum.reborn.components.design.pressShape
 import projekt.substratum.reborn.nav.SharedKeys
 import projekt.substratum.reborn.nav.themeShared
 
@@ -60,38 +82,130 @@ fun kindPolygon(theme: ThemeItem): RoundedPolygon = when (theme.kind) {
     ThemeKind.HYBRID -> MaterialShapes.Clover8Leaf
 }
 
+/** The compact tile's preview: 20 dp corners inside the tile's 24 dp (pressShape) */
+private val PreviewShape = RoundedCornerShape(20.dp)
+
 /**
- * A full-width theme card: the hero (16:9) with a scrim, its avatar, name and byline, then the
- * kind chips. The art, name and avatar are shared with the theme's page, so a tap morphs into it.
+ * A compact theme tile for the Themes grid (two columns on a phone, about 190 dp tall): the
+ * theme's art (rounded 20 dp) with its avatar, a small "In use" badge, then the name and one quiet
+ * line (what it is, and who made it). The art, name and avatar are shared with the theme's page,
+ * so a tap morphs into it. Corners spring tighter and the tile scales down while pressed.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ThemeItemCard(
+fun ThemeTile(
     theme: ThemeItem,
     onOpen: () -> Unit,
     onLongPress: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    ThemeCard(
-        name = theme.name,
-        byline = byline(theme),
-        onClick = onOpen,
-        onLongClick = onLongPress,
-        modifier = modifier,
-        artModifier = Modifier.themeShared(SharedKeys.art(theme.id)),
-        nameModifier = Modifier.themeShared(SharedKeys.name(theme.id)),
-        inUse = theme.inUse,
-        // Same name as another installed theme: told apart by package and version
-        supporting = if (theme.namesake) {
-            stringResource(R.string.reborn_theme_package_version, theme.pkg, theme.version ?: "–")
-        } else null,
-        avatar = { KindAvatar(theme, Modifier.themeShared(SharedKeys.avatar(theme.id))) },
-        chips = {
-            if (theme.inUse) StatusChip(stringResource(R.string.reborn_theme_in_use), ChipState.OK)
-            ThemeChips(theme)
-        },
+    val scheme = MaterialTheme.colorScheme
+    val haptics = LocalHapticFeedback.current
+    val interaction = remember { MutableInteractionSource() }
+    val shape = pressShape(interaction, rest = 24.dp, pressed = 18.dp)
+    val scale = pressScale(interaction, pressed = 0.96f)
+    val inUse = stringResource(R.string.reborn_theme_in_use)
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(shape)
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = ripple(),
+                role = Role.Button,
+                onClick = onOpen,
+                onLongClick = onLongPress?.let { long ->
+                    {
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        long()
+                    }
+                },
+            )
+            .semantics { if (theme.inUse) stateDescription = inUse },
+        shape = shape,
+        color = scheme.surfaceContainerLow,
     ) {
-        ThemeHero(theme, Modifier.fillMaxSize())
+        Column(Modifier.padding(6.dp)) {
+            Box(
+                Modifier
+                    .themeShared(SharedKeys.art(theme.id))
+                    .fillMaxWidth()
+                    .aspectRatio(5f / 4f)
+                    .clip(PreviewShape),
+            ) {
+                ThemeHero(theme, Modifier.fillMaxSize(), compact = true)
+                KindAvatar(
+                    theme,
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp)
+                        .themeShared(SharedKeys.avatar(theme.id)),
+                    size = 32.dp,
+                )
+                if (theme.inUse) {
+                    InUseBadge(
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                    )
+                }
+            }
+            Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 6.dp)) {
+                Text(
+                    theme.name,
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.themeShared(SharedKeys.name(theme.id)),
+                )
+                Text(
+                    tileLine(theme),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
+}
+
+/** A small check pill on a tile's art: the theme is on now. */
+@Composable
+private fun InUseBadge(modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier
+            .background(scheme.primary, CircleShape)
+            .padding(start = 6.dp, end = 8.dp, top = 3.dp, bottom = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(R.drawable.ic_reborn_check), contentDescription = null, tint = scheme.onPrimary, modifier = Modifier.size(14.dp))
+        Spacer(Modifier.width(3.dp))
+        Text(stringResource(R.string.reborn_theme_in_use), style = MaterialTheme.typography.labelSmall, color = scheme.onPrimary, maxLines = 1)
+    }
+}
+
+/**
+ * A tile's quiet line: what the theme is and who made it ("Classic · Jane"); for namesakes (two
+ * themes with one name), the package and version that tell them apart.
+ */
+@Composable
+private fun tileLine(theme: ThemeItem): String {
+    if (theme.builtIn) return stringResource(R.string.reborn_builtin_byline)
+    if (theme.namesake) return stringResource(R.string.reborn_theme_package_version, theme.pkg, theme.version ?: "–")
+    val kind = stringResource(
+        when (theme.kind) {
+            ThemeKind.ENGINE -> R.string.reborn_theme_chip_rules
+            ThemeKind.HYBRID -> R.string.reborn_theme_kind_hybrid
+            else -> R.string.reborn_themes_filter_classic
+        },
+    )
+    return if (theme.author.isBlank()) kind else stringResource(R.string.reborn_theme_tile_line, kind, theme.author)
 }
 
 /** The theme's icon on its kind's shape: the app icon, or for a built-in its own glyph. */
@@ -137,18 +251,23 @@ internal fun ThemeChips(theme: ThemeItem) {
     }
 }
 
-/** A theme's hero: drawn for a built-in, else its own image or one drawn in its icon's colours. */
+/**
+ * A theme's hero: drawn for a built-in, else its own image or one drawn in its icon's colours.
+ * [compact] (a grid tile) leaves out the built-in's large shape: the tile's avatar carries it.
+ */
 @Composable
-fun ThemeHero(theme: ThemeItem, modifier: Modifier = Modifier) {
-    if (theme.builtIn) BuiltInHero(theme, modifier) else HeroArt(theme, modifier)
+fun ThemeHero(theme: ThemeItem, modifier: Modifier = Modifier, compact: Boolean = false) {
+    if (theme.builtIn) BuiltInHero(theme, modifier, compact) else HeroArt(theme, modifier)
 }
 
 /** The built-in card's art: the saved accent (One UI blue when none) over black, with its shape. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun BuiltInHero(theme: ThemeItem, modifier: Modifier = Modifier) {
+private fun BuiltInHero(theme: ThemeItem, modifier: Modifier = Modifier, compact: Boolean = false) {
     val context = LocalContext.current
-    val light = remember(theme.updated) {
+    // Read again when the look changes (an accent chosen in the Studio)
+    val look by StudioState.look.collectAsState()
+    val light = remember(theme.updated, look) {
         runCatching {
             val accent = AmoledPresets.look(Substratum.getPreferences()).accent
             AmoledPresets.resolveAccent(accent, AmoledPresets.monetAccent(context))
@@ -157,21 +276,23 @@ private fun BuiltInHero(theme: ThemeItem, modifier: Modifier = Modifier) {
     val accent = Color(light)
     Box(modifier) {
         DrawnHero(accent, Color(BuiltInThemes.DEFAULT_DEEP))
-        Box(
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 20.dp, end = 24.dp)
-                .size(76.dp)
-                .clip(kindPolygon(theme).toShape())
-                .background(accent),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_reborn_amoled),
-                contentDescription = null,
-                tint = if (accent.luminance() > 0.5f) Color.Black else Color.White,
-                modifier = Modifier.size(36.dp),
-            )
+        if (!compact) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 20.dp, end = 24.dp)
+                    .size(76.dp)
+                    .clip(kindPolygon(theme).toShape())
+                    .background(accent),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_reborn_amoled),
+                    contentDescription = null,
+                    tint = if (accent.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(36.dp),
+                )
+            }
         }
     }
 }

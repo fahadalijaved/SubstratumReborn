@@ -8,6 +8,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,6 +71,8 @@ fun BackIcon(onBack: () -> Unit) {
  * [snackbarHost] are the Scaffold's own slots (Setup's Done button, a screen's own snackbars).
  * [connectScroll] false leaves [scrollBehavior]'s nested scroll to the caller: a screen with pull to
  * refresh hands it to [RebornPullToRefresh], so the collapsed bar expands before a pull refreshes.
+ * The content insets include the room a tab's root leaves for the floating navigation bar
+ * ([LocalNavBarSpace]), so lists scroll under it and a FAB sits above it.
  */
 @Composable
 fun RebornFlexibleScaffold(
@@ -84,7 +87,7 @@ fun RebornFlexibleScaffold(
     snackbarHost: @Composable () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(),
     connectScroll: Boolean = true,
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets.add(WindowInsets(bottom = LocalNavBarSpace.current)),
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val titleSlot: @Composable () -> Unit = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) }

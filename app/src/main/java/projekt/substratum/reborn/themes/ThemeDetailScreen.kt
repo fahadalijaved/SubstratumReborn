@@ -4,7 +4,9 @@
  */
 package projekt.substratum.reborn.themes
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.text.format.DateUtils
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
@@ -25,6 +27,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,6 +72,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -88,6 +94,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -96,6 +103,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import projekt.substratum.R
@@ -137,6 +145,7 @@ import projekt.substratum.reborn.nav.StudioSection
 import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.reborn.nav.enginePackage
 import projekt.substratum.reborn.nav.themeShared
+import projekt.substratum.reborn.theme.LocalRebornColors
 import java.util.concurrent.ConcurrentHashMap
 
 /** The apps a theme changes on this phone, by theme and update (counting reads every package). */
@@ -324,7 +333,10 @@ private fun ThemePage(
         LazyColumn(
             state = list,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 128.dp),
+            // Room for the floating toolbar over the end of the page (above the navigation bar)
+            contentPadding = PaddingValues(
+                bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 112.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item(key = "hero") {
@@ -374,6 +386,8 @@ private fun ThemePage(
                 )
             }
         }
+        // Light status bar icons over the dark hero in light mode, the app's own once it is gone
+        StatusIconsOverHero(over = !heroGone)
         // Over the hero: back and more on tonal plates; a plain bar with the name once scrolled
         val barColor by animateColorAsState(
             if (heroGone) scheme.background else Color.Transparent,
@@ -423,6 +437,28 @@ private fun ThemePage(
             onDismiss = { confirmRemove = false },
         )
     }
+}
+
+/**
+ * Light status bar icons while [over] the page's dark hero (in light mode the app's bars have dark
+ * icons, which vanish on it); the app's own again once the hero scrolls away or the page goes.
+ */
+@Composable
+private fun StatusIconsOverHero(over: Boolean) {
+    val view = LocalView.current
+    if (LocalRebornColors.current.dark || view.isInEditMode) return
+    val window = remember(view) { view.context.findActivity()?.window } ?: return
+    DisposableEffect(window, over) {
+        val controller = WindowCompat.getInsetsController(window, view)
+        controller.isAppearanceLightStatusBars = !over
+        onDispose { controller.isAppearanceLightStatusBars = true }
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 /** The 4:3 hero: the theme's art under a scrim, its avatar, name, kind chips and "In use". */

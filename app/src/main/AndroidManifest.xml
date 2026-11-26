@@ -240,7 +240,7 @@
             android:name=".activities.launch.AmoledSettingsActivity"
             android:exported="false"
             android:theme="@style/AppTheme" />
-        <!-- Reborn: the Compose shell (Home, AMOLED, Themes, Applied), reached through LauncherActivity -->
+        <!-- Reborn: the Compose shell (Home, Themes, Create, Applied), reached through LauncherActivity -->
         <activity
             android:name=".reborn.RebornActivity"
             android:enableOnBackInvokedCallback="true"

@@ -23,16 +23,22 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,8 +54,11 @@ import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
@@ -63,8 +72,12 @@ import projekt.substratum.reborn.applied.AppliedScreen
 import projekt.substratum.reborn.applied.UndoEverythingHost
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.RebornSnackbarHost
+import projekt.substratum.reborn.components.design.LocalNavBarFab
+import projekt.substratum.reborn.components.design.LocalNavBarSpace
+import projekt.substratum.reborn.components.design.NavBarFabSlot
 import projekt.substratum.reborn.components.design.NavDest
 import projekt.substratum.reborn.components.design.RebornNavBar
+import projekt.substratum.reborn.components.design.RebornNavBarDefaults
 import projekt.substratum.reborn.components.design.fadeThrough
 import projekt.substratum.reborn.create.CreateScreen
 import projekt.substratum.reborn.create.InspectScreen
@@ -166,6 +179,9 @@ fun RebornApp(link: MutableState<RebornLink?>) {
     val scope = rememberCoroutineScope()
     val motion = MaterialTheme.motionScheme
     val restartPending by AppliedRepository.restartPending.collectAsState()
+    val destinations = remember { RebornTab.entries.map { NavDest(it.key, it.label, it.icon, it.selectedIcon) } }
+    // Each tab's root may put a FAB beside the floating bar (Themes: Add a theme)
+    val fabSlots = remember { RebornTab.entries.associateWith { NavBarFabSlot() } }
 
     /** The Studio of the engine theme in use (Reborn AMOLED when none), over its page in Themes. */
     fun openStudioInUse() {
@@ -215,47 +231,82 @@ fun RebornApp(link: MutableState<RebornLink?>) {
             })
         } else {
             CompositionLocalProvider(LocalSnackbar provides snackbar) {
-                Box(Modifier.fillMaxSize()) {
-                    Scaffold(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentWindowInsets = WindowInsets(0),
-                        snackbarHost = { RebornSnackbarHost(snackbar) },
-                        bottomBar = {
-                            // The M3E short bar (64 dp); it ticks on every tap itself
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                ) {
+                    // The routes draw under the floating bar: a tab's root leaves room for it at
+                    // the end of its list ([LocalNavBarSpace]) and may put its FAB beside it
+                    AnimatedContent(
+                        targetState = navigator.tab,
+                        transitionSpec = { fadeThrough(motion) },
+                        label = "tab",
+                    ) { tab ->
+                        TabStack(tab, navigator, holder, backEnabled = !showAbout) { route ->
+                            val root = route == tab.root
+                            CompositionLocalProvider(
+                                LocalNavBarSpace provides if (root) RebornNavBarDefaults.ContentSpace else 0.dp,
+                                LocalNavBarFab provides if (root) fabSlots.getValue(tab) else null,
+                            ) {
+                                RouteContent(
+                                    tab = tab,
+                                    route = route,
+                                    navigator = navigator,
+                                    homeActive = !showAbout && !showWhatsNew,
+                                    onOpenSetup = { showSetup = true },
+                                    onOpenAbout = { showAbout = true },
+                                    onOpenStudioInUse = ::openStudioInUse,
+                                )
+                            }
+                        }
+                    }
+                    // The floating bar on the tabs' roots; a pushed page (a theme, its Studio)
+                    // has the whole screen and its own actions
+                    AnimatedVisibility(
+                        visible = !navigator.canPop,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth(),
+                        enter = slideInVertically(motion.defaultSpatialSpec()) { it } + fadeIn(motion.defaultEffectsSpec()),
+                        exit = slideOutVertically(motion.fastSpatialSpec()) { it } + fadeOut(motion.fastEffectsSpec()),
+                    ) {
+                        Box(contentAlignment = Alignment.BottomCenter) {
+                            // A soft fade under the bar, so a list scrolling beneath it does not
+                            // fight its icons (draws only: touches go through to the list)
+                            val page = MaterialTheme.colorScheme.background
+                            val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(inset + RebornNavBarDefaults.ContentSpace + 24.dp)
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to ComposeColor.Transparent,
+                                            0.55f to page.copy(alpha = 0.7f),
+                                            1f to page.copy(alpha = 0.92f),
+                                        ),
+                                    ),
+                            )
+                            // It ticks on every tap itself
                             RebornNavBar(
-                                destinations = RebornTab.entries.map { NavDest(it.key, it.label, it.icon, it.selectedIcon) },
+                                destinations = destinations,
                                 selected = navigator.tab.key,
                                 onSelect = { d -> RebornTab.of(d.key)?.let(navigator::select) },
                                 onReselect = { d -> RebornTab.of(d.key)?.let(navigator::select) },
                                 badges = if (restartPending) setOf(RebornTab.Applied.key) else emptySet(),
+                                floatingActionButton = fabSlots.getValue(navigator.tab).content,
                             )
-                        },
-                    ) { padding ->
-                        Box(
-                            Modifier
-                                .fillMaxSize()
-                                .padding(padding)
-                                .consumeWindowInsets(padding),
-                        ) {
-                            AnimatedContent(
-                                targetState = navigator.tab,
-                                transitionSpec = { fadeThrough(motion) },
-                                label = "tab",
-                            ) { tab ->
-                                TabStack(tab, navigator, holder, backEnabled = !showAbout) { route ->
-                                    RouteContent(
-                                        tab = tab,
-                                        route = route,
-                                        navigator = navigator,
-                                        homeActive = !showAbout && !showWhatsNew,
-                                        onOpenSetup = { showSetup = true },
-                                        onOpenAbout = { showAbout = true },
-                                        onOpenStudioInUse = ::openStudioInUse,
-                                    )
-                                }
-                            }
                         }
                     }
+                    // Over the bar (and a page's floating toolbar)
+                    RebornSnackbarHost(
+                        snackbar,
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = RebornNavBarDefaults.ContentSpace),
+                    )
                     // About, over the tabs (they keep their state underneath), on the expressive springs
                     AnimatedVisibility(
                         visible = showAbout,

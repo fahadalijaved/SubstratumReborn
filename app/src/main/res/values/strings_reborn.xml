@@ -299,6 +299,9 @@
     <string name="reborn_theme_chip_rules">Reborn engine</string>
     <string name="reborn_theme_chip_overlays">Classic overlays</string>
     <string name="reborn_theme_chip_wallpapers">Wallpapers</string>
+    <!-- A compact tile's second line: what the theme is, then who made it -->
+    <string name="reborn_theme_tile_line">%1$s · %2$s</string>
+    <string name="reborn_theme_kind_hybrid">Engine and classic</string>
     <string name="reborn_theme_open">Open</string>
     <string name="reborn_theme_open_overlays">Its overlays in Classic: pick them, then Build &amp; Enable</string>
     <string name="reborn_theme_app_info">App info</string>

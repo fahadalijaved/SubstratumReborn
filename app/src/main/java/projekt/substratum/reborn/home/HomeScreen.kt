@@ -116,7 +116,7 @@ fun HomeScreen(
     onOpenSetup: () -> Unit,
     /** The Studio of the engine theme in use (Reborn AMOLED when none) */
     onOpenStudio: () -> Unit,
-    /** A theme's page (the showcase opens Reborn AMOLED's) */
+    /** A theme's page (the showcase opens the engine theme it shows: Reborn AMOLED when none) */
     onOpenTheme: (ThemeId) -> Unit,
     onOpenThemes: () -> Unit,
     onOpenApplied: () -> Unit,
@@ -304,7 +304,8 @@ fun HomeScreen(
                         ShowcaseCarousel(
                             theme = applied?.amoled?.theme,
                             themeName = amoledName(applied?.amoled),
-                            onOpen = { onOpenTheme(ThemeId.RebornAmoled) },
+                            // The theme it shows (Reborn AMOLED when none is in use, or its starter APK)
+                            onOpen = { onOpenTheme(ThemeId.ofPackage(applied?.amoled?.theme)) },
                             onExplore = onOpenThemes,
                             active = active,
                         )

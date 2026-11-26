@@ -103,7 +103,7 @@ object RebornActions {
         return theme to name
     }
 
-    /** AMOLED Studio (the AMOLED tab), with a rules theme to apply with. */
+    /** The Studio (through AmoledSettingsActivity): a rules theme's page, or with none the Studio of the theme in use. */
     fun openAmoledSettings(context: Context, theme: String?, name: CharSequence?) {
         AmoledSettingsActivity.launch(context, theme, name)
     }
