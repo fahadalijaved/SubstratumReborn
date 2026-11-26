@@ -8,6 +8,7 @@ import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Shapes
@@ -135,7 +136,11 @@ fun RebornTheme(
             // extraExtraLarge 48. Use MaterialTheme.shapes.* (or ShapeDefaults.*) instead of literals.
             shapes = Shapes(),
             typography = RebornTypography,
-            content = content,
+            content = {
+                // Text drawn straight on the page (outside a Surface or Scaffold) takes the page's
+                // colour; Compose's default content colour is black, invisible on true black
+                CompositionLocalProvider(LocalContentColor provides scheme.onBackground, content = content)
+            },
         )
     }
 }

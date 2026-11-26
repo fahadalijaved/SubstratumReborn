@@ -177,7 +177,7 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
             visible = installer.installing == null,
         )
     }
-    if (fabBesideBar && installer.installing == null) NavBarFab(addTheme)
+    // "Add a theme" lives in the header (as in the approved design); no second button by the bar
     OnReselect(reselect) { list.animateScrollToItem(0) }
 
     // The entrance plays once; coming back to the tab shows the cards at once
@@ -309,13 +309,6 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                     }
                 }
             }
-        }
-        if (!fabBesideBar) {
-            Box(
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .navigationBarsPadding(),
-            ) { addTheme() }
         }
     }
 
