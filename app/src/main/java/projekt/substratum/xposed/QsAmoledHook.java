@@ -22,7 +22,8 @@ import projekt.substratum.common.platform.XposedBackend;
  * {@code SecPanelBackground.mMaxAlpha} is kept at 1.</li>
  * <li>The brightness and volume bars draw their track as two layers of a fixed 15% white (grey
  * on black): the box behind the bar ({@code BoxWithOutline}, composed by
- * {@code BidirectionalBar}) and a rectangle in the bar's draw method. Both become 6% white.</li>
+ * {@code BidirectionalBar}) and a rectangle in the bar's draw method. Both become the rules'
+ * track color ({@link QsOptions#trackColor}, 6% white unless a theme sets {@code qsTrack}).</li>
  * </ul>
  * Active only while "AMOLED for every app" is applied ({@link XposedBackend#AMOLED_FLAG}).
  * Every hook is independent and fails closed: a missing class or method leaves stock behaviour.
@@ -32,10 +33,12 @@ final class QsAmoledHook {
     private static final String TAG = "SubstratumXposed: QS AMOLED: ";
     private static final String TILES = "com.android.systemui.samsung.quicksetting.ui.tiles.";
     private static final int STOCK_TRACK = 0x26ffffff;
-    private static final int AMOLED_TRACK = 0x10ffffff;
+    /**
+     * The track color when the options cannot say
+     */
+    private static final int AMOLED_TRACK = QsOptions.DEFAULT_TRACK;
     // Compose packs an sRGB color as the ARGB int in the upper 32 bits
     private static final long STOCK_TRACK_COLOR = ((long) STOCK_TRACK) << 32;
-    private static final long AMOLED_TRACK_COLOR = ((long) AMOLED_TRACK) << 32;
     /**
      * Set while a bar is being composed or drawn (both run on the UI thread)
      */
@@ -48,7 +51,7 @@ final class QsAmoledHook {
         if (!new File(XposedBackend.DIR, XposedBackend.AMOLED_FLAG).exists()) return;
         QsOptions options = QsOptions.read();
         if (options.shade) opaqueShade(loader);
-        if (options.track) darkBarTrack(loader);
+        if (options.track) darkBarTrack(loader, options.trackColor);
     }
 
     private static void opaqueShade(ClassLoader loader) {
@@ -66,7 +69,10 @@ final class QsAmoledHook {
         }
     }
 
-    private static void darkBarTrack(ClassLoader loader) {
+    private static void darkBarTrack(ClassLoader loader, int color) {
+        // The stock color itself would change nothing; fall back to the built-in near black
+        final int track = color != STOCK_TRACK ? color : AMOLED_TRACK;
+        final long trackColor = ((long) track) << 32;
         try {
             Class<?> bar = XposedHelpers.findClass(TILES + "BidirectionalBarKt", loader);
             Method compose = method(bar, "BidirectionalBar-");
@@ -97,7 +103,7 @@ final class QsAmoledHook {
                     for (int i = 0; i < param.args.length; i++) {
                         if (param.args[i] instanceof Long &&
                                 (Long) param.args[i] == STOCK_TRACK_COLOR) {
-                            param.args[i] = AMOLED_TRACK_COLOR;
+                            param.args[i] = trackColor;
                         }
                     }
                 }
@@ -110,7 +116,7 @@ final class QsAmoledHook {
                         protected void beforeHookedMethod(MethodHookParam param) {
                             if (Boolean.TRUE.equals(IN_BAR.get()) &&
                                     (int) param.args[0] == STOCK_TRACK) {
-                                param.args[0] = AMOLED_TRACK;
+                                param.args[0] = track;
                             }
                         }
                     });
@@ -120,7 +126,7 @@ final class QsAmoledHook {
             // compiler inlined them
             deoptimize(compose);
             deoptimize(draw);
-            XposedBridge.log(TAG + "dark bar tracks");
+            XposedBridge.log(TAG + String.format("bar tracks #%08x", track));
         } catch (Throwable t) {
             XposedBridge.log(TAG + "bar track left stock: " + t);
         }

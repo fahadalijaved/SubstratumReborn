@@ -27,4 +27,6 @@
 
 
 
+    <color name="reborn_card">#FF121212</color>
+    <color name="reborn_card_edge">#FF2A2A2A</color>
 </resources>

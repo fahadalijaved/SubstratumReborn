@@ -47,9 +47,10 @@ import projekt.substratum.util.helpers.Root;
  * For each app it loads the app's own resources in dark mode, resolves what every color really
  * shows (following One UI's reference chains), applies the AMOLED rules ({@link AmoledPalette})
  * and registers the result as a night-only fabricated overlay (see {@link FabricatedValues}), or
- * hands it to the LSPosed module by resource id when the app refuses overlays. Light mode is never
- * touched, and the overlay manager applies overlays live. What is applied is kept in
- * {@link AmoledState}; the steps run as {@link AmoledJobs}.
+ * hands it to the LSPosed module by resource id when the app refuses overlays. Light mode keeps
+ * its stock values (only the accent may follow there, when chosen), and the overlay manager
+ * applies overlays live. What is applied is kept in {@link AmoledState}, and each app's changes
+ * in {@link AmoledChange} records; the steps run as {@link AmoledJobs}.
  */
 public final class SystemAmoled {
 
@@ -130,6 +131,14 @@ public final class SystemAmoled {
      * tracks) and remember the apply.
      */
     public static void markApplied(Context context, String themePackage) {
+        markApplied(context, themePackage, null);
+    }
+
+    /**
+     * {@link #markApplied(Context, String)}, remembering the look the rules had (so a new
+     * wallpaper accent can be noticed).
+     */
+    public static void markApplied(Context context, String themePackage, AmoledRules rules) {
         Root.runCommand("mkdir -p " + XposedBackend.DIR + " && chmod 755 " + XposedBackend.DIR +
                 " && touch " + XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG +
                 " && chmod 644 " + XposedBackend.DIR + "/" + XposedBackend.AMOLED_FLAG +
@@ -141,6 +150,10 @@ public final class SystemAmoled {
             s.appliedAt = System.currentTimeMillis();
             s.bootCount = boot;
             s.appliedBootCount = boot;
+            if (rules != null) {
+                s.level = rules.level().key();
+                s.accent = rules.accent();
+            }
         });
     }
 
@@ -158,6 +171,7 @@ public final class SystemAmoled {
         boolean hadModule = new File(XposedBackend.DIR, pkg + XposedBackend.AMOLED_IDS).exists();
         if (!installed(context, pkg)) {
             clean(pkg);
+            AmoledChange.delete(context, pkg);
             AmoledState.update(context, s -> {
                 AmoledState.App app = s.perApp.get(pkg);
                 if (app != null && app.userEnabled) s.perApp.remove(pkg);
@@ -167,6 +181,7 @@ public final class SystemAmoled {
         }
         if (!rules.covers(pkg)) {
             clean(pkg);
+            AmoledChange.delete(context, pkg);
             boolean restartNeeded = hadModule && !restartIfSafe(context, pkg);
             AmoledState.update(context, s -> {
                 AmoledState.App app = none(s.app(pkg));
@@ -178,9 +193,9 @@ public final class SystemAmoled {
         FabricatedValues.disable(Collections.singletonList(name));
         awaitStock(context, pkg);
         String key = versionKey(context, pkg);
-        List<String[]> items;
+        List<AmoledChange> changes;
         try {
-            items = compute(context, pkg, rules);
+            changes = compute(context, pkg, rules);
         } catch (Throwable t) {
             // Keep what the app had
             Log.w(TAG, "Skipping " + pkg + ", keeping its previous colors: " + t);
@@ -189,6 +204,8 @@ public final class SystemAmoled {
             return 0;
         }
         removeById(pkg);
+        List<String[]> items = AmoledChange.toItems(changes);
+        Set<String> rejected = new HashSet<>();
         Route route;
         int count = 0;
         if (items.isEmpty()) {
@@ -199,11 +216,12 @@ public final class SystemAmoled {
             count = registerById(context, pkg, items, key);
             route = count > 0 ? Route.MODULE : Route.UNSUPPORTED;
         } else {
-            count = register(context, pkg, items);
+            count = register(context, pkg, items, rejected);
             if (count > 0) {
                 route = Route.OVERLAY;
             } else {
                 // The app refuses overlays for these colors: the module by id instead
+                rejected.clear();
                 FabricatedValues.disable(Collections.singletonList(name));
                 count = registerById(context, pkg, items, key);
                 route = count > 0 ? Route.MODULE : Route.UNSUPPORTED;
@@ -214,14 +232,31 @@ public final class SystemAmoled {
         // that ends on the overlay route is never restarted
         boolean restartNeeded = (route == Route.MODULE || route != Route.OVERLAY && hadModule) &&
                 !restartIfSafe(context, pkg);
-        int applied = count;
+        // What the app got, for the inspector and the preview
+        String changesFile = null;
+        if (count > 0) {
+            List<AmoledChange> applied = new ArrayList<>(changes.size());
+            for (AmoledChange change : changes) {
+                if (!rejected.contains("color/" + change.name)) applied.add(change);
+            }
+            File file = AmoledChange.save(context, new AmoledChange.Record(pkg,
+                    rules.level().key(), rules.accent(), primary50(context, pkg), route.name(),
+                    key, System.currentTimeMillis(), applied));
+            if (file != null) changesFile = file.getAbsolutePath();
+        } else {
+            AmoledChange.delete(context, pkg);
+        }
+        int appliedCount = count;
+        String recorded = changesFile;
         AmoledState.update(context, s -> {
             AmoledState.App app = s.app(pkg);
             app.route = route;
-            app.colors = applied;
+            app.colors = appliedCount;
             app.versionKey = key;
             app.error = null;
             app.restartNeeded = restartNeeded;
+            app.level = rules.level().key();
+            app.changesFile = recorded;
         });
         return count;
     }
@@ -230,6 +265,7 @@ public final class SystemAmoled {
         app.route = Route.NONE;
         app.colors = 0;
         app.error = null;
+        app.changesFile = null;
         return app;
     }
 
@@ -314,9 +350,11 @@ public final class SystemAmoled {
      * those: one other entry and the whole overlay is refused (STATE_NO_IDMAP). In that case the
      * entries idmap2 rejected are dropped and the rest is registered again.
      *
+     * @param rejected Filled with the targets ({@code color/<name>}) idmap2 refused
      * @return Number of colors applied
      */
-    private static int register(Context context, String pkg, List<String[]> items) {
+    private static int register(Context context, String pkg, List<String[]> items,
+                                Set<String> rejected) {
         String name = pkg + SUFFIX;
         List<String> names = new ArrayList<>();
         names.add(name);
@@ -324,13 +362,12 @@ public final class SystemAmoled {
         // attempt reveals new ones. Only the log since this package started is read: scanning
         // the whole buffer took 20 s to many minutes per call on One UI 9.
         long since = System.currentTimeMillis() - 2000;
-        Set<String> rejected = new HashSet<>();
         for (int attempt = 0; attempt < MAX_REGISTER_ATTEMPTS && !items.isEmpty(); attempt++) {
             if (FabricatedValues.registerItems(context, pkg, name, items) == 0) return 0;
             FabricatedValues.enable(names);
             String state = Root.runCommand(
                     "cmd overlay dump com.android.shell:" + name + " | grep mState");
-            if (state == null || !state.contains("NO_IDMAP")) return items.size() / 2;
+            if (state == null || !state.contains("NO_IDMAP")) return colorCount(items);
             int known = rejected.size();
             rejected.addAll(rejectedByIdmap(name, since));
             if (rejected.size() == known) return 0;
@@ -344,6 +381,15 @@ public final class SystemAmoled {
     }
 
     private static final int MAX_REGISTER_ATTEMPTS = 12;
+
+    /**
+     * Colors in a list of items: one night item each (a light item is optional)
+     */
+    private static int colorCount(List<String[]> items) {
+        Set<String> targets = new HashSet<>();
+        for (String[] item : items) if ("night".equals(item[3])) targets.add(item[0]);
+        return targets.size();
+    }
 
     private static Set<String> rejectedByIdmap(String overlayName, long sinceMillis) {
         Set<String> rejected = new HashSet<>();
@@ -922,6 +968,12 @@ public final class SystemAmoled {
             //noinspection ResultOfMethodCallIgnored
             for (File copy : copies) copy.delete();
         }
+        // Nothing is applied any more: no change records either
+        File[] records = AmoledChange.dir(context).listFiles();
+        if (records != null) {
+            //noinspection ResultOfMethodCallIgnored
+            for (File record : records) record.delete();
+        }
         AmoledState.update(context, s -> {
             s.enabled = false;
             for (Map.Entry<String, AmoledState.App> entry : s.perApp.entrySet()) {
@@ -970,11 +1022,15 @@ public final class SystemAmoled {
     // Reading an app's colors
 
     /**
-     * @return fabricated items {target, type, value, config, id} for light mode and
-     * {target, type, value, "night", id, stock dark value or "" for a state list, rule} for the
-     * app's dark mode
+     * Read an app's colors and decide each one (see {@link AmoledChange#night}): the dark-mode
+     * value as the app shows it, the decision, and the light entry by the Monet-safe rules: a
+     * light value that can change at runtime (a theme attribute, or a reference that reaches the
+     * framework's Monet roles) gets none, nor does a color state list, and the Monet roles
+     * themselves are never touched.
+     *
+     * @return The colors that change
      */
-    static List<String[]> compute(Context context, String pkg, AmoledRules rules)
+    static List<AmoledChange> compute(Context context, String pkg, AmoledRules rules)
             throws PackageManager.NameNotFoundException {
         Context app = context.createPackageContext(pkg, Context.CONTEXT_IGNORE_SECURITY);
         Configuration night = new Configuration(app.getResources().getConfiguration());
@@ -985,59 +1041,102 @@ public final class SystemAmoled {
         day.uiMode = (day.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
                 Configuration.UI_MODE_NIGHT_NO;
         Resources dayRes = app.createConfigurationContext(day).getResources();
+        TypedValue dayRaw = new TypedValue();
         TypedValue dayValue = new TypedValue();
+        int primary50 = primary50(res, pkg);
 
-        List<String[]> items = new ArrayList<>();
+        List<AmoledChange> changes = new ArrayList<>();
         TypedValue tv = new TypedValue();
         List<Integer> ids = colorIds(res, pkg);
         Log.d(TAG, pkg + ": " + ids.size() + " color resources");
         for (int id : ids) {
             String name;
-            int light;
-            Integer mapped;
-            String rule;
-            boolean plain;
+            Integer stockDark;
+            AmoledPalette.Decision decision;
             try {
                 name = res.getResourceEntryName(id);
                 res.getValue(id, tv, true);
-                plain = tv.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
-                        tv.type <= TypedValue.TYPE_LAST_COLOR_INT;
-                AmoledPalette.Decision decision = rules.explicitDecision(pkg, name);
-                // Color state lists keep their states, unless the rules name a color for them
-                if (decision == null) {
-                    if (!plain) continue;
-                    decision = AmoledPalette.decide(tv.data, name, rules);
-                }
-                mapped = decision.color;
-                rule = decision.rule;
-                if (mapped == null || plain && mapped == tv.data) continue;
-                // A night-only entry can fail to map (idmap2 confuses it with similarly named
-                // resources), so every night value is paired with the stock light value
-                light = plain ? tv.data : res.getColorStateList(id, null).getDefaultColor();
+                stockDark = isColor(tv.type) ? tv.data : null;
+                decision = AmoledChange.night(pkg, name, stockDark, rules, primary50);
+                if (decision == null) continue;
+                // A state list that does not inflate is left alone
+                if (stockDark == null) res.getColorStateList(id, null);
             } catch (RuntimeException e) {
                 continue; // Resources.NotFoundException, or a state list that does not inflate
             }
+            Integer dayLiteral = null, stockLight = null;
             try {
                 dayRes.getValue(id, dayValue, true);
-                if (dayValue.type >= TypedValue.TYPE_FIRST_COLOR_INT &&
-                        dayValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                    light = dayValue.data;
-                } else if (!plain) {
-                    light = dayRes.getColorStateList(id, null).getDefaultColor();
-                } else {
+                if (isColor(dayValue.type)) {
+                    stockLight = dayValue.data;
+                } else if (stockDark != null) {
                     continue; // a state list in light mode: leave the resource alone
                 }
-            } catch (Resources.NotFoundException ignored) {
-                // no light value
+                // A light value that follows the wallpaper or the theme keeps following it: no
+                // light entry for it. A fixed one is paired with the night value as before (a
+                // night-only entry can make idmap2 refuse the whole overlay)
+                dayRes.getValue(id, dayRaw, false);
+                if (stockLight != null && (isColor(dayRaw.type) || fixed(dayRes, dayRaw))) {
+                    dayLiteral = stockLight;
+                }
+            } catch (Resources.NotFoundException e) {
+                // No light value (a resource of dark mode only): paired with its own dark value
+                if (stockDark != null) dayLiteral = stockDark;
             }
-            String hexId = String.format("0x%08x", id);
-            items.add(new String[]{"color/" + name, "28",
-                    String.format("0x%08x", light), "", hexId});
-            items.add(new String[]{"color/" + name, "28",
-                    String.format("0x%08x", mapped), "night", hexId,
-                    plain ? String.format("0x%08x", tv.data) : "", rule});
+            changes.add(AmoledChange.of(pkg, name, id, stockDark, decision, dayLiteral,
+                    stockLight, rules, primary50));
         }
-        return items;
+        return changes;
+    }
+
+    /**
+     * Whether a light value always shows the same color: a literal, or a chain of references
+     * that ends in one without passing a theme attribute or a Monet role of the framework
+     * ({@code android:color/system_*}, which follow the wallpaper).
+     */
+    private static boolean fixed(Resources res, TypedValue raw) {
+        TypedValue value = new TypedValue();
+        value.setTo(raw);
+        for (int hop = 0; hop < 12; hop++) {
+            if (isColor(value.type)) return true;
+            if (value.type != TypedValue.TYPE_REFERENCE || value.data == 0) return false;
+            int ref = value.data;
+            try {
+                if ("android".equals(res.getResourcePackageName(ref)) &&
+                        res.getResourceEntryName(ref).startsWith("system_")) {
+                    return false;
+                }
+                res.getValue(ref, value, false);
+            } catch (Resources.NotFoundException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isColor(int type) {
+        return type >= TypedValue.TYPE_FIRST_COLOR_INT && type <= TypedValue.TYPE_LAST_COLOR_INT;
+    }
+
+    /**
+     * The app's stock accent (basic_token_primary_50 in dark mode), or One UI blue.
+     */
+    private static int primary50(Resources res, String pkg) {
+        try {
+            int id = res.getIdentifier("basic_token_primary_50", "color", pkg);
+            if (id != 0) return res.getColor(id, null);
+        } catch (RuntimeException ignored) {
+            // none
+        }
+        return AmoledPalette.ONEUI_BLUE;
+    }
+
+    private static int primary50(Context context, String pkg) {
+        try {
+            return primary50(nightResources(context, pkg), pkg);
+        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+            return AmoledPalette.ONEUI_BLUE;
+        }
     }
 
     /**

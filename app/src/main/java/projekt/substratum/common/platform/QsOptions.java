@@ -20,21 +20,31 @@ import projekt.substratum.util.helpers.Root;
  * One UI 9 quick settings options carried out by the LSPosed module in System UI, shared through
  * {@code /data/resource-cache/substratum/qs-options} (readable by System UI, written as root):
  * <pre>
- * aspect=0.65   panel row height as a fraction of the cell width (0 = stock 0.917)
- * shade=1       solid black shade instead of see-through
- * track=1       near-black brightness / volume tracks instead of grey
+ * aspect=0.65       panel row height as a fraction of the cell width (0 = stock 0.917)
+ * shade=1           solid black shade instead of see-through
+ * track=#10ffffff   brightness / volume tracks in this color instead of 15% white (grey);
+ *                   0 keeps them stock, 1 (older versions) means the default 6% white
  * </pre>
- * The shade and track options only act while AMOLED for every app is applied.
+ * The shade and track options only act while AMOLED for every app is applied. The track color
+ * comes from the rules ({@code "qsTrack"}); older modules read any value but 0 as "on".
  */
 public final class QsOptions {
 
     public static final String FILE = "qs-options";
     public static final float STOCK_ASPECT = 0.917f;
     public static final float MIN_ASPECT = 0.5f;
+    /**
+     * Near-black tracks: 6% white
+     */
+    public static final int DEFAULT_TRACK = 0x10ffffff;
 
     public float aspect; // 0 = stock
     public boolean shade = true;
     public boolean track = true;
+    /**
+     * The track color while {@link #track} is on
+     */
+    public int trackColor = DEFAULT_TRACK;
 
     public static QsOptions read() {
         QsOptions options = new QsOptions();
@@ -57,6 +67,8 @@ public final class QsOptions {
                         break;
                     case "track":
                         options.track = !"0".equals(value);
+                        Integer color = color(value);
+                        if (color != null) options.trackColor = color;
                         break;
                     default:
                         break;
@@ -69,13 +81,29 @@ public final class QsOptions {
     }
 
     /**
+     * {@code #AARRGGBB}, {@code #RRGGBB} or {@code 0xAARRGGBB}, or null (0 and 1 are switches)
+     */
+    static Integer color(String value) {
+        String hex = value.startsWith("#") ? value.substring(1) :
+                value.startsWith("0x") ? value.substring(2) : null;
+        if (hex == null || hex.length() != 6 && hex.length() != 8) return null;
+        try {
+            long v = Long.parseLong(hex, 16);
+            return (int) (hex.length() == 6 ? v | 0xff000000L : v);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
      * Write the options for System UI (root). They take effect when System UI restarts.
      */
     public boolean write(Context context) {
         File local = new File(context.getCacheDir(), FILE);
         try (FileWriter writer = new FileWriter(local)) {
-            writer.write(String.format(Locale.US, "aspect=%.3f\nshade=%d\ntrack=%d\n",
-                    aspect, shade ? 1 : 0, track ? 1 : 0));
+            writer.write(String.format(Locale.US, "aspect=%.3f\nshade=%d\ntrack=%s\n",
+                    aspect, shade ? 1 : 0, track ? String.format(Locale.US, "#%08x", trackColor) :
+                            "0"));
         } catch (IOException e) {
             return false;
         }

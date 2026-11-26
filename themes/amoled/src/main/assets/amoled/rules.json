@@ -6,6 +6,11 @@
   "blur": "#000000",
   "slider": "#1a1a1a",
   "thumb": "#2a2a2a",
+  "_look": "level: pure (every dark surface 'background'), dim, elevated or tinted (surfaces keep One UI's elevation on a ramp of four steps: page, card, raised, container). ramp: those four colors, e.g. [\"#000000\", \"#0b0b0b\", \"#141414\", \"#1c1c1c\"]; default: the level's own. accent: none, monet (the wallpaper's), oneui, sprite, white or a color; recolors One UI's accent colors in dark mode with their tone kept (accentLight: in light mode too). qsTrack: brightness and volume bar tracks (LSPosed module). The look chosen in Substratum overrides these.",
+  "level": "pure",
+  "accent": "none",
+  "accentLight": false,
+  "qsTrack": "#10ffffff",
   "include": [
     "^(android|com\\.(samsung|sec|google|android)\\..*|com\\.wssyncmldm|com\\.wssnps)$"
   ],

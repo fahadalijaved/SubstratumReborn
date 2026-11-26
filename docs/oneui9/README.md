@@ -129,10 +129,17 @@ image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the r
 | `outline` | the thin border that keeps floating elements visible on a black page |
 | `blur` | tint over blurred panels (notification shade, QS); its alpha is how much blur shows |
 | `slider`, `thumb` | slider and seekbar tracks, scrollbar thumbs |
+| `level` | `pure` (default: every dark surface is `background`), `dim`, `elevated` or `tinted` |
+| `ramp` | four colors for the levels other than `pure`: page, card, raised and container surfaces |
+| `accent` | `none`, `monet` (the wallpaper's accent), `oneui`, `sprite`, `white` or a color |
+| `accentLight` | the accent in light mode too (default `false`) |
+| `qsTrack` | One UI 9 brightness and volume bar tracks, drawn by the LSPosed module (default `#10ffffff`) |
 | `include`, `exclude` | regexes of package names to theme |
 | `colors` | hand-picked values per package; keys are resource names, or regexes when they start with `^` |
 
-Every key is optional; what a theme leaves out keeps Reborn AMOLED's value. Make a variant by
+Every key is optional; what a theme leaves out keeps Reborn AMOLED's value. The look chosen on
+the AMOLED screen (preset, level, accent, active tile) overrides the theme's, and the user's own
+rules (keep a color stock, pin one; `files/amoled/user_rules.json`) come before everything. Make a variant by
 copying `themes/amoled`, changing the package name, and editing the values: a dark grey
 `background`, a coloured `outline`, a different QS accent. The [reference](reference) shows the
 resource names for `colors`.
@@ -154,8 +161,31 @@ UI's reference chains) and its resource name decide:
 | See-through dark tint over blur | `blur` |
 | Slider or track / scrollbar thumb | `slider` / `thumb` |
 
-Each night value is registered together with the app's stock light value, so light mode never
-changes. Colors are always read with the app's previous AMOLED overlay disabled, so running it
+### Levels and accent
+
+| Level | Page | Card | Raised | Container |
+|---|---|---|---|---|
+| `pure` | `background` | `background` | `background` | `background` |
+| `elevated` | `#000000` | `#0B0B0B` | `#141414` | `#1C1C1C` |
+| `dim` | `#0E0E0E` | `#141414` | `#1A1A1A` | `#222222` |
+| `tinted` | `#000000` | elevated, 5% accent | elevated, 5% accent | elevated, 5% accent |
+
+One UI's own grey ramp keeps its roles (`basic_token_gray_100` page, `_95` card, `_90` raised,
+`_80`/`_70` container); other dark surfaces go by their brightest channel (up to `0x20`, `0x2c`,
+`0x3b`, else). Floating elements take at least the raised step.
+
+The accent recolors `basic_token_primary_01` to `_100`, `sesl_primary_color_dark` and
+`sesl_primary_dark_color_dark` (everything else that shows One UI's accent references them), and
+the active QS tile when its option is "accent". Each shade keeps its tone: Material's HCT with the
+accent's hue, its chroma scaled by the shade's chroma over the app's `basic_token_primary_50`
+(0 to 1.2), and the shade's tone.
+
+Each night value is registered together with the app's stock light value when that is fixed (a
+literal color, or references that end in one), so light mode never changes and idmap2 maps the
+entry reliably. A light value that follows a theme attribute or the wallpaper (a reference chain
+through the framework's `system_*` Monet roles) gets no light entry and keeps following its
+source, a color state list a rule names keeps its light list, and the Monet roles themselves are
+never touched. Colors are always read with the app's previous AMOLED overlay disabled, so running it
 again gives the same result.
 
 ## Classic AMOLED theme (static overlays)
@@ -210,13 +240,14 @@ change. While AMOLED for every app is applied, the module (scoped to System UI) 
 | Part | Stock | With the module |
 |---|---|---|
 | Shade background | faded to a max alpha below 1, apps show through | fully opaque |
-| Brightness / volume track | 15% white drawn twice (grey) | 6% white (near black) |
+| Brightness / volume track | 15% white drawn twice (grey) | the rules' `qsTrack` (6% white, near black) |
 | Panel row height | `cell width x 0.917` | `cell width x` the chosen value (for example `0.65`) |
 
 All of it is set on Substratum's **AMOLED for every app** screen (tap the theme, or Themes menu >
 AMOLED for every app): panel row height, active tile color (white, blue, stock), solid shade,
 dark tracks, and a switch per app. The options live in
-`/data/resource-cache/substratum/qs-options` (`aspect=0.650`, `shade=1`, `track=1`) and take
+`/data/resource-cache/substratum/qs-options` (`aspect=0.650`, `shade=1`, `track=#10ffffff`, the
+rules' `qsTrack`, or `track=0` for stock) and take
 effect when System UI restarts, which the screen does for you. The tile box columns are
 QuickStar's setting.
 

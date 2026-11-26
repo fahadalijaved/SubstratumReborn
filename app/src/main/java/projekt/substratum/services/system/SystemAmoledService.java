@@ -27,6 +27,7 @@ import projekt.substratum.common.References;
 import projekt.substratum.common.platform.AmoledJobs;
 import projekt.substratum.common.platform.AmoledRules;
 import projekt.substratum.common.platform.AmoledState;
+import projekt.substratum.common.platform.AmoledUserRules;
 import projekt.substratum.common.platform.QsOptions;
 import projekt.substratum.common.platform.SystemAmoled;
 import projekt.substratum.util.helpers.Root;
@@ -177,20 +178,31 @@ public class SystemAmoledService extends Service {
     }
 
     private String applyAll(AmoledJobs.Job job) {
+        // A newer apply waits (the look was changed again): it would redo all of this
+        if (AmoledJobs.hasNewerWaiting(job)) {
+            Log.i(TAG, job + " superseded by a newer apply");
+            return null;
+        }
         AmoledRules rules = rules(job.theme);
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), null);
-        SystemAmoled.markApplied(this, job.theme);
+        SystemAmoled.markApplied(this, job.theme, rules);
         // Everything is registered again: an old "not restored" notice no longer applies
         getSystemService(NotificationManager.class).cancel(NO_ROOT_NOTIFICATION_ID);
-        // The theme's quick settings layout, unless one was chosen in Substratum
+        // The theme's quick settings layout, unless one was chosen in Substratum, and the
+        // rules' track color (both from the next System UI start)
+        QsOptions options = QsOptions.read();
+        boolean write = options.trackColor != rules.qsTrack();
+        options.trackColor = rules.qsTrack();
         if (rules.qsAspect > 0 && !projekt.substratum.Substratum.getPreferences()
                 .getBoolean(AmoledRules.PREF_QS_CHOSEN, false)) {
-            QsOptions options = QsOptions.read();
+            write |= options.aspect != rules.qsAspect;
             options.aspect = rules.qsAspect;
-            options.write(this);
         }
-        Log.i(TAG, "applied to " + done[0] + " apps, " + done[1] + " colors");
+        if (write) options.write(this);
+        Log.i(TAG, "applied to " + done[0] + " apps, " + done[1] + " colors, look " +
+                rules.level().key() + (rules.accent() != null ?
+                String.format(" accent #%08x", rules.accent()) : ""));
         return getString(R.string.system_amoled_done, done[0], done[1]);
     }
 
@@ -214,6 +226,12 @@ public class SystemAmoledService extends Service {
         AmoledRules rules = rules(job.theme != null ? job.theme : state.rulesTheme);
         int[] done = SystemAmoled.applyAll(this, rules, (pkg, i, total) ->
                 progress(job, pkg, i, total), job.packages);
+        // The track color from the rules, before System UI starts again
+        QsOptions options = QsOptions.read();
+        if (options.trackColor != rules.qsTrack()) {
+            options.trackColor = rules.qsTrack();
+            options.write(this);
+        }
         if (job.restart) QsOptions.restartSystemUi();
         return getString(R.string.system_amoled_done, done[0], done[1]);
     }
@@ -293,7 +311,10 @@ public class SystemAmoledService extends Service {
                 Log.w(TAG, "Using default rules, " + theme + ": " + e);
             }
         }
-        return rules.withUserOptions(projekt.substratum.Substratum.getPreferences());
+        // The look chosen in Substratum (a wallpaper accent is read now), then the user's own
+        // keep and pin rules
+        return rules.withUserOptions(this, projekt.substratum.Substratum.getPreferences())
+                .withUserRules(AmoledUserRules.read(this));
     }
 
     private void progress(AmoledJobs.Job job, String pkg, int index, int total) {

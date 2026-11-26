@@ -39,6 +39,15 @@
         <item name="shapeAppearance">?attr/shapeAppearanceCornerLarge</item>
     </style>
 
+    <!-- Reborn's card on true black: #121212 with a hairline edge and 28dp corners -->
+    <style name="RebornCard" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">@color/reborn_card</item>
+        <item name="strokeColor">@color/reborn_card_edge</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">28dp</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.Material3.Dark.ActionBar" />
 
     <style name="AppTheme.DialogAlert" parent="Theme.Material3Expressive.DayNight.Dialog.Alert" />

@@ -107,4 +107,7 @@
 
     <color name="drawer_item_background">@android:color/transparent</color>
 
+    <!-- Reborn cards in the XML screens: as Home's in Compose -->
+    <color name="reborn_card">#FFF2F1F6</color>
+    <color name="reborn_card_edge">#00000000</color>
 </resources>

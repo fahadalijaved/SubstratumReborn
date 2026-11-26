@@ -267,6 +267,15 @@ public final class AmoledJobs {
     }
 
     /**
+     * A newer job of the same kind waits in the queue: for an APPLY_ALL, running this one would
+     * only be redone by it.
+     */
+    public static boolean hasNewerWaiting(Job job) {
+        for (Job other : WAITING) if (other.kind == job.kind && other.id > job.id) return true;
+        return false;
+    }
+
+    /**
      * The name of an app the queue reported progress for, or the package name.
      */
     public static String labelOf(String pkg) {

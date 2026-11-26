@@ -42,10 +42,14 @@ import projekt.substratum.util.helpers.Root;
  * {@code files/amoled/state.json}:
  * <pre>
  * {"version":1, "enabled":true, "rulesTheme":"...", "appliedAt":ms, "restoredAt":ms,
- *  "bootCount":n, "appliedBootCount":n,
+ *  "bootCount":n, "appliedBootCount":n, "level":"elevated", "accent":"#FF009587",
  *  "perApp":{"pkg":{"route":"OVERLAY|MODULE|UNSUPPORTED|NONE", "userEnabled":true,
- *                   "versionKey":"...", "colors":n, "restartNeeded":false, "error":"..."}}}
+ *                   "versionKey":"...", "colors":n, "restartNeeded":false, "error":"...",
+ *                   "level":"elevated", "changesFile":".../changes/pkg.json"}}}
  * </pre>
+ * {@code level} and {@code accent} are the look of the last apply (the accent is absent when
+ * there was none); each app's {@code level} is the look its colors were read with and
+ * {@code changesFile} lists them (see {@link AmoledChange}).
  * {@code bootCount} is Settings.Global.BOOT_COUNT at the last apply or restore and
  * {@code appliedBootCount} the one at the last apply, so a restore after a reboot shows.
  * <p>
@@ -94,6 +98,14 @@ public final class AmoledState {
          */
         public boolean restartNeeded;
         public String error;
+        /**
+         * {@link AmoledLevel#key} the colors were read with, or null
+         */
+        public String level;
+        /**
+         * The app's {@link AmoledChange} list, or null
+         */
+        public String changesFile;
 
         public App copy() {
             App app = new App();
@@ -103,6 +115,8 @@ public final class AmoledState {
             app.colors = colors;
             app.restartNeeded = restartNeeded;
             app.error = error;
+            app.level = level;
+            app.changesFile = changesFile;
             return app;
         }
 
@@ -114,6 +128,8 @@ public final class AmoledState {
             o.put("colors", colors);
             o.put("restartNeeded", restartNeeded);
             if (error != null) o.put("error", error);
+            if (level != null) o.put("level", level);
+            if (changesFile != null) o.put("changesFile", changesFile);
             return o;
         }
 
@@ -125,6 +141,8 @@ public final class AmoledState {
             app.colors = o.optInt("colors", 0);
             app.restartNeeded = o.optBoolean("restartNeeded", false);
             app.error = string(o, "error");
+            app.level = string(o, "level");
+            app.changesFile = string(o, "changesFile");
             return app;
         }
     }
@@ -135,6 +153,11 @@ public final class AmoledState {
     public long restoredAt;
     public int bootCount;
     public int appliedBootCount;
+    /**
+     * The look of the last apply: {@link AmoledLevel#key}, and the accent or null
+     */
+    public String level;
+    public Integer accent;
     public final Map<String, App> perApp = new TreeMap<>();
 
     /**
@@ -271,6 +294,8 @@ public final class AmoledState {
         o.put("restoredAt", restoredAt);
         o.put("bootCount", bootCount);
         o.put("appliedBootCount", appliedBootCount);
+        if (level != null) o.put("level", level);
+        if (accent != null) o.put("accent", AmoledUserRules.hex(accent));
         JSONObject apps = new JSONObject();
         for (Map.Entry<String, App> entry : perApp.entrySet()) {
             apps.put(entry.getKey(), entry.getValue().toJson());
@@ -288,6 +313,15 @@ public final class AmoledState {
         state.restoredAt = o.optLong("restoredAt", 0);
         state.bootCount = o.optInt("bootCount", 0);
         state.appliedBootCount = o.optInt("appliedBootCount", 0);
+        state.level = string(o, "level");
+        String accent = string(o, "accent");
+        if (accent != null) {
+            try {
+                state.accent = AmoledPalette.parseColor(accent);
+            } catch (IllegalArgumentException ignored) {
+                // no accent
+            }
+        }
         JSONObject apps = o.optJSONObject("perApp");
         if (apps != null) {
             for (Iterator<String> keys = apps.keys(); keys.hasNext(); ) {

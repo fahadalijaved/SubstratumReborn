@@ -5,6 +5,8 @@
 
 package projekt.substratum.common.platform;
 
+import com.google.android.material.color.utilities.Hct;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,8 +14,12 @@ import java.util.regex.Pattern;
 
 /**
  * The per-color decision of "AMOLED for every app": what a dark-mode color becomes, and which
- * rule decided it. Pure Java (no Android classes), so the rules run in JVM unit tests against the
- * One UI reference in docs/oneui9/reference (see AmoledGoldenTest).
+ * rule decided it. Pure Java (no Android classes; Material's HCT color space is plain Java too),
+ * so the rules run in JVM unit tests against the One UI reference in docs/oneui9/reference (see
+ * AmoledGoldenTest).
+ * <p>
+ * The order, in {@link #forColor}: the user's own rules (keep stock, pin a color), the colors a
+ * rules theme names, the accent, then the generic rules of {@link #decide}.
  */
 public final class AmoledPalette {
 
@@ -37,6 +43,32 @@ public final class AmoledPalette {
      */
     public static final String EXPLICIT = "explicit";
     public static final String PATTERN_PREFIX = "pattern:";
+    /**
+     * An accent color, recolored to the chosen accent with its tone kept
+     */
+    public static final String ACCENT = "accent";
+    /**
+     * The user kept the stock color (a sentinel: nothing is written for it)
+     */
+    public static final String USER_KEEP = "user-keep";
+    /**
+     * The user pinned a color
+     */
+    public static final String USER_PIN = "user-pin";
+
+    /**
+     * One UI's accent (basic_token_primary_50), used when an app has none of its own
+     */
+    public static final int ONEUI_BLUE = 0xff387aff;
+    static final String SYSTEMUI = "com.android.systemui";
+    static final String ACTIVE_TILE = "qs_tile_round_background_on";
+    /**
+     * The colors an accent recolors: One UI's primary ramp (basic_token_primary_01 to _100) and
+     * the Samsung widgets' primary colors. Everything else that shows the accent references these,
+     * so it follows.
+     */
+    static final Pattern ACCENT_NAMES = Pattern.compile(
+            "^(basic_token_primary_\\d+|sesl_primary_color_dark|sesl_primary_dark_color_dark)$");
 
     static final Pattern STATE = Pattern.compile(
             "ripple|press|focus|select|hover|drag|highlight|state|checked|activated");
@@ -107,12 +139,107 @@ public final class AmoledPalette {
     }
 
     /**
-     * The decision compute() makes for a plain dark-mode color of a package: a color the rules
-     * name for it first, the generic rules otherwise.
+     * The decision compute() makes for a plain dark-mode color of a package whose accent is One
+     * UI blue (see {@link #forColor(String, String, int, AmoledRules, int)}).
      */
     public static Decision forColor(String packageName, String name, int color, AmoledRules rules) {
+        return forColor(packageName, name, color, rules, ONEUI_BLUE);
+    }
+
+    /**
+     * The decision compute() makes for a plain dark-mode color of a package: the user's rules and
+     * the colors the rules theme names first, then the accent, then the generic rules.
+     *
+     * @param primary50 The app's own basic_token_primary_50 (its stock accent), which sets how
+     *                  colorful each accent shade is
+     */
+    public static Decision forColor(String packageName, String name, int color, AmoledRules rules,
+                                    int primary50) {
         Decision explicit = rules.explicitDecision(packageName, name);
-        return explicit != null ? explicit : decide(color, name, rules);
+        if (explicit != null) return explicit;
+        Integer accent = accentFor(packageName, name, color, rules, primary50);
+        if (accent != null) return new Decision(accent, ACCENT);
+        return decide(color, name, rules);
+    }
+
+    /**
+     * The accent color for a resource, or null when it is not an accent color (or no accent is
+     * chosen). The active quick settings tile takes the accent itself when the tile option is
+     * "accent"; the accent colors keep their tone (see {@link #toneSwap}).
+     */
+    public static Integer accentFor(String packageName, String name, int stock, AmoledRules rules,
+                                    int primary50) {
+        Integer accent = rules.accent;
+        if (accent == null) return null;
+        if (rules.accentTile && SYSTEMUI.equals(packageName) && ACTIVE_TILE.equals(name)) {
+            return accent | 0xff000000;
+        }
+        if (!ACCENT_NAMES.matcher(name).matches()) return null;
+        return toneSwap(stock, accent, primary50);
+    }
+
+    /**
+     * A shade of the stock accent as the same shade of another accent, in Material's HCT color
+     * space: the accent's hue, its chroma scaled by how colorful this shade is next to the stock
+     * accent (0 to 1.2 times), and the shade's own tone. So One UI's light and dark accent steps
+     * keep their contrast with text and surfaces. A grey or white accent lifts the light shades
+     * towards white, so it reads as white rather than grey. The stock alpha is kept.
+     *
+     * @param primary50 The stock accent the shades were made from
+     */
+    public static int toneSwap(int stock, int accent, int primary50) {
+        Hct shade = Hct.fromInt(stock | 0xff000000);
+        Hct target = Hct.fromInt(accent | 0xff000000);
+        Hct reference = Hct.fromInt(primary50 | 0xff000000);
+        double ratio = reference.getChroma() < 1 ? 1 :
+                Math.max(0, Math.min(1.2, shade.getChroma() / reference.getChroma()));
+        double tone = shade.getTone();
+        if (target.getChroma() < 8 && tone >= 50) tone = 85 + (tone - 50) * 0.3;
+        int rgb = Hct.from(target.getHue(), target.getChroma() * ratio, tone).toInt();
+        return (stock & 0xff000000) | (rgb & 0x00ffffff);
+    }
+
+    /**
+     * The step of a level's ramp a dark surface takes, by its stock dark value: 0 page, 1 card,
+     * 2 raised, 3 container. One UI's own grey ramp keeps its roles (basic_token_gray_100 page,
+     * _95 card surface, _90 raised and popup, _80 and _70 containers); any other color goes by
+     * its brightest channel: up to 0x20, 0x2c, 0x3b, else (up to 0x52, the darkest grey the rules
+     * paint).
+     */
+    public static int tier(int color) {
+        switch (color | 0xff000000) {
+            case 0xff010102:
+                return 0;
+            case 0xff17171a:
+                return 1;
+            case 0xff252528:
+                return 2;
+            case 0xff3a3a3d:
+            case 0xff4d4d52:
+                return 3;
+            default:
+                break;
+        }
+        int hi = Math.max((color >> 16) & 0xff, Math.max((color >> 8) & 0xff, color & 0xff));
+        if (hi <= 0x20) return 0;
+        if (hi <= 0x2c) return 1;
+        if (hi <= 0x3b) return 2;
+        return 3;
+    }
+
+    /**
+     * {@code base} moved towards {@code toward} by {@code amount} (0 to 1), per channel; the
+     * result is opaque.
+     */
+    public static int blend(int base, int toward, float amount) {
+        int r = mix((base >> 16) & 0xff, (toward >> 16) & 0xff, amount);
+        int g = mix((base >> 8) & 0xff, (toward >> 8) & 0xff, amount);
+        int b = mix(base & 0xff, toward & 0xff, amount);
+        return 0xff000000 | (r << 16) | (g << 8) | b;
+    }
+
+    private static int mix(int a, int b, float amount) {
+        return Math.max(0, Math.min(255, Math.round(a + (b - a) * amount)));
     }
 
     /**
@@ -151,8 +278,9 @@ public final class AmoledPalette {
         if (name.contains("track") || SLIDERS.matcher(name).find() && bg) {
             return hi <= 0x80 ? new Decision(rules.slider, SLIDER) : keep(KEPT);
         }
-        Decision surface = floating ? new Decision(rules.floating, FLOATING) :
-                new Decision(rules.background, SURFACE);
+        // Pure black: the rules' background and floating colors; other levels: a step of the ramp
+        Decision surface = floating ? new Decision(rules.floatingFor(color), FLOATING) :
+                new Decision(rules.surfaceFor(color), SURFACE);
         if (hi <= 0x30) return surface;
         // dark greys (cards, containers, lines); mid greys are secondary text and stay
         if (hi - lo <= 0x18 && hi <= 0x52) return surface;

@@ -72,8 +72,8 @@ android {
         applicationId = "projekt.substratum"
         minSdk = 26
         targetSdk = 28
-        versionCode = 1103
-        versionName = "reborn 1103"
+        versionCode = 1104
+        versionName = "reborn 1104"
         buildConfigField("java.util.Date", "buildTime", "new java.util.Date(${System.currentTimeMillis()}L)")
         buildConfigField("String", "GIT_HASH", "\"${gitHash()}\"")
     }

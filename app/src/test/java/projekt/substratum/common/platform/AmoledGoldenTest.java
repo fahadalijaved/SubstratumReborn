@@ -29,16 +29,36 @@ import static org.junit.Assert.assertTrue;
 /**
  * Locks the colors "AMOLED for every app" computes, against the One UI 9 reference
  * (docs/oneui9/reference/&lt;pkg&gt;/values/color.csv): for every color, its dark-mode value
- * (night, else default, following references), then the rules exactly as compute() applies them.
- * One line per changed color, {@code name #stock -> #amoled rule}, in
- * src/test/resources/golden/&lt;pkg&gt;.pure.txt.
+ * (night, else default, following references), then the rules exactly as compute() applies them
+ * ({@link AmoledChange#night}, with the app's own basic_token_primary_50 as its stock accent).
+ * One line per changed color, {@code name #stock -> #amoled rule}, per look:
+ * src/test/resources/golden/&lt;pkg&gt;.pure.txt (pure black), .dim.txt, .elevated.txt and
+ * .tinted.txt (with the Sprite accent #009587).
  * <p>
  * After an intended change: {@code ./gradlew :app:testDebugUnitTest -Dgolden.update=true}.
  */
 public class AmoledGoldenTest {
 
     private static final int MAX_HOPS = 8;
-    private static final String SUFFIX = ".pure.txt";
+    private static final String[] LOOKS = {"pure", "dim", "elevated", "tinted"};
+    static final int SPRITE_TEAL = 0xff009587;
+
+    /**
+     * The rules of each look, built fresh (they are changed by the options)
+     */
+    static AmoledRules rules(String look) {
+        AmoledRules rules = AmoledRules.defaults();
+        switch (look) {
+            case "dim":
+                return rules.setLevel(AmoledLevel.DIM);
+            case "elevated":
+                return rules.setLevel(AmoledLevel.ELEVATED);
+            case "tinted":
+                return rules.setLevel(AmoledLevel.TINTED).setAccent(SPRITE_TEAL);
+            default:
+                return rules;
+        }
+    }
 
     @Test
     public void colorsMatchGoldenSnapshots() throws IOException {
@@ -51,17 +71,16 @@ public class AmoledGoldenTest {
         Arrays.sort(packages);
         Map<String, Map<String, String>> android =
                 table(new File(reference, "android/values/color.csv"));
-        AmoledRules rules = AmoledRules.defaults();
 
         List<String> failures = new ArrayList<>();
         Set<String> names = new TreeSet<>();
         int lines = 0;
-        for (File dir : packages) {
+        for (File dir : packages) for (String look : LOOKS) {
             String pkg = dir.getName();
             List<String> actual = snapshot(pkg, table(new File(dir, "values/color.csv")),
-                    android, rules);
+                    android, rules(look));
             lines += actual.size();
-            File file = new File(golden, pkg + SUFFIX);
+            File file = new File(golden, pkg + "." + look + ".txt");
             names.add(file.getName());
             if (update) {
                 //noinspection ResultOfMethodCallIgnored
@@ -78,12 +97,14 @@ public class AmoledGoldenTest {
             for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
                 if (!line.isEmpty()) expected.add(line);
             }
-            if (!expected.equals(actual)) failures.add(pkg + ": " + diff(expected, actual));
+            if (!expected.equals(actual)) {
+                failures.add(pkg + " (" + look + "): " + diff(expected, actual));
+            }
         }
         String[] existing = golden.list();
         if (existing != null) {
             for (String name : existing) {
-                if (!name.endsWith(SUFFIX) || names.contains(name)) continue;
+                if (!name.endsWith(".txt") || names.contains(name)) continue;
                 if (update) {
                     //noinspection ResultOfMethodCallIgnored
                     new File(golden, name).delete();
@@ -92,8 +113,8 @@ public class AmoledGoldenTest {
                 }
             }
         }
-        System.out.println("AMOLED golden: " + packages.length + " packages, " + lines +
-                " changed colors" + (update ? " (snapshots rewritten)" : ""));
+        System.out.println("AMOLED golden: " + packages.length + " packages x " + LOOKS.length +
+                " looks, " + lines + " changed colors" + (update ? " (snapshots rewritten)" : ""));
         assertTrue(failures.size() + " AMOLED golden snapshots differ (if intended, run " +
                         "./gradlew :app:testDebugUnitTest -Dgolden.update=true):\n" +
                         String.join("\n", failures), failures.isEmpty());
@@ -105,17 +126,29 @@ public class AmoledGoldenTest {
     static List<String> snapshot(String pkg, Map<String, Map<String, String>> own,
                                  Map<String, Map<String, String>> android, AmoledRules rules) {
         List<String> lines = new ArrayList<>();
+        int primary50 = primary50(own, android);
         for (Map.Entry<String, Map<String, String>> entry : own.entrySet()) {
             String name = entry.getKey();
             Integer stock = resolve(dark(entry.getValue()), own, android, 0);
             if (stock == null) continue;
-            AmoledPalette.Decision decision = AmoledPalette.forColor(pkg, name, stock, rules);
-            if (decision.color == null || decision.color.intValue() == stock.intValue()) continue;
+            AmoledPalette.Decision decision = AmoledChange.night(pkg, name, stock, rules,
+                    primary50);
+            if (decision == null) continue;
             lines.add(String.format(Locale.ROOT, "%s #%08x -> #%08x %s", name, stock,
                     decision.color, decision.rule));
         }
         Collections.sort(lines);
         return lines;
+    }
+
+    /**
+     * The app's stock accent: its basic_token_primary_50 in dark mode, or One UI blue.
+     */
+    static int primary50(Map<String, Map<String, String>> own,
+                         Map<String, Map<String, String>> android) {
+        Map<String, String> configs = own.get("basic_token_primary_50");
+        Integer color = configs == null ? null : resolve(dark(configs), own, android, 0);
+        return color != null ? color : AmoledPalette.ONEUI_BLUE;
     }
 
     /**
