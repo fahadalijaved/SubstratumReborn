@@ -60,6 +60,11 @@ public final class RebornStatus {
             {LSPOSED_DB, LSPOSED_DB + "-wal", LSPOSED_DB + "-shm"};
     private static final String PREF_THEME_MODE = "current_theme_mode";
     private static final String TAG = "RebornStatus";
+    /**
+     * One LSPosed read at a time: Home and Setup (and a refresh while a read is still running)
+     * share the copy folder, and one read's clean-up would delete the other's files
+     */
+    private static final Object LSPOSED_LOCK = new Object();
 
     private RebornStatus() {
     }
@@ -220,11 +225,18 @@ public final class RebornStatus {
      * LSPosed's own database (root).
      */
     public static LsposedInfo lsposed(Context context, boolean root) {
-        LsposedInfo info = new LsposedInfo();
         if (!root) {
+            LsposedInfo info = new LsposedInfo();
             info.error = "no root";
             return info;
         }
+        synchronized (LSPOSED_LOCK) {
+            return readLsposed(context);
+        }
+    }
+
+    private static LsposedInfo readLsposed(Context context) {
+        LsposedInfo info = new LsposedInfo();
         File dir = new File(context.getCacheDir(), "lspd");
         File raw = new File(dir, "raw");
         SQLiteDatabase db = null;
@@ -266,6 +278,8 @@ public final class RebornStatus {
             deleteChildren(raw);
             //noinspection ResultOfMethodCallIgnored
             raw.delete();
+            // LSPosed's whole module and scope list: no copy stays behind in the cache
+            deleteChildren(dir);
         }
         return info;
     }
@@ -449,13 +463,22 @@ public final class RebornStatus {
      * "One UI 9.0" from ro.build.version.oneui (90000), or null on other devices
      */
     public static String oneUi() {
+        String prop = null;
         try {
             Class<?> props = Class.forName("android.os.SystemProperties");
             Method get = props.getMethod("get", String.class, String.class);
-            return oneUiName((String) get.invoke(null, "ro.build.version.oneui", ""));
+            prop = (String) get.invoke(null, "ro.build.version.oneui", "");
         } catch (Throwable t) {
-            return null;
+            // A hidden API this app's target may be refused: getprop below
         }
+        if (prop == null || prop.trim().isEmpty()) {
+            try {
+                prop = Systems.getProp("ro.build.version.oneui");
+            } catch (Throwable t) {
+                return null;
+            }
+        }
+        return oneUiName(prop);
     }
 
     static String oneUiName(String prop) {
@@ -487,8 +510,9 @@ public final class RebornStatus {
      * @return True, if the manager started
      */
     public static boolean openLsposedWithRoot() {
+        // From /dev/null: nothing may read the shared root shell's input (its end marker)
         String out = Root.runCommand("am start -c org.lsposed.manager.LAUNCH_MANAGER " +
-                "com.android.shell/.BugreportWarningActivity 2>&1; echo rc=$?");
+                "com.android.shell/.BugreportWarningActivity </dev/null 2>&1; echo rc=$?");
         if (out == null) return false;
         String trimmed = out.trim();
         return trimmed.endsWith("rc=0") && !trimmed.contains("Error");

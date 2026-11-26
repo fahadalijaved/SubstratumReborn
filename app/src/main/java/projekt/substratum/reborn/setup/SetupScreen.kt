@@ -221,8 +221,8 @@ fun SetupScreen(onDone: () -> Unit) {
                             recheck(6000L)
                         }
                         StepFix.ResumeHooks -> {
-                            RebornActions.setHooksPaused(false)
-                            snackbar(context.getString(R.string.reborn_resumed_done))
+                            val resumed = RebornActions.setHooksPaused(false)
+                            snackbar(context.getString(if (resumed) R.string.reborn_resumed_done else R.string.reborn_failed))
                             recheck(6000L)
                         }
                     }

@@ -28,13 +28,13 @@ import java.util.TimerTask;
 import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import projekt.substratum.R;
-import projekt.substratum.activities.launch.SplashScreenActivity;
 import projekt.substratum.activities.shortcuts.RescueActivity;
 import projekt.substratum.common.Activities;
 import projekt.substratum.common.Packages;
 import projekt.substratum.common.References;
 import projekt.substratum.common.Systems;
 import projekt.substratum.databinding.CrashActivityBinding;
+import projekt.substratum.reborn.RebornActivity;
 
 import static projekt.substratum.common.Internal.SUPPORTED_ROMS_FILE;
 import static projekt.substratum.common.References.NO_THEME_ENGINE;
@@ -86,7 +86,8 @@ public class SubstratumCrash extends Activity {
         Button stacktraceButton = binding.logcat;
 
         restartButton.setOnClickListener(view -> {
-            Intent intent = new Intent(SubstratumCrash.this, SplashScreenActivity.class);
+            // The app's start is Reborn Home now (the splash led to Classic)
+            Intent intent = new Intent(SubstratumCrash.this, RebornActivity.class);
             CustomActivityOnCrash.restartApplicationWithIntent(
                     SubstratumCrash.this,
                     intent,

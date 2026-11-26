@@ -61,6 +61,17 @@ public class Theming {
                     context, packageName, Packages.getPackageName(context, packageName));
             return;
         }
+        launchOverlayTheme(context, packageName);
+    }
+
+    /**
+     * Open an overlay theme (not a rules theme) in its InformationActivity, for callers that
+     * already know which kind it is: no package lookup on the caller's thread.
+     *
+     * @param context     Context
+     * @param packageName Theme to launch
+     */
+    public static void launchOverlayTheme(Context context, String packageName) {
         if (context.getPackageName().equals(SUBSTRATUM_PACKAGE)) {
             Intent themeIntent = themeIntent(
                     context,

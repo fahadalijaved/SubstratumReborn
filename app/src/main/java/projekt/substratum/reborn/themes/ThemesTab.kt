@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import projekt.substratum.R
 import projekt.substratum.common.Packages
 import projekt.substratum.common.Theming
+import projekt.substratum.common.platform.AmoledRules
 import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.RebornCache
 import projekt.substratum.reborn.components.AppIcon
@@ -55,14 +56,31 @@ import projekt.substratum.reborn.components.rememberResumeCount
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.components.rememberSnackbar
 
-data class ThemeItem(val name: String, val author: String, val pkg: String)
+/**
+ * An installed theme. [rules] marks an AMOLED rules theme (opens the AMOLED screen, labelled
+ * [label]); both are read with the list, off the main thread.
+ */
+data class ThemeItem(
+    val name: String,
+    val author: String,
+    val pkg: String,
+    val rules: Boolean = false,
+    val label: CharSequence? = null,
+)
 
 /** Blocking: PackageManager. */
 fun loadThemes(context: Context): List<ThemeItem> =
     Packages.getSubstratumPackages(context, null).orEmpty()
         .mapNotNull { (name, data) ->
             val pkg = data.getOrNull(1) ?: return@mapNotNull null
-            ThemeItem(name ?: pkg, data.getOrNull(0).orEmpty(), pkg)
+            val rules = AmoledRules.isRulesTheme(context, pkg)
+            ThemeItem(
+                name = name ?: pkg,
+                author = data.getOrNull(0).orEmpty(),
+                pkg = pkg,
+                rules = rules,
+                label = if (rules) Packages.getPackageName(context, pkg) else null,
+            )
         }
         .sortedBy { it.name.lowercase() }
 
@@ -151,7 +169,12 @@ fun ThemesTab() {
                     SectionCard(
                         onClick = {
                             try {
-                                Theming.launchTheme(activity ?: context, theme.pkg)
+                                // Which kind it is was read with the list: no package lookup here
+                                if (theme.rules) {
+                                    RebornActions.openAmoledSettings(activity ?: context, theme.pkg, theme.label ?: theme.name)
+                                } else {
+                                    Theming.launchOverlayTheme(activity ?: context, theme.pkg)
+                                }
                             } catch (e: RuntimeException) {
                                 snackbar(cannotOpen)
                             }

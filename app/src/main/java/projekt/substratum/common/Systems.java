@@ -730,9 +730,8 @@ public class Systems {
      */
     private static void setAndCheckRootAccess() {
         boolean access = Root.requestRootAccess();
-        prefs.edit().putBoolean("root_access", false).apply();
-        if (access) {
-            prefs.edit().putBoolean("root_access", true).apply();
-        }
+        // One write: Reborn's status read and its start-up run this at once on two threads, and
+        // a false written first could be read by the other as root missing
+        prefs.edit().putBoolean("root_access", access).apply();
     }
 }
