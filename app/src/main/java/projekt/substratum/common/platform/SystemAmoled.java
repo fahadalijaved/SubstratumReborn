@@ -320,14 +320,20 @@ public final class SystemAmoled {
         String name = pkg + SUFFIX;
         List<String> names = new ArrayList<>();
         names.add(name);
-        for (int attempt = 0; attempt < 3 && !items.isEmpty(); attempt++) {
+        // idmap2d names at most 50 rejected resources per attempt, so keep trying while each
+        // attempt reveals new ones. Only the log since this package started is read: scanning
+        // the whole buffer took 20 s to many minutes per call on One UI 9.
+        long since = System.currentTimeMillis() - 2000;
+        Set<String> rejected = new HashSet<>();
+        for (int attempt = 0; attempt < MAX_REGISTER_ATTEMPTS && !items.isEmpty(); attempt++) {
             if (FabricatedValues.registerItems(context, pkg, name, items) == 0) return 0;
             FabricatedValues.enable(names);
             String state = Root.runCommand(
                     "cmd overlay dump com.android.shell:" + name + " | grep mState");
             if (state == null || !state.contains("NO_IDMAP")) return items.size() / 2;
-            Set<String> rejected = rejectedByIdmap(name);
-            if (rejected.isEmpty()) return 0;
+            int known = rejected.size();
+            rejected.addAll(rejectedByIdmap(name, since));
+            if (rejected.size() == known) return 0;
             List<String[]> kept = new ArrayList<>();
             for (String[] item : items) if (!rejected.contains(item[0])) kept.add(item);
             if (kept.size() == items.size()) return 0;
@@ -337,10 +343,15 @@ public final class SystemAmoled {
         return 0;
     }
 
-    private static Set<String> rejectedByIdmap(String overlayName) {
+    private static final int MAX_REGISTER_ATTEMPTS = 12;
+
+    private static Set<String> rejectedByIdmap(String overlayName, long sinceMillis) {
         Set<String> rejected = new HashSet<>();
+        String since = (sinceMillis / 1000) + "." + String.format(java.util.Locale.US, "%03d",
+                sinceMillis % 1000);
         String log = Root.runCommand(
-                "logcat -d -s idmap2d:* | grep 'shell-" + overlayName + "-' | " +
+                "timeout 20 logcat -d -T '" + since + "' -s idmap2d:* </dev/null | " +
+                        "grep 'shell-" + overlayName + "-' | " +
                         "grep -oE \"overlay resource '[^']+'\" | sort -u");
         if (log == null) return rejected;
         Matcher m = Pattern.compile("overlay resource '([^']+)'").matcher(log);
