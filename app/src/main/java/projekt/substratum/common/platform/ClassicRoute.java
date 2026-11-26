@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -322,7 +321,8 @@ public final class ClassicRoute {
         Set<String> toModule = new LinkedHashSet<>(refused);
         if (allToModule) {
             if (items != null) for (String[] item : items) toModule.add(item[0]);
-            FabricatedValues.disable(Collections.singletonList(name));
+            // Off, and not registered again by the restore after a reboot
+            FabricatedValues.forget(name);
             forgetDefinition(context, name);
         } else {
             saveDefinition(context, name, kept);

@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.robv.android.xposed.XposedBridge;
 import projekt.substratum.common.platform.CrashAttribution;
@@ -56,14 +58,29 @@ final class SafeForward {
     static final Object STOCK = new Object();
     private static final List<CrashAttribution.Forwarded> FORWARDED =
             Collections.synchronizedList(new ArrayList<>());
+    // What FORWARDED holds already: each package's resources of a process bring the same
+    // framework entries again
+    private static final Set<String> FORWARDED_KEYS = Collections.synchronizedSet(new HashSet<>());
+    // fileOpens verdicts, once per overlay file and process
+    private static final Map<String, Boolean> OPENS = new ConcurrentHashMap<>();
     private static final Set<String> SKIPPED = Collections.synchronizedSet(new HashSet<>());
     // Skipped lists written by this process: the first write starts the file afresh
     private static final Set<String> WRITTEN = Collections.synchronizedSet(new HashSet<>());
     private static final ThreadLocal<Boolean> BUSY = new ThreadLocal<>();
     private static volatile boolean recorderInstalled;
     private static volatile String ownDir;
+    /**
+     * Set while the zygote applies framework overlays: what it finds is logged only, never listed
+     * in a file (there is no app folder yet, and every app forked from it would inherit the
+     * zygote's folder and its "already listed" names)
+     */
+    private static volatile boolean zygote;
 
     private SafeForward() {
+    }
+
+    static void inZygote(boolean on) {
+        zygote = on;
     }
 
     static boolean isNight(Resources res) {
@@ -81,6 +98,10 @@ final class SafeForward {
     static void forwarded(String overlay, String overlayPackage, String resource,
                           String replacementClass, String stockClass) {
         if (FORWARDED.size() > 20000) return;
+        if (!FORWARDED_KEYS.add(overlay + '|' + resource + '|' + replacementClass + '|' +
+                stockClass)) {
+            return;
+        }
         FORWARDED.add(new CrashAttribution.Forwarded(overlay, overlayPackage, resource,
                 replacementClass, stockClass));
     }
@@ -124,10 +145,14 @@ final class SafeForward {
                     // Checked and fine: from now on forwarded as before, with the app's theme.
                     // Dark mode only keeps this loader, which follows the configuration
                     if (ok && !darkOnly) {
-                        if (systemWide) {
-                            XResources.setSystemWideReplacement(id, modRes.fwd(repId));
-                        } else {
-                            res.setReplacement(id, modRes.fwd(repId));
+                        try {
+                            if (systemWide) {
+                                XResources.setSystemWideReplacement(id, modRes.fwd(repId));
+                            } else {
+                                res.setReplacement(id, modRes.fwd(repId));
+                            }
+                        } catch (Throwable t) {
+                            // This loader keeps handing it out
                         }
                     }
                 }
@@ -179,6 +204,18 @@ final class SafeForward {
      */
     static boolean fileOpens(XModuleResources modRes, String overlay, String type, String name,
                              int repId) {
+        // A framework overlay comes here once for every package whose resources a process
+        // loads: parse each file once
+        String key = overlay + '|' + type + '/' + name;
+        Boolean known = OPENS.get(key);
+        if (known != null) return known;
+        boolean opens = opens(modRes, overlay, type, name, repId);
+        OPENS.put(key, opens);
+        return opens;
+    }
+
+    private static boolean opens(XModuleResources modRes, String overlay, String type,
+                                 String name, int repId) {
         try {
             switch (type) {
                 case "layout":
@@ -214,12 +251,12 @@ final class SafeForward {
      * Log a name left stock once per process and list it for the app
      */
     static void skip(String overlay, String resource, String why) {
-        if (!SKIPPED.add(overlay + '|' + resource)) return;
-        try {
-            XposedBridge.log(TAG + overlay + ": " + resource + " left stock, " + why);
-        } catch (Throwable ignored) {
-            // nothing to log to
+        if (zygote) {
+            log(overlay + ": " + resource + " left stock everywhere, " + why);
+            return;
         }
+        if (!SKIPPED.add(overlay + '|' + resource)) return;
+        log(overlay + ": " + resource + " left stock, " + why);
         String dir = ownDir();
         if (dir == null) return;
         boolean append = !WRITTEN.add(overlay);
@@ -246,14 +283,29 @@ final class SafeForward {
                 } catch (Throwable ignored) {
                     // never in the way of the crash itself
                 }
-                if (previous != null) previous.uncaughtException(thread, error);
+                if (previous != null) {
+                    previous.uncaughtException(thread, error);
+                } else {
+                    // What the platform's own handler ends with: a crash never leaves the
+                    // process running without the thread that died (a frozen app)
+                    try {
+                        error.printStackTrace();
+                    } finally {
+                        Process.killProcess(Process.myPid());
+                        System.exit(10);
+                    }
+                }
             });
         } catch (Throwable t) {
-            try {
-                XposedBridge.log(TAG + "crash recorder not installed: " + t);
-            } catch (Throwable ignored) {
-                // nothing to log to
-            }
+            log("crash recorder not installed: " + t);
+        }
+    }
+
+    private static void log(String message) {
+        try {
+            XposedBridge.log(TAG + message);
+        } catch (Throwable ignored) {
+            // nothing to log to
         }
     }
 
@@ -280,10 +332,14 @@ final class SafeForward {
      * This process' app's device-protected data folder, or null
      */
     private static String ownDir() {
+        if (zygote) return null;
         if (ownDir != null) return ownDir;
         try {
             String process = HookGuard.processName();
-            if (process == null || process.startsWith("<")) return null;
+            if (process == null || process.startsWith("<") || process.startsWith("zygote") ||
+                    process.startsWith("usap")) {
+                return null;
+            }
             int colon = process.indexOf(':');
             String pkg = colon > 0 ? process.substring(0, colon) : process;
             ownDir = "/data/user_de/" + Process.myUid() / 100000 + '/' + pkg;

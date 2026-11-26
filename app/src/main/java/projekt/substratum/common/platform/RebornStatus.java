@@ -208,6 +208,8 @@ public final class RebornStatus {
             s.classicSystemUiParts.addAll(ClassicParts.enabledFor(SYSTEMUI));
             CrashAttribution.Recorded crash = XposedBackend.readCrash(SYSTEMUI);
             if (crash == null || !XposedBackend.isStored(crash.overlay)) return;
+            // The guard trips within 90 seconds of the crash loop's last crash
+            if (!crash.explainsTrip(10 * 60_000L)) return;
             ClassicParts.Part part = ClassicParts.part(context, crash.overlay);
             if (part == null || part.held) return;
             s.crashPart = part;

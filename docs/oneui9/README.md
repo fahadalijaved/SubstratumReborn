@@ -442,7 +442,8 @@ kill $(pidof com.android.systemui)
 
 The theme's page lists its parts with a switch each (a held one says "Paused: crashed System UI";
 switching it on loads it again), and **Turn off this theme** switches all of them off at once,
-with Undo.
+with Undo. Applying the theme again rebuilds a paused part but keeps it paused; enabling it on
+purpose (its switch, or Enable selected in Classic) releases it.
 
 ### Classic themes
 

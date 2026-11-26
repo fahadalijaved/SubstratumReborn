@@ -157,4 +157,30 @@ public class SafeForwardingTest {
         assertNull(CrashAttribution.Recorded.parse(""));
         assertNull(CrashAttribution.Recorded.parse(null));
     }
+
+    @Test
+    public void onlyTheCrashBeforeTheTripNamesThePart() {
+        String record = "overlay=" + NAVBARS + "\nnames=drawable/ic_sysbar_docked\n" +
+                "time=1764150000000\n\n";
+        // What the app reads: the record, then the guard's own time
+        CrashAttribution.Recorded fresh = CrashAttribution.Recorded.parse(record +
+                "tripped=1764150040000\n");
+        assertTrue(fresh.explainsTrip(10 * 60_000L));
+        // A record left from an older crash names the wrong part
+        CrashAttribution.Recorded old = CrashAttribution.Recorded.parse(record +
+                "tripped=1764160000000\n");
+        assertTrue(!old.explainsTrip(10 * 60_000L));
+        // No trip time to compare with: the record is all there is
+        assertTrue(CrashAttribution.Recorded.parse(record + "tripped=\n")
+                .explainsTrip(10 * 60_000L));
+    }
+
+    @Test
+    public void manyCopiesOfTheSameEntriesStillPointAtOnePart() {
+        java.util.List<CrashAttribution.Forwarded> many = new java.util.ArrayList<>();
+        for (int i = 0; i < 2000; i++) many.addAll(FORWARDED);
+        CrashAttribution.Result result = CrashAttribution.attribute(CRASH_NAVBAR, many);
+        assertNotNull(result);
+        assertEquals(NAVBARS, result.overlay);
+    }
 }

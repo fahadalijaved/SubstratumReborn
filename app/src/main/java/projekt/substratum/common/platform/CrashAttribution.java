@@ -6,7 +6,9 @@
 package projekt.substratum.common.platform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +31,7 @@ public final class CrashAttribution {
             "([A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z0-9_]+)*):([a-z]+)/([A-Za-z0-9_.]+)");
     private static final Pattern CAST = Pattern.compile(
             "(?:class )?([A-Za-z0-9_.$]+) cannot be cast to (?:class )?([A-Za-z0-9_.$]+)");
+    private static final Pattern WORD = Pattern.compile("[A-Za-z0-9_]+");
 
     private CrashAttribution() {
     }
@@ -103,15 +106,19 @@ public final class CrashAttribution {
                 hit(score, names, f.overlay, f.resource, stock ? 3 : 1);
             }
         }
-        // 3. Forwarded names the text mentions
+        // 3. Forwarded names the text mentions (as whole words). This runs in the dying process
+        // over up to thousands of entries: one pass over the text, not a pattern per entry
+        Set<String> words = new HashSet<>(Arrays.asList(stackText.split("[^A-Za-z0-9_]+")));
+        Set<String> seen = new HashSet<>();
         for (Forwarded f : forwarded) {
+            if (!seen.add(f.overlay + '|' + f.resource)) continue;
             int slash = f.resource.indexOf('/');
             String name = f.resource.substring(slash + 1);
             if (name.length() < 5) continue;
-            if (Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name) + "(?![A-Za-z0-9_])")
-                    .matcher(stackText).find()) {
-                hit(score, names, f.overlay, f.resource, 1);
-            }
+            boolean mentioned = WORD.matcher(name).matches() ? words.contains(name) :
+                    Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name) +
+                            "(?![A-Za-z0-9_])").matcher(stackText).find();
+            if (mentioned) hit(score, names, f.overlay, f.resource, 1);
         }
         String best = null;
         int bestScore = 0;
@@ -138,6 +145,21 @@ public final class CrashAttribution {
         public final List<String> names = new ArrayList<>();
         public long time;
         public String error;
+        /**
+         * When the guard tripped ({@code tripped=}, added by the app as it reads the record), 0
+         * when unknown
+         */
+        public long tripped;
+
+        /**
+         * Whether this record explains a guard that tripped: the crash came at most
+         * {@code window} before the trip (a record left from an older, single crash names the
+         * wrong part). Pure.
+         */
+        public boolean explainsTrip(long window) {
+            if (time <= 0 || tripped <= 0) return true;
+            return time <= tripped + 60_000 && tripped - time <= window;
+        }
 
         /**
          * The file's content for a result
@@ -184,6 +206,13 @@ public final class CrashAttribution {
                         break;
                     case "error":
                         r.error = value;
+                        break;
+                    case "tripped":
+                        try {
+                            r.tripped = Long.parseLong(value);
+                        } catch (NumberFormatException ignored) {
+                            // unknown
+                        }
                         break;
                     default:
                         break;

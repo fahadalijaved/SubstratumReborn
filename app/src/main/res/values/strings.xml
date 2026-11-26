@@ -534,6 +534,10 @@
         <item quantity="one">Skipped %1$d line that %2$s no longer has</item>
         <item quantity="other">Skipped %1$d lines that %2$s no longer has</item>
     </plurals>
+    <plurals name="apply_summary_held">
+        <item quantity="one">%1$d part stays paused because it crashed System UI. Switch it on from the theme\'s page.</item>
+        <item quantity="other">%1$d parts stay paused because they crashed System UI. Switch them on from the theme\'s page.</item>
+    </plurals>
     <string name="apply_summary_pruned_android">this Android version</string>
     <string name="apply_summary_pruned_show">%1$s  ▾</string>
     <string name="apply_summary_pruned_hide">%1$s  ▴</string>

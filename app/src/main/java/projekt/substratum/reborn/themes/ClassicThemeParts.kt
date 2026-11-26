@@ -45,6 +45,7 @@ import projekt.substratum.reborn.components.design.RebornSwitch
 import projekt.substratum.reborn.components.design.SegmentedGroup
 import projekt.substratum.reborn.components.design.rebornSegmentColors
 import projekt.substratum.reborn.components.onIo
+import projekt.substratum.reborn.components.rememberResumeCount
 import projekt.substratum.reborn.components.rememberRoot
 
 /** Turning a classic theme off and on again, and its parts one by one. Root work on IO. */
@@ -116,8 +117,10 @@ fun ClassicOptions(theme: ThemeItem, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var version by remember { mutableIntStateOf(0) }
-    val stored by rememberRoot(theme.pkg, version) { ClassicDarkMode.isOn(context, theme.pkg) }
-    var local by remember(theme.pkg) { mutableStateOf<Boolean?>(null) }
+    // Read again on return: Classic's theme menu has the same switch
+    val resumes = rememberResumeCount()
+    val stored by rememberRoot(theme.pkg, version, resumes) { ClassicDarkMode.isOn(context, theme.pkg) }
+    var local by remember(theme.pkg, resumes) { mutableStateOf<Boolean?>(null) }
     val on = local ?: stored ?: true
     SegmentedGroup(1, modifier) { _, shapes ->
         SegmentedListItem(

@@ -423,6 +423,15 @@ public final class FabricatedValues {
         run("disable", names);
     }
 
+    /**
+     * Switch an overlay's fabricated half off for good: disabled, and its definition removed so
+     * the restore after a reboot does not register it again
+     */
+    static void forget(String name) {
+        Root.runCommand("cmd overlay disable --user 0 " + OWNER + name + " >/dev/null 2>&1; " +
+                "rm -f '" + DIR + '/' + name + ".xml'");
+    }
+
     private static void run(String verb, Iterable<String> names) {
         StringBuilder command = new StringBuilder();
         for (String name : names) {

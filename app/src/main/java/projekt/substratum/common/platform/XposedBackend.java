@@ -222,10 +222,18 @@ public class XposedBackend {
             return false;
         }
         Set<String> leftToModule = new HashSet<>();
+        // The build stored now, before it is replaced
+        boolean hadFabricated = isFabricated(name);
         boolean fabricated = workArea != null &&
                 FabricatedValues.register(context, new File(workArea), target, name,
                         leftToModule, darkOnly, report) > 0;
-        if (!fabricated) ClassicRoute.forgetDefinition(context, name);
+        if (!fabricated) {
+            ClassicRoute.forgetDefinition(context, name);
+            // The earlier build's fabricated half (with its values for light mode too) would
+            // otherwise stay on, and come back after a reboot, while the module now applies
+            // every value itself
+            if (hadFabricated) FabricatedValues.forget(name);
+        }
         if (report != null && fabricated) {
             for (String resource : resources) {
                 if (leftToModule.contains(resource)) report.toModule.add(resource);
@@ -330,15 +338,21 @@ public class XposedBackend {
 
     public static void enable(Iterable<String> names) {
         StringBuilder command = new StringBuilder();
+        List<String> fabricated = new ArrayList<>();
         for (String name : names) {
+            // Switching a part on releases it from a hold: a part is either loaded or held
             command.append("[ -f '").append(DIR).append('/').append(name).append(APK)
                     .append("' ] && touch '").append(DIR).append('/').append(name)
                     .append(ENABLED).append("' && chmod 644 '").append(DIR).append('/')
-                    .append(name).append(ENABLED).append("'; ");
+                    .append(name).append(ENABLED).append("' && rm -f '").append(DIR)
+                    .append('/').append(name).append(HELD).append("'; ");
+            // Only the fabricated half this build registered: an older build's one may still
+            // be registered under the same name (with values for light mode too)
+            if (isFabricated(name)) fabricated.add(name);
         }
         if (command.length() == 0) return;
         Root.runCommand(command + "restorecon -R " + DIR);
-        FabricatedValues.enable(names);
+        FabricatedValues.enable(fabricated);
     }
 
     /**
@@ -463,8 +477,11 @@ public class XposedBackend {
      */
     public static CrashAttribution.Recorded readCrash(String pkg) {
         if (pkg == null || !pkg.matches("[A-Za-z0-9_.]+")) return null;
-        String out = Root.runCommand("cat /data/user_de/0/" + pkg + '/' + CRASH_FILE +
-                " 2>/dev/null");
+        String dir = "/data/user_de/0/" + pkg + '/';
+        // With the time the guard tripped, to tell a record of that crash from an older one. A
+        // status read: on the status shell, never behind a long job
+        String out = Root.runQuickCommand("cat " + dir + CRASH_FILE + " 2>/dev/null; echo; " +
+                "echo tripped=$(head -n 1 " + dir + GUARD_FILES + "tripped 2>/dev/null)");
         return CrashAttribution.Recorded.parse(out);
     }
 

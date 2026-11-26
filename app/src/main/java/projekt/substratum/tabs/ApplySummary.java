@@ -50,6 +50,8 @@ final class ApplySummary {
     String system;
     // Overlays switched off for these ('Disable other themes', auto-disable)
     int turnedOff;
+    // Built, but kept paused (they crashed System UI before)
+    int held;
 
     /**
      * Enable the overlays that compiled and restart each affected target once. Background thread.
@@ -92,11 +94,21 @@ final class ApplySummary {
             turnedOff.addAll(others);
         }
 
+        // A part paused after it crashed System UI stays paused when it is built again: the
+        // theme's page switches it back on
+        List<String> enabling = new ArrayList<>();
+        for (String name : stored) {
+            if (XposedBackend.isHeld(name) && !XposedBackend.isEnabled(name)) {
+                summary.held++;
+            } else {
+                enabling.add(name);
+            }
+        }
         // Also switches the fabricated values back on: a rebuild registers them again
-        XposedBackend.enable(context, stored);
+        XposedBackend.enable(context, enabling);
         // One restart per target, covering rebuilt overlays that were on already (their targets
         // still hold the old build) and whatever was turned off for them
-        List<String> restart = new ArrayList<>(stored);
+        List<String> restart = new ArrayList<>(enabling);
         restart.addAll(turnedOff);
         if (!restart.isEmpty()) XposedBackend.restartTargets(context, restart);
         for (String name : new HashSet<>(turnedOff)) {
@@ -201,7 +213,13 @@ final class ApplySummary {
             notes.add(activity.getResources().getQuantityString(
                     R.plurals.apply_summary_turned_off, turnedOff, turnedOff));
         }
-        if (enabled < built) notes.add(activity.getString(R.string.apply_summary_not_enabled));
+        if (held > 0) {
+            notes.add(activity.getResources().getQuantityString(R.plurals.apply_summary_held,
+                    held, held));
+        }
+        if (enabled + held < built) {
+            notes.add(activity.getString(R.string.apply_summary_not_enabled));
+        }
         if (!notes.isEmpty()) {
             StringBuilder text = new StringBuilder();
             for (String note : notes) {

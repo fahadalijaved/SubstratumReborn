@@ -67,8 +67,9 @@ public final class ClassicParts {
      */
     public static List<Part> withSkipped(List<Part> parts) {
         if (parts.isEmpty()) return parts;
-        String out = projekt.substratum.util.helpers.Root.runCommand(
-                "grep -c '' /data/user_de/0/*/" + XposedBackend.SKIPPED_PREFIX + "* " +
+        // /dev/null first: grep prints the file names only when it reads more than one file
+        String out = projekt.substratum.util.helpers.Root.runQuickCommand(
+                "grep -c '' /dev/null /data/user_de/0/*/" + XposedBackend.SKIPPED_PREFIX + "* " +
                         "2>/dev/null");
         if (out == null) return parts;
         java.util.Map<String, Integer> counts = new java.util.HashMap<>();
@@ -108,12 +109,25 @@ public final class ClassicParts {
      * The theme an overlay came from (its Substratum_Parent), or null
      */
     public static String themeOf(Context context, String overlay) {
+        // Parsing every stored APK each time a theme page opens takes seconds with a big theme:
+        // kept per overlay until its APK changes
+        long stamp = new java.io.File(XposedBackend.DIR, overlay + XposedBackend.APK)
+                .lastModified();
+        Object[] known = THEMES.get(overlay);
+        if (known != null && (Long) known[0] == stamp) return (String) known[1];
+        String theme;
         try {
-            return XposedBackend.getMetadata(context, overlay, References.metadataOverlayParent);
+            theme = XposedBackend.getMetadata(context, overlay,
+                    References.metadataOverlayParent);
         } catch (RuntimeException e) {
             return null;
         }
+        THEMES.put(overlay, new Object[]{stamp, theme});
+        return theme;
     }
+
+    private static final java.util.Map<String, Object[]> THEMES =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     public static Part part(Context context, String overlay) {
         String target = XposedBackend.getTarget(overlay);

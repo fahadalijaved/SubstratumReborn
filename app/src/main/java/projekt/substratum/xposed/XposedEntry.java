@@ -51,6 +51,9 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     private static final String SYSTEMUI = "com.android.systemui";
     // Plain values replaced directly, per target Resources, so they can follow light/dark changes
     private static final Map<Resources, List<ValueReplacement>> VALUES = new WeakHashMap<>();
+    // Night or not as last applied, per themed Resources object (guarded by VALUES)
+    private static final Map<Resources, Boolean> APPLIED_NIGHT = new WeakHashMap<>();
+    private static final ThreadLocal<Boolean> REAPPLYING = new ThreadLocal<>();
     private static boolean configHooked;
 
     /**
@@ -91,12 +94,18 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
     public void initZygote(StartupParam startupParam) {
         // Kill switch (hooks.off, hooks.off.android)
         if (!HookGuard.allowFramework()) return;
-        for (String name : enabledOverlays()) {
-            try {
-                apply(null, FRAMEWORK, name, true);
-            } catch (Throwable t) {
-                XposedBridge.log(TAG + "skipping " + name + " for framework: " + t);
+        SafeForward.inZygote(true);
+        try {
+            for (String name : enabledOverlays()) {
+                try {
+                    apply(null, FRAMEWORK, name, true);
+                } catch (Throwable t) {
+                    XposedBridge.log(TAG + "skipping " + name + " for framework: " + t);
+                }
             }
+        } finally {
+            // Apps forked from here find their own folders
+            SafeForward.inZygote(false);
         }
     }
 
@@ -185,7 +194,7 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
         // and do not need it)
         if (!enabled.isEmpty()) hookConfigurationChanges();
         if (!enabled.isEmpty()) SafeForward.installRecorder(null);
-        boolean framework = HookGuard.allowFramework();
+        boolean framework = frameworkAllowed();
         for (String name : enabled) {
             try {
                 // Framework overlays of dark mode only themes come here too, per app: a
@@ -196,6 +205,16 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                 XposedBridge.log(TAG + "skipping " + name + " for " + target + ": " + t);
             }
         }
+    }
+
+    // The framework's kill switch, read once per process (here for every package whose
+    // resources the process loads); null until then, and never set in the zygote
+    private static volatile Boolean frameworkAllowed;
+
+    private static boolean frameworkAllowed() {
+        Boolean allowed = frameworkAllowed;
+        if (allowed == null) frameworkAllowed = allowed = HookGuard.allowFramework();
+        return allowed;
     }
 
     private static java.util.List<String> enabledOverlays() {
@@ -254,6 +273,9 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
             if (res != null) {
                 remember(res, new ValueReplacement(ValueReplacement.FOLLOW, target, null, null,
                         modRes, 0, darkOnly));
+                synchronized (VALUES) {
+                    APPLIED_NIGHT.put(res, night);
+                }
             }
             int replaced = 0;
             for (String entry : lines) {
@@ -388,12 +410,75 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
         } catch (Throwable t) {
             XposedBridge.log(TAG + "could not follow configuration changes: " + t);
         }
+        // An app's configuration changes reach its ResourcesImpl (or a new one is set), not
+        // Resources.updateConfiguration: follow night mode there as well, or dark mode only
+        // parts would keep the mode the process started in (System UI does not restart when
+        // the phone switches between light and dark)
+        XC_MethodHook follow = new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                try {
+                    followNight();
+                } catch (Throwable ignored) {
+                    // the next change tries again
+                }
+            }
+        };
+        try {
+            XposedHelpers.findAndHookMethod("android.content.res.ResourcesImpl", null,
+                    "updateConfiguration", Configuration.class, DisplayMetrics.class,
+                    "android.content.res.CompatibilityInfo", follow);
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + "could not follow night mode (impl): " + t);
+        }
+        try {
+            XposedHelpers.findAndHookMethod(Resources.class, "setImpl",
+                    "android.content.res.ResourcesImpl", follow);
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + "could not follow night mode (setImpl): " + t);
+        }
+    }
+
+    /**
+     * Re-apply the themed Resources objects whose night mode differs from what was applied
+     */
+    private static void followNight() {
+        if (Boolean.TRUE.equals(REAPPLYING.get())) return;
+        List<XResources> changed = new ArrayList<>();
+        List<List<ValueReplacement>> lists = new ArrayList<>();
+        synchronized (VALUES) {
+            if (VALUES.isEmpty()) return;
+            for (Map.Entry<Resources, List<ValueReplacement>> e : VALUES.entrySet()) {
+                Resources res = e.getKey();
+                if (!(res instanceof XResources)) continue;
+                boolean now = SafeForward.isNight(res);
+                Boolean was = APPLIED_NIGHT.get(res);
+                if (was != null && was == now) continue;
+                changed.add((XResources) res);
+                lists.add(new ArrayList<>(e.getValue()));
+            }
+        }
+        for (int i = 0; i < changed.size(); i++) reapply(changed.get(i), lists.get(i));
     }
 
     private static void reapply(XResources res, List<ValueReplacement> list) {
+        // Updating the overlay's own resources below comes back through the hooks
+        if (Boolean.TRUE.equals(REAPPLYING.get())) return;
+        REAPPLYING.set(true);
+        try {
+            reapplyNow(res, list);
+        } finally {
+            REAPPLYING.set(false);
+        }
+    }
+
+    private static void reapplyNow(XResources res, List<ValueReplacement> list) {
         Configuration config = res.getConfiguration();
         DisplayMetrics metrics = res.getDisplayMetrics();
         boolean night = SafeForward.isNight(res);
+        synchronized (VALUES) {
+            APPLIED_NIGHT.put(res, night);
+        }
         Set<XModuleResources> updated = new HashSet<>();
         for (ValueReplacement r : list) {
             try {

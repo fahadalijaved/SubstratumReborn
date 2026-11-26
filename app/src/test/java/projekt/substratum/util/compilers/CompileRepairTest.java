@@ -179,6 +179,26 @@ public class CompileRepairTest {
     }
 
     @Test
+    public void anErrorReportedTwiceKeepsTheFile() {
+        List<String> xml = lines(
+                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"",
+                "    android:layout_width=\"match_parent\"",
+                "    android:layout_height=\"wrap_content\"",
+                "    android:background=\"@*com.samsung.android.lool:drawable/abc_ic_ab_back_material\">",
+                "</LinearLayout>");
+        String error = error("layout/card.xml", 1, "Error: No resource found that matches the " +
+                "given name (at 'background' with value " +
+                "'@*com.samsung.android.lool:drawable/abc_ic_ab_back_material').");
+        List<CompileRepair.Pruned> out = new ArrayList<>();
+        List<String> result = CompileRepair.prune(xml, "layout",
+                CompileRepair.parse(Arrays.asList(error, error)), "layout/card.xml", out);
+        // The second report finds its attribute gone: the file stays, without it
+        assertTrue(result != null);
+        assertFalse(String.join("\n", result).contains("android:background"));
+        assertEquals(1, out.size());
+    }
+
+    @Test
     public void aFileThatNeedsTheAttributeGoes() {
         List<String> xml = lines(
                 "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\"",

@@ -234,7 +234,11 @@ final class CompileRepair {
         String type = folder.contains("-") ? folder.substring(0, folder.indexOf('-')) : folder;
         String[] text = lines.toArray(new String[0]);
         boolean[] drop = new boolean[text.length];
+        // aapt can report one line more than once (per configuration or pass): the second
+        // report must not find its attribute gone and take the whole file with it
+        Set<String> seen = new HashSet<>();
         for (Problem p : problems) {
+            if (!seen.add(p.line + "|" + p.attr + '|' + p.ref + '|' + p.parent)) continue;
             int index = Math.min(p.line, text.length) - 1;
             if (index < 0) continue;
             if (type.equals("values")) {
