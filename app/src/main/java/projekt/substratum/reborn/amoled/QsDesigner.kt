@@ -62,6 +62,8 @@ import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.reborn.components.ConfirmDialog
 import projekt.substratum.reborn.components.SectionCard
 import projekt.substratum.reborn.components.ShapedIcon
+import projekt.substratum.reborn.components.isOneUi
+import projekt.substratum.reborn.components.stockLookName
 import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.reborn.components.mock.MockSide
 import projekt.substratum.reborn.components.mock.QsMock
@@ -102,6 +104,11 @@ fun QsDesigner(
     amoledOn: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // The options hook One UI 9's System UI: elsewhere they would do nothing
+    if (!isOneUi()) {
+        QsDesignerOneUiOnly(modifier)
+        return
+    }
     val haptics = LocalHapticFeedback.current
     val colors = LocalRebornColors.current
     val scheme = MaterialTheme.colorScheme
@@ -126,28 +133,7 @@ fun QsDesigner(
 
     val roles = previews?.tiles?.get(tile) ?: previews?.look ?: MockRoles.Empty
     SectionCard(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ShapedIcon(
-                icon = R.drawable.ic_reborn_systemui,
-                container = scheme.tertiaryContainer,
-                content = scheme.onTertiaryContainer,
-                size = 48.dp,
-                shape = MaterialShapes.Cookie6Sided.toShape(),
-            )
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    stringResource(R.string.reborn_studio_qs_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    stringResource(R.string.reborn_studio_qs_text),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-            }
-        }
+        QsDesignerHeader()
         Spacer(Modifier.height(16.dp))
         Box(
             Modifier
@@ -320,6 +306,63 @@ fun QsDesigner(
                 touched = false
             },
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun QsDesignerHeader() {
+    val scheme = MaterialTheme.colorScheme
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        ShapedIcon(
+            icon = R.drawable.ic_reborn_systemui,
+            container = scheme.tertiaryContainer,
+            content = scheme.onTertiaryContainer,
+            size = 48.dp,
+            shape = MaterialShapes.Cookie6Sided.toShape(),
+        )
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.reborn_studio_qs_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                stringResource(R.string.reborn_studio_qs_text),
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** Not One UI: what the designer is for, and a short note instead of controls that do nothing. */
+@Composable
+private fun QsDesignerOneUiOnly(modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    SectionCard(modifier = modifier) {
+        QsDesignerHeader()
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = scheme.surfaceContainerHighest,
+            modifier = Modifier.padding(top = 14.dp),
+        ) {
+            Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painterResource(R.drawable.ic_reborn_info),
+                    contentDescription = null,
+                    tint = scheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    stringResource(R.string.reborn_studio_qs_oneui_only, stockLookName()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

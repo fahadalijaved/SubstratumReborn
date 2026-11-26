@@ -39,6 +39,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -101,6 +102,9 @@ private enum class ShowcasePage(@StringRes val title: Int, @StringRes val detail
 /** The previews and which preset the saved look is (or [AmoledPresets.CUSTOM]). */
 class ShowcaseLooks(val previews: StudioState.Previews, val savedPreset: String)
 
+/** The looks "Try a look" offers: the built-in presets, never one named after a third-party theme */
+private val SHOWN_PRESETS = AmoledPresets.PRESETS.filter { it.id != AmoledPresets.SPRITE }
+
 /** Every page is this tall, so paging never moves Home below it; taller mocks fade out. */
 private val PageHeight = 344.dp
 private const val ADVANCE_MILLIS = 5600L
@@ -126,6 +130,7 @@ private fun loadLooks(context: Context, theme: String?): ShowcaseLooks {
  * @param active Home is in front: false while something covers it (About, a sheet), which pauses
  *   the auto-advance
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ShowcaseCarousel(
     theme: String?,
@@ -163,16 +168,14 @@ fun ShowcaseCarousel(
     val lifeState by lifecycle.currentStateAsState()
     val resumed = lifeState.isAtLeast(Lifecycle.State.RESUMED)
     var touched by remember { mutableStateOf(false) }
+    val paging = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
 
     LaunchedEffect(resumed, touched, motion, active) {
         if (!resumed || touched || !motion || !active) return@LaunchedEffect
         while (true) {
             delay(ADVANCE_MILLIS)
             if (pager.isScrollInProgress) continue
-            pager.animateScrollToPage(
-                (pager.currentPage + 1) % pages.size,
-                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessVeryLow),
-            )
+            pager.animateScrollToPage((pager.currentPage + 1) % pages.size, animationSpec = paging)
         }
     }
 
@@ -197,8 +200,7 @@ fun ShowcaseCarousel(
             Column(Modifier.weight(1f)) {
                 Text(
                     stringResource(R.string.reborn_showcase_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                 )
                 Text(
                     stringResource(R.string.reborn_showcase_subtitle),
@@ -315,14 +317,17 @@ fun ShowcaseCarousel(
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (current?.savedPreset == AmoledPresets.CUSTOM) {
+            // The saved look when it has no chip of its own here (custom, or a look this row
+            // leaves out)
+            val saved = current?.savedPreset
+            if (saved != null && SHOWN_PRESETS.none { it.id == saved }) {
                 LookChip(
                     label = stringResource(R.string.reborn_showcase_yours),
-                    selected = shown == AmoledPresets.CUSTOM,
+                    selected = trying == null,
                     onClick = { trying = null },
                 )
             }
-            AmoledPresets.PRESETS.forEach { preset ->
+            SHOWN_PRESETS.forEach { preset ->
                 LookChip(
                     label = stringResource(presetName(preset.id)),
                     selected = shown == preset.id,
@@ -356,7 +361,6 @@ private fun presetName(id: String): Int = when (id) {
     AmoledPresets.PURE_BLACK -> R.string.amoled_preset_pure
     AmoledPresets.ELEVATED_CARDS -> R.string.amoled_preset_elevated
     AmoledPresets.DIM -> R.string.amoled_preset_dim
-    AmoledPresets.SPRITE -> R.string.amoled_preset_sprite
     else -> R.string.amoled_preset_custom
 }
 

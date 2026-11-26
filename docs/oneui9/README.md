@@ -1,7 +1,19 @@
-# Theming One UI 9 with SubstratumReborn
+# Theming One UI 9 and AOSP with SubstratumReborn
 
-One UI 9 (Android 17) skips overlay APKs that Samsung did not preinstall, and Android rejects
-overlays signed with another key. SubstratumReborn therefore applies themes in two layers:
+SubstratumReborn is a theme engine for themers: you build ordinary Substratum themes, or rules
+themes, and the engine applies them on today's Android. Reborn AMOLED (`themes/amoled`) is one of
+its built-in themes and the reference for the rules format.
+
+**Where it runs.** It is tested on One UI 9 (Galaxy A36, Android 17). The engine itself uses
+standard Android pieces, shell fabricated overlays (Android 12 and newer) and an LSPosed module,
+so AOSP-based ROMs (Pixel stock, LineageOS and similar, rooted with LSPosed) are a target as
+well; it has **not been tested on a Pixel or another AOSP device yet**. Sections marked
+*One UI only* (the design tokens, the One UI 9 quick settings and the Quick Settings designer)
+need a Samsung build.
+
+One UI 9 (Android 17) skips overlay APKs that Samsung did not preinstall, and Android limits
+what an overlay signed with another key may change. SubstratumReborn therefore applies themes in
+two layers:
 
 - **Colors, booleans and integers** become a *fabricated overlay* in the system Overlay Manager
   (root). They are resolved natively, so they also reach colors the app only uses through
@@ -63,7 +75,7 @@ it as a number and Substratum skips the theme.
 5. Restarting a target over and over trips LSPosed's crash detection, which then stops all
    modules (safe mode). Substratum restarts each target once per action.
 
-## Design tokens
+## Design tokens (One UI only)
 
 Most One UI 9 system apps share a palette of design tokens. Overriding them themes all of those
 apps the same way:
@@ -233,7 +245,7 @@ tools/oneui-reference/fab_to_theme.py OUT/definitions themes/amoled-static/src/m
 
 The reference records names and values only; it does not contain Samsung's files.
 
-### One UI 9 quick settings: what needs the LSPosed module
+### One UI 9 quick settings: what needs the LSPosed module (One UI only)
 
 One UI 9 draws parts of quick settings in Compose code with fixed values, which no overlay can
 change. While AMOLED for every app is applied, the module (scoped to System UI) handles them:

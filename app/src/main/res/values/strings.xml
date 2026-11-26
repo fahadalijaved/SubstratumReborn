@@ -664,7 +664,7 @@
     <string name="amoled_look_summary">How dark every app gets, and the accent it shows. Changes apply to every app on their own.</string>
     <string name="amoled_look_stock">Stock</string>
     <string name="amoled_look_amoled">AMOLED</string>
-    <string name="amoled_look_preview_description">Preview: stock One UI on the left, your look on the right</string>
+    <string name="amoled_look_preview_description">Preview: %1$s on the left, your look on the right</string>
     <string name="amoled_look_presets">Presets</string>
     <string name="amoled_look_surfaces">Surfaces</string>
     <string name="amoled_look_accent">Accent</string>
@@ -681,7 +681,7 @@
     <string name="amoled_level_dim_summary">Soft near-black, easier on the eyes at night</string>
     <string name="amoled_level_elevated_summary">Black pages, cards and popups a step above</string>
     <string name="amoled_level_tinted_summary">Elevated, with a breath of the accent</string>
-    <string name="amoled_accent_none">No accent: One UI blue stays</string>
+    <string name="amoled_accent_none">No accent: %1$s stays</string>
     <string name="amoled_accent_monet">Wallpaper colors</string>
     <string name="amoled_accent_oneui">One UI blue</string>
     <string name="amoled_accent_sprite">Sprite teal</string>
@@ -848,5 +848,5 @@
 
     <string name="module_placed_reboot_message">Substratum has installed its root module (Magisk / KernelSU / APatch) successfully. Please reboot to allow overlays to take effect.</string>
 
-    <string name="xposed_description" translatable="false">Substratum theme engine for ROMs that reject overlays (One UI 9). Add every app you theme to the scope.</string>
+    <string name="xposed_description" translatable="false">Substratum Reborn, the theme engine for One UI and AOSP: applies theme colours by resource id where overlays cannot reach. Add every app you theme to the scope.</string>
 </resources>

@@ -24,8 +24,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -235,11 +233,14 @@ fun RebornApp(requestedTab: MutableState<String?>) {
                             }
                         }
                     }
-                    // About, over the tabs (they keep their state underneath)
+                    // About, over the tabs (they keep their state underneath), on the expressive springs
+                    val motion = MaterialTheme.motionScheme
                     AnimatedVisibility(
                         visible = showAbout,
-                        enter = slideInHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 4 } + fadeIn(tween(220)),
-                        exit = slideOutHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 4 } + fadeOut(tween(160)),
+                        enter = slideInHorizontally(motion.defaultSpatialSpec()) { it / 4 } +
+                            fadeIn(motion.defaultEffectsSpec()),
+                        exit = slideOutHorizontally(motion.fastSpatialSpec()) { it / 4 } +
+                            fadeOut(motion.fastEffectsSpec()),
                     ) {
                         AboutScreen(
                             onBack = { showAbout = false },

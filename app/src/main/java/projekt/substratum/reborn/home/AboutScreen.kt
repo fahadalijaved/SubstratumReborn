@@ -31,6 +31,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -65,8 +66,10 @@ import projekt.substratum.reborn.components.StatusChip
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.theme.LocalRebornColors
 
-/** This fork's repository (the git remote it is published from) */
+/** This fork's repository (the git remote it is published from; public) */
 private const val SOURCE_URL = "https://github.com/fahadalijaved/SubstratumReborn"
+/** The theme format and the engine, for themers */
+private const val THEMERS_URL = "$SOURCE_URL/blob/oneui9-root/docs/oneui9/README.md"
 /** The project it is based on */
 private const val UPSTREAM_URL = "https://github.com/substratum/substratum"
 private const val TAG = "RebornAbout"
@@ -128,8 +131,7 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                         Column(Modifier.weight(1f)) {
                             Text(
                                 stringResource(R.string.reborn_about_name),
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.headlineSmallEmphasized,
                             )
                             Text(
                                 BuildConfig.VERSION_NAME,
@@ -139,6 +141,17 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                             )
                         }
                     }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        stringResource(R.string.reborn_about_tagline),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.reborn_about_tested),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = scheme.onSurfaceVariant,
+                    )
                     Spacer(Modifier.height(18.dp))
                     HorizontalDivider(color = if (colors.dark) colors.cardBorder else scheme.outlineVariant)
                     Spacer(Modifier.height(6.dp))
@@ -164,11 +177,15 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
             item(key = "status") {
                 SectionCard {
                     if (model == null) {
-                        Text(
-                            stringResource(R.string.reborn_checking),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = scheme.onSurfaceVariant,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            LoadingIndicator(Modifier.size(40.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                stringResource(R.string.reborn_checking),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
                     } else {
                         Text(
                             stringResource(model.headline),
@@ -218,6 +235,15 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                         content = scheme.onPrimaryContainer,
                         shape = MaterialShapes.Clover4Leaf.toShape(),
                         onClick = onWhatsNew,
+                    )
+                    LinkRow(
+                        icon = R.drawable.ic_reborn_themes,
+                        title = stringResource(R.string.reborn_about_themers),
+                        subtitle = stringResource(R.string.reborn_about_themers_text),
+                        container = scheme.tertiaryContainer,
+                        content = scheme.onTertiaryContainer,
+                        shape = MaterialShapes.Sunny.toShape(),
+                        onClick = { openUrl(context, THEMERS_URL) },
                     )
                     LinkRow(
                         icon = R.drawable.ic_reborn_open,

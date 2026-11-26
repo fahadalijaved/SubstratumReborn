@@ -83,8 +83,13 @@ private class Highlight(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val highlights: List<Highlight> by lazy {
     listOf(
-        Highlight(R.drawable.ic_reborn_amoled, R.string.reborn_new_studio, R.string.reborn_new_studio_text,
+        // The engine first: Reborn is a theme engine, AMOLED one of its built-in themes
+        Highlight(R.drawable.ic_reborn_layers, R.string.reborn_new_engine, R.string.reborn_new_engine_text,
+            MaterialShapes.Burst),
+        Highlight(R.drawable.ic_reborn_amoled, R.string.reborn_new_builtin, R.string.reborn_new_builtin_text,
             MaterialShapes.Clover4Leaf),
+        Highlight(R.drawable.ic_reborn_engine, R.string.reborn_new_faster, R.string.reborn_new_faster_text,
+            MaterialShapes.Cookie9Sided),
         Highlight(R.drawable.ic_reborn_palette, R.string.reborn_new_look, R.string.reborn_new_look_text,
             MaterialShapes.Cookie6Sided),
         Highlight(R.drawable.ic_reborn_search, R.string.reborn_new_inspector, R.string.reborn_new_inspector_text,
@@ -93,10 +98,8 @@ private val highlights: List<Highlight> by lazy {
             MaterialShapes.Cookie4Sided),
         Highlight(R.drawable.ic_reborn_check, R.string.reborn_new_safety, R.string.reborn_new_safety_text,
             MaterialShapes.Sunny),
-        Highlight(R.drawable.ic_reborn_engine, R.string.reborn_new_engine, R.string.reborn_new_engine_text,
-            MaterialShapes.Burst),
-        Highlight(R.drawable.ic_reborn_refresh, R.string.reborn_new_retheme, R.string.reborn_new_retheme_text,
-            MaterialShapes.Cookie9Sided),
+        Highlight(R.drawable.ic_reborn_restart, R.string.reborn_new_retheme, R.string.reborn_new_retheme_text,
+            MaterialShapes.SoftBurst),
     )
 }
 
@@ -105,7 +108,7 @@ private val highlights: List<Highlight> by lazy {
  *
  * @param onDismiss The sheet is gone (closed by a button, a swipe or back)
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
     // Opens straight to full height: no half-open stop
@@ -136,7 +139,7 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
                 Box(Modifier.size(76.dp), contentAlignment = Alignment.Center) {
                     MorphingShape(HeroShape.Calm, scheme.primary, Modifier.fillMaxSize())
                     Icon(
-                        painterResource(R.drawable.ic_reborn_amoled),
+                        painterResource(R.drawable.ic_reborn_themes),
                         contentDescription = null,
                         tint = scheme.onPrimary,
                         modifier = Modifier.size(32.dp),
@@ -153,13 +156,17 @@ fun WhatsNewSheet(onDismiss: () -> Unit, onOpenStudio: () -> Unit) {
                     )
                     Text(
                         BuildConfig.VERSION_NAME,
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.displaySmallEmphasized,
                         modifier = Modifier.semantics { heading() },
                     )
                 }
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.reborn_new_headline),
+                style = MaterialTheme.typography.titleLargeEmphasized,
+            )
+            Spacer(Modifier.height(6.dp))
             Text(
                 stringResource(R.string.reborn_new_lead),
                 style = MaterialTheme.typography.bodyLarge,

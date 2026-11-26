@@ -133,6 +133,8 @@ import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.common.platform.AmoledState
 import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.reborn.RebornActions
+import projekt.substratum.reborn.components.stockAccentName
+import projekt.substratum.reborn.components.stockLookName
 import projekt.substratum.reborn.components.ChipState
 import projekt.substratum.reborn.components.ConfirmDialog
 import projekt.substratum.reborn.components.Entrance
@@ -255,6 +257,10 @@ private fun accentLabel(accent: String?): Int = when (accent) {
     null -> R.string.amoled_accent_custom
     else -> if (AmoledPresets.isCustom(accent)) R.string.amoled_accent_custom else R.string.amoled_accent_none
 }
+
+/** An accent choice's name; "none" names the accent apps keep (One UI blue, or the system accent). */
+@Composable
+private fun accentText(accent: String?): String = stringResource(accentLabel(accent), stockAccentName())
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -848,7 +854,7 @@ private fun PresetCarousel(
 private fun presetDetail(level: AmoledLevel, accent: String): String {
     val levelName = stringResource(levelLabel(level))
     return if (accent == AmoledPresets.ACCENT_NONE) levelName
-    else levelName + " · " + stringResource(accentLabel(accent))
+    else levelName + " · " + accentText(accent)
 }
 
 @Composable
@@ -983,7 +989,7 @@ private fun PreviewCard(
             }
         }
         Text(
-            stringResource(R.string.reborn_studio_preview_hint),
+            stringResource(R.string.reborn_studio_preview_hint, stockLookName()),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
@@ -1088,7 +1094,7 @@ private fun AccentCard(
             )
             Text(
                 if (custom) stringResource(R.string.amoled_accent_custom_value, accent.uppercase(Locale.ROOT))
-                else stringResource(accentLabel(accent)),
+                else accentText(accent),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
@@ -1106,7 +1112,7 @@ private fun AccentCard(
                 AccentSwatch(
                     option = option,
                     selected = selected,
-                    label = stringResource(accentLabel(option.choice)),
+                    label = accentText(option.choice),
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         if (option.choice == null) picking = true else onAccent(option.choice)

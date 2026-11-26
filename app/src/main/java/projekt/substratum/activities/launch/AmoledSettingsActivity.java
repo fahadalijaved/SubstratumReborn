@@ -55,6 +55,7 @@ import projekt.substratum.common.platform.AmoledPreview;
 import projekt.substratum.common.platform.AmoledRules;
 import projekt.substratum.common.platform.AmoledState;
 import projekt.substratum.common.platform.QsOptions;
+import projekt.substratum.common.platform.RebornPlatform;
 import projekt.substratum.common.platform.SystemAmoled;
 import projekt.substratum.util.helpers.Root;
 
@@ -382,7 +383,7 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 FrameLayout.LayoutParams.WRAP_CONTENT, android.view.Gravity.CENTER));
         swatches.add(swatch);
         swatchAccents.add(accent);
-        swatch.setContentDescription(getString(accentLabel(accent)));
+        swatch.setContentDescription(accentText(accent));
         swatch.setOnClickListener(v -> {
             v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
             if (accent == null) {
@@ -430,6 +431,14 @@ public class AmoledSettingsActivity extends AppCompatActivity {
             chooseAccent(String.format(Locale.ROOT, "#%06X", color & 0xffffff));
         }));
         dialog.show();
+    }
+
+    /**
+     * An accent choice's name; "none" names the accent apps keep (One UI blue, or the system
+     * accent on stock Android).
+     */
+    private String accentText(String accent) {
+        return getString(accentLabel(accent), RebornPlatform.stockAccent(this));
     }
 
     private static int accentLabel(String accent) {
@@ -491,7 +500,7 @@ public class AmoledSettingsActivity extends AppCompatActivity {
             }
         }
         accentName.setText(custom ? getString(R.string.amoled_accent_custom_value,
-                accent.toUpperCase(Locale.ROOT)) : getString(accentLabel(accent)));
+                accent.toUpperCase(Locale.ROOT)) : accentText(accent));
         accentLight.setChecked(look.accentLight != null && look.accentLight);
         accentLight.setEnabled(!AmoledPresets.ACCENT_NONE.equals(accent));
         lookLoading = false;

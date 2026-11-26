@@ -1,11 +1,18 @@
 # Substratum Reborn
 
-**True black for every app on One UI 9, with a studio to see it before you apply it.**
+**A theme engine for One UI and AOSP, rebuilt on fabricated overlays and LSPosed, for themers to
+build on.**
 
-Substratum Reborn brings the Substratum theme engine to rooted Galaxy phones on One UI 9
-(Android 17). Its flagship is AMOLED Studio: pick a look, compare it on a live before and after
-preview drawn with the engine's real colours, apply it in one tap, and inspect every colour it
-changed in every app. Everything applied shows in one place, with one Undo.
+Substratum Reborn is the Substratum theme engine rebuilt for current Android, where overlay APKs
+from a third party no longer load. Themers ship ordinary Substratum themes or *rules themes*;
+the engine registers their colours as fabricated overlays with root and applies what an overlay
+cannot reach through its LSPosed module. It is tested on One UI 9 (Galaxy A36, Android 17); the
+same standard pieces make AOSP-based ROMs a target too, but they have not been tested yet.
+
+Its first built-in theme is **Reborn AMOLED**: true black for every app, set up in AMOLED
+Studio. Pick a look, compare it on a live before and after preview drawn with the engine's real
+colours, apply it in one tap, and inspect every colour it changed in every app. Everything
+applied shows in one place, with one Undo.
 
 <!--
   Screenshot slots. The images are not in the repository yet: they are captured in demo mode and
@@ -23,11 +30,13 @@ changed in every app. Everything applied shows in one place, with one Undo.
 
 | Feature | What you get |
 |---|---|
+| **Theme engine** | For themers: classic Substratum themes and rules themes (`assets/amoled/rules.json`) that read each app's own colours on the phone, so one theme fits every app; colours go out as fabricated overlays (native) or through the LSPosed module (by resource id). The format is in [docs/oneui9/README.md](docs/oneui9/README.md) |
+| **Reborn AMOLED** (built-in theme) | True black for every app, from AMOLED Studio |
 | **AMOLED Studio** | Looks (Pure black, Elevated cards, Dim), a live before/after preview of Quick Settings and Settings drawn from the engine's computed colours, one-tap Apply with progress you can watch |
 | **Levels and accent** | Pure, Dim, Elevated or Tinted surfaces; accent none, Monet (the wallpaper's), One UI blue, white or any colour; optionally in light mode too |
 | **Per-app inspector** | Every covered app with search, filters, its route (native overlay or module) and a *Restart needed* state; each colour that changed, stock to AMOLED, and the rule that decided it; long-press to keep a colour stock or pin your own |
 | **Applied and Undo everything** | Compiled theme overlays, AMOLED and Quick Settings tweaks in one list; swipe one off, or put everything back to stock in one go |
-| **Quick Settings designer** | Opaque shade, near-black slider tracks, the active tile colour and a compact row height, carried out in System UI by the module |
+| **Quick Settings designer** (One UI only) | Opaque shade, near-black slider tracks, the active tile colour and a compact row height, carried out in One UI 9's System UI by the module |
 | **Themes** | Full-width cards and one-tap Apply, install a theme from an APK file, rules themes open in the Studio; compatible legacy Substratum themes still work, and Classic Substratum is one tap away |
 | **Safety** | A kill switch, a crash-loop guard for System UI and every hooked app, no restarts of the phone, Bluetooth or keyboard processes, boot restore, and snapshots on Remove |
 | **Engine** | Fabricated overlays + LSPosed: cached, batched and flicker-free, and apps you update are re-themed on their own |
@@ -37,7 +46,12 @@ nothing changed a few seconds (the classic engine, still selectable, needs about
 
 ## Requirements
 
-- **One UI 9 / Android 17.** Tested device: **Galaxy A36**.
+- **Android 12 or newer** (shell fabricated overlays).
+  - **Tested:** One UI 9 / Android 17 on a **Galaxy A36**.
+  - **Targeted, not tested yet:** AOSP-based ROMs such as Pixel stock or LineageOS, rooted and
+    with LSPosed. The engine uses only standard Android pieces, but nobody has run it on one of
+    them so far.
+  - **One UI only:** the Quick Settings designer and the One UI 9 design-token rules.
 - **Root.** KernelSU is tested; Magisk and APatch should work but are untested.
 - **LSPosed** with the Substratum Reborn module enabled. Its scope needs **System UI**,
   **Settings** and **Substratum Reborn** itself, plus the apps AMOLED Studio marks *Needs scope*
@@ -47,7 +61,7 @@ nothing changed a few seconds (the classic engine, still selectable, needs about
 
 1. Install the APK (`./gradlew :app:assembleDebug` builds `app/build/outputs/apk/debug/app-debug.apk`;
    it needs the Android SDK with platform 37.1 and a recent JDK).
-2. Open Substratum Reborn and grant it root in the KernelSU manager.
+2. Open Substratum Reborn and grant it root in your root manager (KernelSU is the tested one).
 3. In LSPosed, enable the module and add System UI, Settings and Substratum Reborn to its scope.
 4. Follow the **Setup checklist** that opens on the first launch: four live checks (root, module,
    scope, System UI hooked), each with a Fix button, and unrestricted battery use as a
@@ -78,8 +92,8 @@ flowchart LR
   Their definitions are kept in `/data/system/substratum` and registered again at every boot.
 - **The LSPosed module (by id).** Apps with obfuscated resource names or that refuse shell
   overlays get their colours inside their own process, by resource id, keyed to the app version
-  they were read from. The module also draws what One UI 9 paints in code (the Quick Settings
-  shade, slider tracks, row height and the battery).
+  they were read from. On One UI 9 the module also draws what System UI paints in code (the
+  Quick Settings shade, slider tracks, row height and the battery).
 - **The cache and the auto re-theme job.** Each app's result is cached, so a re-apply only reads
   what changed; a periodic job re-themes apps after they update.
 
@@ -113,9 +127,15 @@ reach their colours by name. The module applies them by resource id inside the a
 process, and it can only do that in apps that are in its LSPosed scope.
 
 **Why not overlay APKs, like classic Substratum?**
-One UI 9 skips overlay APKs that Samsung did not preinstall, and Android rejects overlays signed
-with another key. Fabricated overlays, registered with root, are resolved natively without an
-APK; the module covers what they cannot carry.
+One UI 9 skips overlay APKs that Samsung did not preinstall, and Android limits what an overlay
+signed with another key may change. Fabricated overlays, registered with root, are resolved
+natively without an APK; the module covers what they cannot carry.
+
+**Does it work on AOSP, a Pixel or LineageOS?**
+That is the aim: fabricated overlays (Android 12 and newer) and an LSPosed module are standard
+Android pieces, not Samsung ones. It has not been tested on a Pixel or another AOSP-based ROM
+yet, so expect rough edges and report what you find. The Quick Settings designer and the One UI 9
+design-token rules are One UI only; the Studio says so on other devices.
 
 **Does it change light mode?**
 No. AMOLED colours are night-only; where an app's light value is a fixed colour, the stock light

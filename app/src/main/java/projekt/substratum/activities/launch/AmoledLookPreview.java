@@ -25,6 +25,7 @@ import java.util.Map;
 
 import projekt.substratum.R;
 import projekt.substratum.common.platform.AmoledPreview;
+import projekt.substratum.common.platform.RebornPlatform;
 
 /**
  * A small Settings and quick settings mock, stock on the left and AMOLED on the right, drawn
@@ -58,7 +59,8 @@ public class AmoledLookPreview extends View {
                 getResources().getDisplayMetrics()));
         stockLabel = context.getString(R.string.amoled_look_stock);
         amoledLabel = context.getString(R.string.amoled_look_amoled);
-        setContentDescription(context.getString(R.string.amoled_look_preview_description));
+        setContentDescription(context.getString(R.string.amoled_look_preview_description,
+                RebornPlatform.stockLook(context)));
     }
 
     /**
