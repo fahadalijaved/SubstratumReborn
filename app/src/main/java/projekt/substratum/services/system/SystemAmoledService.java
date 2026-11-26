@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -57,11 +58,21 @@ public class SystemAmoledService extends Service {
     private static final ExecutorService QUEUE = Executors.newSingleThreadExecutor(
             r -> new Thread(r, "AmoledJobs"));
     private static final AtomicInteger PENDING = new AtomicInteger();
+    private static final String WAKE_LOCK_TAG = "Reborn:AmoledJob";
+    /**
+     * Safety limit of one acquire; every job acquires again, so only a job stuck this long loses it
+     */
+    private static final long WAKE_LOCK_TIMEOUT = 30L * 60L * 1000L;
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private int lastStartId;
     private volatile String lastResult;
     private volatile Notification shown;
+    /**
+     * Held from the first queued job until the queue is idle: with the screen off the CPU would
+     * otherwise suspend in the middle of an apply (and the job freezes until the screen wakes)
+     */
+    private PowerManager.WakeLock wakeLock;
 
     /**
      * @deprecated Use {@link AmoledJobs#snapshot()}
@@ -85,6 +96,7 @@ public class SystemAmoledService extends Service {
             if (PENDING.get() == 0) stopIfIdle();
             return START_NOT_STICKY;
         }
+        holdWakeLock();
         AmoledJobs.queued(job);
         PENDING.incrementAndGet();
         QUEUE.execute(() -> {
@@ -102,29 +114,67 @@ public class SystemAmoledService extends Service {
      */
     private void stopIfIdle() {
         if (PENDING.get() != 0) return;
-        AmoledJobs.idle();
-        String result = lastResult;
-        lastResult = null;
-        shown = null;
-        if (result != null) {
-            stopForeground(STOP_FOREGROUND_DETACH);
-            Notification done = new NotificationCompat.Builder(this,
-                    References.DEFAULT_NOTIFICATION_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.notification_icon)
-                    .setContentTitle(getString(R.string.system_amoled_title))
-                    .setContentText(result)
-                    .setAutoCancel(true)
-                    .build();
-            getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, done);
-        } else {
-            stopForeground(STOP_FOREGROUND_REMOVE);
+        try {
+            AmoledJobs.idle();
+            String result = lastResult;
+            lastResult = null;
+            shown = null;
+            if (result != null) {
+                stopForeground(STOP_FOREGROUND_DETACH);
+                Notification done = new NotificationCompat.Builder(this,
+                        References.DEFAULT_NOTIFICATION_CHANNEL_ID)
+                        .setSmallIcon(R.drawable.notification_icon)
+                        .setContentTitle(getString(R.string.system_amoled_title))
+                        .setContentText(result)
+                        .setAutoCancel(true)
+                        .build();
+                getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, done);
+            } else {
+                stopForeground(STOP_FOREGROUND_REMOVE);
+            }
+            stopSelf(lastStartId);
+        } finally {
+            releaseWakeLock();
         }
-        stopSelf(lastStartId);
+    }
+
+    @Override
+    public void onDestroy() {
+        releaseWakeLock();
+        super.onDestroy();
+    }
+
+    /**
+     * Keep the CPU running while jobs are queued. Not reference counted: every call (each queued
+     * and each started job) renews the {@link #WAKE_LOCK_TIMEOUT}, one release ends it.
+     */
+    private synchronized void holdWakeLock() {
+        try {
+            if (wakeLock == null) {
+                PowerManager power = getSystemService(PowerManager.class);
+                if (power == null) return;
+                wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG);
+                wakeLock.setReferenceCounted(false);
+            }
+            wakeLock.acquire(WAKE_LOCK_TIMEOUT);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "No wake lock: " + e);
+        }
+    }
+
+    private synchronized void releaseWakeLock() {
+        try {
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
+        } catch (RuntimeException e) {
+            Log.w(TAG, "Wake lock release failed: " + e);
+        }
     }
 
     // Jobs (worker thread)
 
     private void run(AmoledJobs.Job job) {
+        // A new safety period for this job
+        holdWakeLock();
         AmoledJobs.started(job);
         show(ongoing(startText(job), 0, 0, true));
         boolean ok = true;

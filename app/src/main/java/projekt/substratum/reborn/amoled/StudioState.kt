@@ -14,7 +14,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -122,6 +124,10 @@ object StudioState {
         val accent: String,
         val accentLight: Boolean,
         val tile: String,
+        /** The level was chosen here; otherwise it is the rules theme's own */
+        val levelChosen: Boolean = true,
+        /** The accent was chosen here; otherwise it is the rules theme's own */
+        val accentChosen: Boolean = true,
     )
 
     @Immutable
@@ -135,6 +141,10 @@ object StudioState {
         val presets: Map<String, MockRoles>,
         /** The saved look with each active tile option, by option */
         val tiles: Map<String, MockRoles>,
+        /** The level Apply uses (the rules theme's where none was chosen here) */
+        val level: AmoledLevel,
+        /** The accent choice Apply uses, or null for none */
+        val accent: String?,
     )
 
     @Immutable
@@ -180,6 +190,11 @@ object StudioState {
     private var scopeWanted = true
     /** Switches made here that a read has not seen yet: shown over what it read */
     private val switched = HashMap<String, Boolean>()
+    /** The rules theme's own level and accent (from the last preview), for parts never chosen */
+    private var themeLevel: AmoledLevel? = null
+    private var themeAccent: String? = null
+    /** Quick settings options being written: shown instead of the file until the write is done */
+    private var qsWrite: QsSaved? = null
     @Volatile
     private var stock: AmoledPreview.Stock? = null
     private val labels = ConcurrentHashMap<String, String>()
@@ -230,9 +245,10 @@ object StudioState {
             for (request in requests) {
                 try {
                     read()
-                } catch (e: CancellationException) {
-                    throw e
                 } catch (t: Throwable) {
+                    // Only a cancelled scope ends the loop: a CancellationException thrown by some
+                    // API inside a read must not stop this kind of read for the whole process
+                    currentCoroutineContext().ensureActive()
                     Log.e(TAG, "read failed", t)
                 }
             }
@@ -247,7 +263,11 @@ object StudioState {
         if (attached++ == 0) AmoledJobs.addListener(listener)
         syncJob()
         if (_look.value == null) _look.value = readLook()
-        if (_scope.value == null) _scope.value = RebornCache.status?.lsposed?.scope?.toSet()
+        if (_scope.value == null) {
+            // An unread scope is empty, not "nothing in scope": every module app would need scope
+            _scope.value = RebornCache.status?.lsposed
+                ?.takeIf { it.level != RebornStatus.Level.UNKNOWN }?.scope?.toSet()
+        }
         refreshAll()
     }
 
@@ -320,7 +340,8 @@ object StudioState {
         // The status shell: never waits behind a running job
         val list = SystemAmoled.listApps(context, true)
         val state = AmoledState.read(context)
-        val level = (AmoledPresets.look(prefs()).level ?: AmoledLevel.PURE).key()
+        // The level a re-apply would use: the chosen one, else the rules theme's (as last applied)
+        val level = AmoledPresets.look(prefs()).level?.key() ?: state.level ?: AmoledLevel.PURE.key()
         val pm = context.packageManager
         return list.map { app ->
             val pkg = app.packageName
@@ -360,7 +381,15 @@ object StudioState {
         val look = readLook()
         _look.value = look
         val theme = _theme.value
-        _previews.value = withContext(Dispatchers.IO) { computePreviews(context, theme, look) }
+        val previews = withContext(Dispatchers.IO) { computePreviews(context, theme, look) }
+        _previews.value = previews
+        // What was never chosen here follows the rules theme: the controls show what Apply uses
+        val accent = previews.accent ?: AmoledPresets.ACCENT_NONE
+        if (previews.level != themeLevel || accent != themeAccent) {
+            themeLevel = previews.level
+            themeAccent = accent
+            if (!look.levelChosen || !look.accentChosen) _look.value = readLook()
+        }
     }
 
     private fun computePreviews(context: Context, theme: String?, look: Look): Previews {
@@ -378,7 +407,8 @@ object StudioState {
             } ?: AmoledRules.defaults()
             return base.withUserOptions(prefs, monet)
         }
-        val saved = MockRoles(AmoledPreview.roles(stock, rules().withUserRules(user)))
+        val savedRules = rules().withUserRules(user)
+        val saved = MockRoles(AmoledPreview.roles(stock, savedRules))
         val presets = AmoledPresets.PRESETS.associate { preset ->
             val tile = preset.tile ?: if (look.tile == AmoledRules.TILE_ACCENT &&
                 preset.accent == AmoledPresets.ACCENT_NONE) AmoledRules.TILE_WHITE else look.tile
@@ -390,13 +420,14 @@ object StudioState {
             val roles = AmoledPreview.roles(stock, rules().withLook(null, null, null, tile, monet).withUserRules(user))
             saved.with(roles.filterKeys { it == AmoledPreview.QS_TILE_ON || it == AmoledPreview.QS_TILE_ICON_ON })
         }
-        return Previews(saved, presets, tiles)
+        return Previews(saved, presets, tiles, savedRules.level() ?: AmoledLevel.PURE, savedRules.accentChoice())
     }
 
     private suspend fun readOthers() {
         val context = app
         val qs = withContext(Dispatchers.IO) { QsOptions.read() }
-        _qs.value = QsSaved(if (qs.aspect > 0) qs.aspect else QsOptions.STOCK_ASPECT, qs.shade, qs.track)
+        // A write still waiting (behind a running job) is what the file is about to say
+        _qs.value = qsWrite ?: QsSaved(if (qs.aspect > 0) qs.aspect else QsOptions.STOCK_ASPECT, qs.shade, qs.track)
         val themes = withContext(Dispatchers.IO) { loadThemes(context) }
         _themes.value = themes
         if (!themeChosen) {
@@ -434,11 +465,12 @@ object StudioState {
     private fun readLook(): Look {
         val prefs = prefs()
         val look = AmoledPresets.look(prefs)
-        val level = look.level ?: AmoledLevel.PURE
-        val accent = look.accent ?: AmoledPresets.ACCENT_NONE
+        val level = look.level ?: themeLevel ?: AmoledLevel.PURE
+        val accent = look.accent ?: themeAccent ?: AmoledPresets.ACCENT_NONE
         val tile = prefs.getString(AmoledRules.PREF_ACTIVE_TILE, AmoledRules.TILE_WHITE) ?: AmoledRules.TILE_WHITE
         val preset = look.preset ?: AmoledPresets.matching(level, accent, tile)
-        return Look(preset, level, accent, look.accentLight == true, tile)
+        return Look(preset, level, accent, look.accentLight == true, tile,
+            levelChosen = look.level != null, accentChosen = look.accent != null)
     }
 
     fun choosePreset(id: String) {
@@ -447,13 +479,29 @@ object StudioState {
     }
 
     fun chooseLevel(level: AmoledLevel) {
+        keepThemeLook()
         AmoledPresets.setLevel(prefs(), level)
         lookChanged()
     }
 
     fun chooseAccent(accent: String) {
+        keepThemeLook()
         AmoledPresets.setAccent(prefs(), accent)
         lookChanged()
+    }
+
+    /**
+     * Choosing a level saves an accent too, and the other way round (none, Pure when nothing was
+     * chosen): the rules theme's own is saved first, so choosing one part keeps what the other
+     * shows.
+     */
+    private fun keepThemeLook() {
+        val prefs = prefs()
+        val look = AmoledPresets.look(prefs)
+        val edit = prefs.edit()
+        if (look.level == null) themeLevel?.let { edit.putString(AmoledPresets.PREF_LEVEL, it.key()) }
+        if (look.accent == null) themeAccent?.let { edit.putString(AmoledPresets.PREF_ACCENT, it) }
+        edit.apply()
     }
 
     fun setAccentLight(on: Boolean) {
@@ -477,16 +525,18 @@ object StudioState {
     /**
      * The saved look differs from the one last applied (as far as the state file tells: level and
      * accent), another rules theme was chosen, or something the state file cannot tell changed
-     * since ([lookDirty]).
+     * since ([lookDirty]). A level or accent never chosen here is the rules theme's, which the
+     * last apply used too: only chosen ones are compared.
      */
     fun pending(summary: Summary?, look: Look?, dirty: Boolean, theme: String?): Boolean {
         if (summary == null || !summary.enabled) return false
         if (dirty) return true
         if (themeChosen && theme != summary.rulesTheme) return true
         if (look == null || summary.appliedLevel == null) return false
-        if (summary.appliedLevel != look.level.key()) return true
-        val accent = AmoledPresets.resolveAccent(look.accent, AmoledPresets.monetAccent(app))
-        return accent != summary.appliedAccent
+        if (look.levelChosen && summary.appliedLevel != look.level.key()) return true
+        if (!look.accentChosen) return false
+        val monet = if (::app.isInitialized) AmoledPresets.monetAccent(app) else null
+        return AmoledPresets.resolveAccent(look.accent, monet) != summary.appliedAccent
     }
 
     // Device actions: jobs run in SystemAmoledService; these return at once
@@ -678,18 +728,26 @@ object StudioState {
             _look.value = readLook()
             previewReads.trySend(Unit)
         }
-        val theme = _theme.value
+        // System UI's colours are read again with the rules theme AMOLED was applied with (the
+        // one chosen in the picker applies with the next Apply, to every app at once)
+        val theme = _summary.value?.rulesTheme
         val enabled = _summary.value?.enabled == true
         // Shown as saved at once (the write may wait behind a running job); read again if it fails
-        _qs.value = QsSaved(aspect, shade, track)
+        val wanted = QsSaved(aspect, shade, track)
+        _qs.value = wanted
         withRoot {
             if (AmoledJobs.isBusy()) say(string(R.string.reborn_studio_qs_waiting))
-            val written = withContext(Dispatchers.IO) {
-                val chosen = QsOptions.read()
-                chosen.aspect = if (aspect >= QsOptions.STOCK_ASPECT - 0.005f) 0f else aspect
-                chosen.shade = shade
-                chosen.track = track
-                chosen.write(app)
+            qsWrite = wanted
+            val written = try {
+                withContext(Dispatchers.IO) {
+                    val chosen = QsOptions.read()
+                    chosen.aspect = if (aspect >= QsOptions.STOCK_ASPECT - 0.005f) 0f else aspect
+                    chosen.shade = shade
+                    chosen.track = track
+                    chosen.write(app)
+                }
+            } finally {
+                if (qsWrite === wanted) qsWrite = null
             }
             if (!written) {
                 say(string(R.string.system_amoled_failed))

@@ -90,9 +90,24 @@ private fun hex(color: Int): String =
     if (color ushr 24 == 0xff) String.format(Locale.ROOT, "#%06X", color and 0xffffff)
     else String.format(Locale.ROOT, "#%08X", color)
 
-/** One line of the inspector: a change the engine made, or a colour the user keeps stock. */
-private class Entry(val name: String, val change: AmoledChange?, val kept: Boolean, val pinned: Int?) {
+/**
+ * One line of the inspector: a change the engine made, or a colour the user keeps stock.
+ *
+ * @param shared How many colours of the app carry this name: more than one when the app's
+ *               resource names are obfuscated (Play Store and other Google apps), and then a keep
+ *               or pin, which goes by name, would change every one of them
+ */
+private class Entry(
+    val name: String,
+    val change: AmoledChange?,
+    val kept: Boolean,
+    val pinned: Int?,
+    val shared: Int = 1,
+) {
     val userRule: Boolean get() = kept || pinned != null
+
+    /** Unique in the list: obfuscated apps repeat one name for many colours, ids never repeat */
+    val key: String = change?.let { "id:" + it.id } ?: "kept:$name"
 }
 
 /**
@@ -123,10 +138,11 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
     val entries = remember(data) {
         val d = data ?: return@remember emptyList<Entry>()
         val changes = d.record?.changes.orEmpty()
-        val named = changes.map { it.name }.toSet()
+        val shared = changes.groupingBy { it.name }.eachCount()
         // Kept colours are not in the record (nothing is written for them): listed first
-        d.kept.filter { it !in named }.map { Entry(it, null, true, null) } +
-            changes.map { Entry(it.name, it, it.name in d.kept, d.pinned[it.name]) }
+        (d.kept.filter { it !in shared }.map { Entry(it, null, true, null) } +
+            changes.map { Entry(it.name, it, it.name in d.kept, d.pinned[it.name], shared[it.name] ?: 1) })
+            .distinctBy { it.key }
     }
     val visible = remember(entries, query) {
         val q = query.trim().lowercase(Locale.ROOT)
@@ -250,7 +266,7 @@ fun Inspector(row: StudioState.AppRow, onDismiss: () -> Unit) {
                             contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 96.dp),
                             verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
-                            items(visible, key = { it.name }, contentType = { "change" }) { entry ->
+                            items(visible, key = { it.key }, contentType = { "change" }) { entry ->
                                 ChangeRow(
                                     entry = entry,
                                     onKeep = {
@@ -387,10 +403,23 @@ private fun ChangeRow(entry: Entry, onKeep: () -> Unit, onPin: () -> Unit, onRes
             }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            // A keep or pin goes by name: with an obfuscated name it would change every colour
+            // that shares it, so only a rule set earlier can be reset
+            val ownName = entry.shared <= 1
+            if (!ownName) {
+                Text(
+                    pluralStringResource(R.plurals.reborn_studio_shared_name, entry.shared, entry.shared),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .width(240.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.reborn_studio_keep_stock)) },
                 leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_undo), null) },
-                enabled = !entry.kept,
+                enabled = !entry.kept && ownName,
                 onClick = {
                     menu = false
                     onKeep()
@@ -399,6 +428,7 @@ private fun ChangeRow(entry: Entry, onKeep: () -> Unit, onPin: () -> Unit, onRes
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.reborn_studio_pin)) },
                 leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_pin), null) },
+                enabled = ownName,
                 onClick = {
                     menu = false
                     onPin()

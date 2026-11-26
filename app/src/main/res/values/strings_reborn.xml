@@ -332,6 +332,10 @@
     <string name="reborn_studio_state_list">state list</string>
     <string name="reborn_studio_changes_none">No colour matches</string>
     <string name="reborn_studio_level">%1$s look</string>
+    <plurals name="reborn_studio_shared_name">
+        <item quantity="one">This app hides its colour names: %d colour shares this one, so it cannot be kept or pinned alone.</item>
+        <item quantity="other">This app hides its colour names: %d colours share this one, so it cannot be kept or pinned alone.</item>
+    </plurals>
 
     <!-- Mock Quick Settings and Settings drawn in the preview -->
     <string name="reborn_mock_time" translatable="false">12:45</string>

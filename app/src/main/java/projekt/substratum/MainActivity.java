@@ -448,10 +448,9 @@ public class MainActivity extends AppCompatActivity implements
             launchInternalActivity(this, ShowcaseActivity.class);
             return true;
         } else if (switchId2 == R.id.system_amoled) {
-            projekt.substratum.activities.launch.AmoledSettingsActivity.launch(this,
-                    projekt.substratum.common.Packages.isPackageInstalled(this,
-                            "projekt.substratum.theme.amoled") ? "projekt.substratum.theme.amoled" :
-                            null, null);
+            // AMOLED Studio keeps its rules theme (the applied one, else the bundled one): this
+            // menu names none, unlike a theme's card
+            projekt.substratum.activities.launch.AmoledSettingsActivity.launch(this, null, null);
             return true;
         } else if (switchId2 == R.id.rescue) {
             Restore.invoke(this);
