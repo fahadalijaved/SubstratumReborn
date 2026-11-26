@@ -17,7 +17,8 @@ Themes are still ordinary Substratum themes; the split happens when Substratum b
 - Root: KernelSU, Magisk or APatch, with Substratum granted root.
 - LSPosed, with the **substratum** module enabled. Its scope must include Substratum itself and
   every app your theme targets. SystemUI and Settings are in the default scope; add the others.
-- Substratum shows **LSPosed mode** under Settings, System status, when all of that is in place.
+- Reborn's Home says in plain words whether root, the module, its scope and the System UI hooks
+  work, and the Setup checklist (first launch, or Home's checklist button) fixes each of them.
 
 ## Theme layout
 
@@ -97,10 +98,10 @@ Every value in the samples is the stock One UI 9 value.
 A theme can also be a set of **rules** instead of a list of overlays. SubstratumReborn then looks
 at every installed app that the rules cover, reads the app's own dark-mode colors on the device,
 and turns them into a night-only fabricated overlay. It works for whatever apps each user has
-and on any One UI release, with nothing to regenerate. Tapping such a theme in Substratum opens
-"AMOLED for every app" (Apply / Remove) instead of the overlay list; the work runs in the
-background with a progress notification. The same is available for the built-in rules from the
-Themes tab menu.
+and on any One UI release, with nothing to regenerate. Tapping such a theme opens AMOLED Studio
+(the AMOLED tab) with its rules instead of the overlay list; the work runs in the background
+with a progress notification. The Studio uses the built-in rules when no rules theme is chosen.
+[The AMOLED engine](#the-amoled-engine) describes the pipeline and where everything is kept.
 
 A rules theme is an ordinary Substratum theme (manifest metadata, `SubstratumLauncher`, hero
 image) with `assets/amoled/rules.json`. `themes/amoled` (Reborn AMOLED) is the reference:
@@ -243,9 +244,9 @@ change. While AMOLED for every app is applied, the module (scoped to System UI) 
 | Brightness / volume track | 15% white drawn twice (grey) | the rules' `qsTrack` (6% white, near black) |
 | Panel row height | `cell width x 0.917` | `cell width x` the chosen value (for example `0.65`) |
 
-All of it is set on Substratum's **AMOLED for every app** screen (tap the theme, or Themes menu >
-AMOLED for every app): panel row height, active tile color (white, blue, stock), solid shade,
-dark tracks, and a switch per app. The options live in
+All of it is set in AMOLED Studio's **Quick Settings designer**: panel row height, active tile
+color (white, accent, blue, stock), solid shade and dark tracks; the Studio's app list has a
+switch per app. The options live in
 `/data/resource-cache/substratum/qs-options` (`aspect=0.650`, `shade=1`, `track=#10ffffff`, the
 rules' `qsTrack`, or `track=0` for stock) and take
 effect when System UI restarts, which the screen does for you. The tile box columns are
@@ -262,6 +263,88 @@ from the module inside their own process, by resource id and, for Compose screen
 own dark surface colors where they are drawn. Add such apps to the module's scope. Each color
 list is keyed to the app version it was read from: after an app update the app stays stock
 until AMOLED for every app is applied again, so ids that moved never turn text black.
+
+## The AMOLED engine
+
+Reborn 2.0's AMOLED for every app, from a tap on Apply to colors in every app.
+
+### Pipeline
+
+1. **Job queue.** Every change is a job: Apply, Remove, one app again, an app switched on or
+   off, the Quick Settings options, the restore at boot. A foreground service runs them one
+   after the other (`AmoledJobs`, `SystemAmoledService`); a job started while another runs waits
+   for it, and the screens follow the progress.
+2. **Read.** The default engine (v2, `AmoledEngine`) reads each app's dark-mode colors without
+   turning its overlay off (`AmoledStock`), four apps at a time: apps with an activity, plus the
+   framework, System UI, keyboards and widget providers. The framework is read first, on its
+   own, so every app reads it as it is applied. The classic engine (one app at a time, its
+   overlay disabled while it is read) stays selectable in the Studio.
+3. **Compute.** Each color goes through the rules, the look (level, accent, active tile) and the
+   user's own rules, as [How colors are chosen](#how-colors-are-chosen) describes.
+4. **Cache.** Each app's result is kept under a key made of the app version, the system build,
+   the engine version, a fingerprint of the rules and the look, the wallpaper palette and the
+   overlay APKs the app shows. An app whose key did not change is neither read nor registered
+   again.
+5. **Register.** Colors an app reaches by name become a night-only fabricated overlay,
+   `com.android.shell:<package>.RebornSystemAmoled`, committed in batches of up to 16 apps with
+   one root call each (`AmoledCommit`). Colors a shell overlay may not change (no
+   `<overlayable>` declaration in an app signed with another key) are left out up front. Apps
+   with obfuscated names, or that refuse overlays, get a module color list instead.
+6. **Record.** Each app's changes are saved for the inspector and the Studio's preview, and the
+   state file is updated under one lock with an atomic write.
+7. **Restore.** At boot (`BootCompletedDetector`) the saved definitions are registered again
+   while AMOLED is applied.
+8. **Watch.** `AmoledWatchJob` (about every hour, and when the app opens) reads apps updated
+   since their colors were read again, in one silent job with one notification. After a system
+   update it reads nothing on its own and offers a full re-apply instead.
+
+Measured on a Galaxy A36 with 229 apps: the v2 engine's first apply took 101.5 s with Pure
+(31,433 colors) and 82.9 s with Elevated, a re-apply with nothing changed 3.9 s; the classic
+engine took 229 s.
+
+### Where everything is kept
+
+| Path | What it holds |
+|---|---|
+| `files/amoled/state.json` | The single source of truth: applied or not, the rules theme, when it was applied and restored, boot counts, the look of the last apply, and per app its route (`OVERLAY`, `MODULE`, `UNSUPPORTED`, `NONE`), switch, version key, color count, restart flag, level and changes file |
+| `files/amoled/changes/<package>.json` | The change records: every color's name, id, type (color or state list), stock light and dark values, AMOLED value, the rule that decided it, and the light entry written |
+| `files/amoled/user_rules.json` | The user's own rules: colors kept stock (`keep`) and pinned colors (`pin`), per package |
+| `files/amoled/cache/<package>.json` | The v2 engine's cache entry: key, color resource ids, primary color and changes |
+| `files/amoled/ids/<package>.ids` | Module colors of an app switched off, kept to put back when it is switched on |
+| `/data/system/substratum/<package>.RebornSystemAmoled.xml` | Fabricated overlay definitions, registered again at boot |
+| `/data/system/substratum/snapshots/<epoch>/` | What Remove took away (definitions and module lists); the newest three are kept |
+| `/data/resource-cache/substratum/<package>.amoled.ids` | Module color lists (see below); `.off` appended while the app is switched off |
+| `/data/resource-cache/substratum/amoled-hooks.on` | Present while AMOLED is applied: turns on the module's System UI code hooks |
+| `/data/resource-cache/substratum/qs-options` | The Quick Settings options |
+| `/data/resource-cache/substratum/hooks.off`, `hooks.off.<package>` | The kill switch, for every process or one app |
+| `/data/user_de/0/<package>/reborn_guard_starts`, `reborn_guard_tripped` | The crash-loop guard's start times, and its mark while the app is kept stock |
+
+`files/` is the app's own data directory (`/data/data/projekt.substratum/files`, or
+`/data/user/0/...`).
+
+A module color list starts with a header naming the app version its ids were read from, then
+one line per color:
+
+```
+# key=/data/app/~~.../com.android.vending-.../base.apk|84251230
+0x7f060140 0xff000000 0xff000000 0xff1f1f1f
+0x7f0601c5 0xff000000 0xff000000 csl
+```
+
+The key is the APK path and the version code. The module ignores a list whose key does not match
+the installed app, so after an update the app stays stock (never black on black) until it is read
+again. Each line is the resource id, the light value (the night value when no light entry is
+written), the night value, and the stock night value, or `csl` for a color state list.
+
+### Heartbeat and guard
+
+System UI writes `reborn_module_status` in `Settings.Global` once the module has set up (or
+skipped) its hooks: `v=<versionCode>;t=<millis>;qs=..;layout=..;battery=..;guard=ok|tripped|off`
+(see [Module status](#module-status)). Home reads it: no heartbeat since boot, a tripped guard or
+paused hooks are problems with a Fix; a heartbeat from an older build (the app was updated after
+System UI started) is not, and Home offers a System UI restart to load the new hooks. The guard
+counts starts in each hooked app's device-protected data; see
+[Crash loop guard](#crash-loop-guard).
 
 ## Recovery
 
@@ -333,7 +416,8 @@ cmd overlay list | grep RebornSystemAmoled
 cmd overlay disable --user 0 com.android.shell:<package>.RebornSystemAmoled
 ```
 
-The next boot registers them again until **Remove** runs on Substratum's AMOLED screen.
+The next boot registers them again until **Remove** runs in AMOLED Studio (or **Undo
+everything** on Home or Applied).
 
 ### LSPosed
 

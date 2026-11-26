@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -35,6 +36,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +45,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -94,10 +98,11 @@ import projekt.substratum.reborn.components.StatusChip
 import projekt.substratum.reborn.components.rememberResumeCount
 import projekt.substratum.reborn.components.rememberRoot
 import projekt.substratum.reborn.components.rememberSnackbar
+import projekt.substratum.reborn.showcase.ShowcaseCarousel
 import projekt.substratum.reborn.theme.LocalRebornColors
 import java.util.Locale
 
-private enum class Confirm { Pause, Resume, SoftReboot }
+private enum class Confirm { Pause, Resume, SoftReboot, RestartSystemUi }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -105,6 +110,9 @@ fun HomeScreen(
     onOpenSetup: () -> Unit,
     onOpenAmoled: () -> Unit,
     onOpenApplied: () -> Unit,
+    onOpenAbout: () -> Unit,
+    /** Nothing covers Home (About, a sheet): its showcase may page on its own */
+    active: Boolean = true,
 ) {
     val context = LocalContext.current
     val snackbar = rememberSnackbar()
@@ -213,6 +221,14 @@ fun HomeScreen(
                         }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(
+                                text = { Text(stringResource(R.string.reborn_about_menu)) },
+                                leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_info), null) },
+                                onClick = {
+                                    menu = false
+                                    onOpenAbout()
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.reborn_classic)) },
                                 leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
                                 onClick = {
@@ -255,8 +271,23 @@ fun HomeScreen(
                     modifier = Modifier.animateItem(),
                 )
             }
-            item(key = "applied_header") {
+            model?.hooksUpdate?.let { update ->
+                item(key = "hooks_update") {
+                    HooksUpdateCard(
+                        update = update,
+                        busy = busy != null,
+                        onRestart = { confirm = Confirm.RestartSystemUi },
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+            item(key = "showcase") {
                 Entrance(1, animate) {
+                    ShowcaseCarousel(theme = applied?.amoled?.theme, onOpenStudio = onOpenAmoled, active = active)
+                }
+            }
+            item(key = "applied_header") {
+                Entrance(2, animate) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         SectionHeader(stringResource(R.string.reborn_applied_now), Modifier.weight(1f))
                         TextButton(onClick = onOpenApplied, modifier = Modifier.padding(top = 10.dp)) {
@@ -268,16 +299,16 @@ fun HomeScreen(
                 }
             }
             item(key = "amoled") {
-                Entrance(2, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
+                Entrance(3, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
             }
             item(key = "applied_tiles") {
-                Entrance(3, animate) { AppliedTiles(applied, onOpenApplied) }
+                Entrance(4, animate) { AppliedTiles(applied, onOpenApplied) }
             }
             item(key = "actions_header") {
-                Entrance(4, animate) { SectionHeader(stringResource(R.string.reborn_quick_actions)) }
+                Entrance(5, animate) { SectionHeader(stringResource(R.string.reborn_quick_actions)) }
             }
             item(key = "actions") {
-                Entrance(5, animate) {
+                Entrance(6, animate) {
                     QuickActions(
                         paused = model?.hooksPaused == true,
                         busy = busy,
@@ -325,6 +356,19 @@ fun HomeScreen(
                 act("pause") {
                     context.getString(if (RebornActions.setHooksPaused(false)) R.string.reborn_resumed_done
                     else R.string.reborn_failed)
+                }
+            },
+        )
+        Confirm.RestartSystemUi -> ConfirmDialog(
+            title = stringResource(R.string.reborn_restart_title),
+            text = stringResource(R.string.reborn_restart_text),
+            confirmLabel = stringResource(R.string.reborn_restart_confirm),
+            icon = R.drawable.ic_reborn_restart,
+            onDismiss = { confirm = null },
+            onConfirm = {
+                act("restart") {
+                    RebornActions.restartSystemUi()
+                    context.getString(R.string.reborn_restarting_systemui)
                 }
             },
         )
@@ -491,6 +535,10 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
                 Text(
                     text = when {
                         amoled == null -> stringResource(R.string.reborn_reading)
+                        // On, but no apply ever finished recording its time (interrupted)
+                        on && amoled.appliedAt <= 0L -> stringResource(
+                            R.string.reborn_amoled_summary_no_time, amoled.themed, amoled.total,
+                        )
                         on -> stringResource(
                             R.string.reborn_amoled_summary, amoled.themed, amoled.total,
                             relativeTime(amoled.appliedAt),
@@ -509,14 +557,76 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
                 color = if (on) scheme.primary else scheme.onSurfaceVariant,
             )
         }
-        if (amoled != null && on && (amoled.survivedReboot || amoled.restartNeeded > 0)) {
+        val interrupted = amoled != null && on && amoled.appliedAt <= 0L
+        if (amoled != null && on && (amoled.survivedReboot || amoled.restartNeeded > 0 || interrupted)) {
             Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (interrupted) {
+                    StatusChip(stringResource(R.string.reborn_amoled_interrupted), ChipState.Warn)
+                }
                 if (amoled.survivedReboot) {
                     StatusChip(stringResource(R.string.reborn_survived_reboot), ChipState.OK)
                 }
                 if (amoled.restartNeeded > 0) {
                     StatusChip(stringResource(R.string.reborn_restart_needed, amoled.restartNeeded), ChipState.Warn)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The module was updated and System UI still runs the hooks it loaded at its start: all is well,
+ * a restart of System UI loads the new ones. Tonal, not a warning.
+ */
+@Composable
+private fun HooksUpdateCard(update: HooksUpdate, busy: Boolean, onRestart: () -> Unit, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val haptics = LocalHapticFeedback.current
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = scheme.secondaryContainer,
+    ) {
+        Column(Modifier.padding(start = 18.dp, end = 14.dp, top = 16.dp, bottom = 12.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Icon(
+                    painterResource(R.drawable.ic_reborn_info),
+                    contentDescription = null,
+                    tint = scheme.onSecondaryContainer,
+                    modifier = Modifier.size(24.dp),
+                )
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        stringResource(R.string.reborn_update_ready_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = scheme.onSecondaryContainer,
+                    )
+                    Text(
+                        stringResource(R.string.reborn_update_ready_text, update.running, update.installed),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = scheme.onSecondaryContainer.copy(alpha = 0.86f),
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Button(
+                    onClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        onRestart()
+                    },
+                    enabled = !busy,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = scheme.onSecondaryContainer,
+                        contentColor = scheme.secondaryContainer,
+                    ),
+                ) {
+                    Icon(painterResource(R.drawable.ic_reborn_restart), contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.reborn_update_ready_action))
                 }
             }
         }

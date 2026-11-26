@@ -31,6 +31,12 @@ data class StatusRow(
     val state: ChipState,
 )
 
+/**
+ * The hooks work, one build behind: System UI started before this version of the app was
+ * installed. Not a problem, just a restart of System UI away.
+ */
+data class HooksUpdate(val running: Int, val installed: Int)
+
 data class HomeStatus(
     val level: HeroLevel,
     @StringRes val headline: Int,
@@ -39,6 +45,8 @@ data class HomeStatus(
     val issues: List<Issue>,
     val rootGranted: Boolean,
     val hooksPaused: Boolean,
+    /** An updated module waits for a System UI restart, or null */
+    val hooksUpdate: HooksUpdate? = null,
 )
 
 /** Plain words for what [RebornStatus] read. */
@@ -86,9 +94,10 @@ fun describe(context: Context, s: RebornStatus.Snapshot): HomeStatus {
             R.drawable.ic_reborn_systemui, R.string.reborn_row_systemui,
             context.getString(R.string.reborn_value_no_heartbeat), ChipState.Error,
         )
+        // Working, one build behind until System UI restarts: not a problem
         !hb.current -> StatusRow(
             R.drawable.ic_reborn_systemui, R.string.reborn_row_systemui,
-            context.getString(R.string.reborn_value_old_build, hb.version), ChipState.Warn,
+            context.getString(R.string.reborn_value_update_ready), ChipState.OK,
         )
         else -> StatusRow(
             R.drawable.ic_reborn_systemui, R.string.reborn_row_systemui,
@@ -136,12 +145,14 @@ fun describe(context: Context, s: RebornStatus.Snapshot): HomeStatus {
             hb.guardOff() -> issues += Issue("stock",
                 context.getString(R.string.reborn_issue_stock_title),
                 context.getString(R.string.reborn_issue_stock_text), Fix.RestartSystemUi)
-            !hb.current -> issues += Issue("old",
-                context.getString(R.string.reborn_issue_old_title),
-                context.getString(R.string.reborn_issue_old_text, hb.version, BuildConfig.VERSION_CODE),
-                Fix.RestartSystemUi)
         }
     }
+    // Hooks loaded and guarded, only from an older build (the app was updated since System UI
+    // started): a calm notice with a restart, never an issue
+    val hooksUpdate = if (root.granted && !s.hooksPaused && lsp.level != RebornStatus.Level.ERROR &&
+        hb.present && hb.sinceBoot && !hb.guardTripped() && !hb.guardOff() && !hb.current) {
+        HooksUpdate(hb.version, BuildConfig.VERSION_CODE)
+    } else null
 
     // The headline
     val heartbeatSinceBoot = hb.present && hb.sinceBoot
@@ -156,8 +167,10 @@ fun describe(context: Context, s: RebornStatus.Snapshot): HomeStatus {
                 context.getString(R.string.reborn_hero_inactive_text))
         issues.isNotEmpty() -> Triple(HeroLevel.Warn, R.string.reborn_hero_attention,
             res.getQuantityString(R.plurals.reborn_hero_attention_text, issues.size, issues.size))
+        hooksUpdate != null -> Triple(HeroLevel.Ok, R.string.reborn_hero_ok,
+            context.getString(R.string.reborn_hero_ok_update_text))
         else -> Triple(HeroLevel.Ok, R.string.reborn_hero_ok,
             context.getString(R.string.reborn_hero_ok_text))
     }
-    return HomeStatus(level, headline, supporting, rows, issues, root.granted, s.hooksPaused)
+    return HomeStatus(level, headline, supporting, rows, issues, root.granted, s.hooksPaused, hooksUpdate)
 }

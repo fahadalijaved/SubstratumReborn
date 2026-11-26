@@ -17,10 +17,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -57,7 +62,11 @@ import projekt.substratum.reborn.applied.AppliedScreen
 import projekt.substratum.reborn.applied.UndoEverythingHost
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.RebornSnackbarHost
+import kotlinx.coroutines.delay
+import projekt.substratum.reborn.home.AboutScreen
 import projekt.substratum.reborn.home.HomeScreen
+import projekt.substratum.reborn.home.WhatsNew
+import projekt.substratum.reborn.home.WhatsNewSheet
 import projekt.substratum.reborn.setup.SetupScreen
 import projekt.substratum.reborn.theme.RebornTheme
 import projekt.substratum.reborn.theme.isDarkPreferred
@@ -76,9 +85,10 @@ enum class RebornTab(val key: String, @StringRes val label: Int, @DrawableRes va
 }
 
 /**
- * The Reborn shell: Home, AMOLED, Themes and Applied, and the setup checklist on the first
- * launch. Started by [projekt.substratum.LauncherActivity]; extra [EXTRA_TAB] picks a tab
- * (home, amoled, themes or applied) and [EXTRA_THEME] the rules theme AMOLED Studio applies with.
+ * The Reborn shell: Home, AMOLED, Themes and Applied, the setup checklist on the first launch,
+ * What's new once per version, and About. Started by [projekt.substratum.LauncherActivity] (also
+ * for the launcher shortcuts); extra [EXTRA_TAB] picks a tab (home, amoled, themes or applied)
+ * and [EXTRA_THEME] the rules theme AMOLED Studio applies with.
  */
 class RebornActivity : ComponentActivity() {
 
@@ -127,16 +137,29 @@ class RebornActivity : ComponentActivity() {
 fun RebornApp(requestedTab: MutableState<String?>) {
     var tab by rememberSaveable { mutableStateOf(RebornTab.Home) }
     var showSetup by rememberSaveable { mutableStateOf(!RebornInit.isSetupDone()) }
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    var showWhatsNew by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val tabs = rememberSaveableStateHolder()
     val haptics = LocalHapticFeedback.current
 
     LaunchedEffect(requestedTab.value) {
-        RebornTab.of(requestedTab.value)?.let { tab = it }
+        RebornTab.of(requestedTab.value)?.let {
+            tab = it
+            showAbout = false
+        }
         requestedTab.value = null
     }
 
     BackHandler(enabled = !showSetup && tab != RebornTab.Home) { tab = RebornTab.Home }
+
+    // This version's highlights, once, when Home (or a tab a shortcut asked for) is up
+    LaunchedEffect(showSetup) {
+        if (showSetup || !WhatsNew.isNew()) return@LaunchedEffect
+        delay(700)
+        WhatsNew.markSeen()
+        showWhatsNew = true
+    }
 
     AnimatedContent(
         targetState = showSetup,
@@ -152,66 +175,91 @@ fun RebornApp(requestedTab: MutableState<String?>) {
             })
         } else {
             CompositionLocalProvider(LocalSnackbar provides snackbar) {
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentWindowInsets = WindowInsets(0),
-                    snackbarHost = { RebornSnackbarHost(snackbar) },
-                    bottomBar = {
-                        NavigationBar {
-                            RebornTab.entries.forEach { item ->
-                                NavigationBarItem(
-                                    selected = tab == item,
-                                    onClick = {
-                                        if (tab != item) {
-                                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                            tab = item
-                                        }
-                                    },
-                                    icon = { Icon(painterResource(item.icon), contentDescription = null) },
-                                    label = { Text(stringResource(item.label)) },
-                                )
-                            }
-                        }
-                    },
-                ) { padding ->
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                            .consumeWindowInsets(padding),
-                    ) {
-                        AnimatedContent(
-                            targetState = tab,
-                            transitionSpec = { fadeIn(tween(220, delayMillis = 60)) togetherWith fadeOut(tween(90)) },
-                            label = "tab",
-                        ) { current ->
-                            tabs.SaveableStateProvider(current.key) {
-                                when (current) {
-                                    RebornTab.Home -> HomeScreen(
-                                        onOpenSetup = { showSetup = true },
-                                        onOpenAmoled = { tab = RebornTab.Amoled },
-                                        onOpenApplied = { tab = RebornTab.Applied },
-                                    )
-                                    RebornTab.Amoled -> AmoledTab()
-                                    RebornTab.Themes -> ThemesScreen(
-                                        onOpenStudio = { theme ->
-                                            // A rules theme: AMOLED Studio applies with its rules
-                                            StudioState.requestTheme(theme)
-                                            tab = RebornTab.Amoled
+                Box(Modifier.fillMaxSize()) {
+                    Scaffold(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentWindowInsets = WindowInsets(0),
+                        snackbarHost = { RebornSnackbarHost(snackbar) },
+                        bottomBar = {
+                            NavigationBar {
+                                RebornTab.entries.forEach { item ->
+                                    NavigationBarItem(
+                                        selected = tab == item,
+                                        onClick = {
+                                            if (tab != item) {
+                                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                                tab = item
+                                            }
                                         },
+                                        icon = { Icon(painterResource(item.icon), contentDescription = null) },
+                                        label = { Text(stringResource(item.label)) },
                                     )
-                                    RebornTab.Applied -> AppliedScreen(
-                                        onOpenAmoled = { tab = RebornTab.Amoled },
-                                        onOpenThemes = { tab = RebornTab.Themes },
-                                    )
+                                }
+                            }
+                        },
+                    ) { padding ->
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .consumeWindowInsets(padding),
+                        ) {
+                            AnimatedContent(
+                                targetState = tab,
+                                transitionSpec = { fadeIn(tween(220, delayMillis = 60)) togetherWith fadeOut(tween(90)) },
+                                label = "tab",
+                            ) { current ->
+                                tabs.SaveableStateProvider(current.key) {
+                                    when (current) {
+                                        RebornTab.Home -> HomeScreen(
+                                            onOpenSetup = { showSetup = true },
+                                            onOpenAmoled = { tab = RebornTab.Amoled },
+                                            onOpenApplied = { tab = RebornTab.Applied },
+                                            onOpenAbout = { showAbout = true },
+                                            active = !showAbout && !showWhatsNew,
+                                        )
+                                        RebornTab.Amoled -> AmoledTab()
+                                        RebornTab.Themes -> ThemesScreen(
+                                            onOpenStudio = { theme ->
+                                                // A rules theme: AMOLED Studio applies with its rules
+                                                StudioState.requestTheme(theme)
+                                                tab = RebornTab.Amoled
+                                            },
+                                        )
+                                        RebornTab.Applied -> AppliedScreen(
+                                            onOpenAmoled = { tab = RebornTab.Amoled },
+                                            onOpenThemes = { tab = RebornTab.Themes },
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                    // About, over the tabs (they keep their state underneath)
+                    AnimatedVisibility(
+                        visible = showAbout,
+                        enter = slideInHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 4 } + fadeIn(tween(220)),
+                        exit = slideOutHorizontally(spring(stiffness = Spring.StiffnessMediumLow)) { it / 4 } + fadeOut(tween(160)),
+                    ) {
+                        AboutScreen(
+                            onBack = { showAbout = false },
+                            onWhatsNew = { showWhatsNew = true },
+                        )
+                    }
+                    // Undo everything (Applied, Home): its question, progress and result
+                    UndoEverythingHost()
                 }
-                // Undo everything (Applied, Home): its question, progress and result
-                UndoEverythingHost()
             }
         }
+    }
+
+    if (showWhatsNew && !showSetup) {
+        WhatsNewSheet(
+            onDismiss = { showWhatsNew = false },
+            onOpenStudio = {
+                showAbout = false
+                tab = RebornTab.Amoled
+            },
+        )
     }
 }

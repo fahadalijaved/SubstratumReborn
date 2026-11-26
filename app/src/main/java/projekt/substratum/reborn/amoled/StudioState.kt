@@ -399,7 +399,7 @@ object StudioState {
         val look = readLook()
         _look.value = look
         val theme = _theme.value
-        val previews = withContext(Dispatchers.IO) { computePreviews(context, theme, look) }
+        val previews = withContext(Dispatchers.IO) { computePreviews(context, theme, look.tile) }
         _previews.value = previews
         // What was never chosen here follows the rules theme: the controls show what Apply uses
         val accent = previews.accent ?: AmoledPresets.ACCENT_NONE
@@ -410,7 +410,17 @@ object StudioState {
         }
     }
 
-    private fun computePreviews(context: Context, theme: String?, look: Look): Previews {
+    /**
+     * The saved look and every preset over [theme]'s rules (null: the built-in ones), for Home's
+     * showcase, without attaching the Studio. Blocking (files): call on IO.
+     */
+    fun showcasePreviews(context: Context, theme: String?): Previews {
+        val tile = prefs().getString(AmoledRules.PREF_ACTIVE_TILE, AmoledRules.TILE_WHITE) ?: AmoledRules.TILE_WHITE
+        return computePreviews(context.applicationContext, theme, tile)
+    }
+
+    /** @param activeTile The active tile option saved ([AmoledRules.PREF_ACTIVE_TILE]) */
+    private fun computePreviews(context: Context, theme: String?, activeTile: String): Previews {
         val stock = stock ?: AmoledPreview.stock(context).also { stock = it }
         val prefs = prefs()
         val monet = AmoledPresets.monetAccent(context)
@@ -428,8 +438,8 @@ object StudioState {
         val savedRules = rules().withUserRules(user)
         val saved = MockRoles(AmoledPreview.roles(stock, savedRules))
         val presets = AmoledPresets.PRESETS.associate { preset ->
-            val tile = preset.tile ?: if (look.tile == AmoledRules.TILE_ACCENT &&
-                preset.accent == AmoledPresets.ACCENT_NONE) AmoledRules.TILE_WHITE else look.tile
+            val tile = preset.tile ?: if (activeTile == AmoledRules.TILE_ACCENT &&
+                preset.accent == AmoledPresets.ACCENT_NONE) AmoledRules.TILE_WHITE else activeTile
             preset.id to MockRoles(AmoledPreview.roles(stock,
                 rules().withLook(preset.level, preset.accent, null, tile, monet).withUserRules(user)))
         }

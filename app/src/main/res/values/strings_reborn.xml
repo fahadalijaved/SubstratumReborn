@@ -104,13 +104,21 @@
     <string name="reborn_issue_heartbeat_text">SystemUI has not reported the module since boot. Fix restarts SystemUI.</string>
     <string name="reborn_issue_stock_title">SystemUI still runs stock</string>
     <string name="reborn_issue_stock_text">Hooks are on again, but SystemUI started while they were paused. Fix restarts it.</string>
-    <string name="reborn_issue_old_title">SystemUI runs an older build</string>
-    <string name="reborn_issue_old_text">SystemUI reports build %1$d, this is %2$d: restart SystemUI.</string>
+    <string name="reborn_value_update_ready">Hooked · update ready</string>
+    <string name="reborn_hero_ok_update_text">Everything works. Restart System UI once to load the updated hooks.</string>
+    <string name="reborn_update_ready_title">Update ready</string>
+    <string name="reborn_update_ready_text">Restart System UI to load the new hooks. The ones running now (build %1$d) keep working until then; this is build %2$d.</string>
+    <string name="reborn_update_ready_action">Restart System UI</string>
+    <string name="reborn_restart_title">Restart System UI?</string>
+    <string name="reborn_restart_text">The status bar and Quick Settings go away for a moment and come back with the new hooks. Apps keep running.</string>
+    <string name="reborn_restart_confirm">Restart</string>
 
     <string name="reborn_applied_now">Applied now</string>
     <string name="reborn_amoled_title">AMOLED for every app</string>
     <string name="reborn_amoled_summary">%1$d of %2$d apps · applied %3$s</string>
     <string name="reborn_amoled_off_summary">Not applied: apps use their own colours</string>
+    <string name="reborn_amoled_summary_no_time">%1$d of %2$d apps · applied, time unknown</string>
+    <string name="reborn_amoled_interrupted">May be incomplete: re-apply</string>
     <string name="reborn_survived_reboot">Survived reboot</string>
     <string name="reborn_restart_needed">%1$d need a restart</string>
     <string name="reborn_overlays_on">theme overlays on</string>
@@ -149,6 +157,75 @@
     <string name="reborn_soft_reboot_title">Soft reboot?</string>
     <string name="reborn_soft_reboot_text">Restarts Android without a full reboot; root stays</string>
     <string name="reborn_soft_reboot">Soft reboot</string>
+
+    <string name="reborn_about_menu">About Reborn</string>
+
+    <!-- Home: the showcase carousel -->
+    <string name="reborn_showcase_title">See the difference</string>
+    <string name="reborn_showcase_subtitle">Fabricated overlays + LSPosed, drawn with your look\'s real colours</string>
+    <string name="reborn_showcase_open">Open AMOLED Studio</string>
+    <string name="reborn_showcase_page_description">%1$s, stock and AMOLED side by side. Opens AMOLED Studio.</string>
+    <string name="reborn_showcase_page_of">Page %1$d of %2$d</string>
+    <string name="reborn_showcase_qs">Quick Settings</string>
+    <string name="reborn_showcase_qs_text">Black panel and tiles, outlined like One UI 9\'s own</string>
+    <string name="reborn_showcase_settings">Settings</string>
+    <string name="reborn_showcase_settings_text">Pages and cards in true black, text untouched</string>
+    <string name="reborn_showcase_apps">Every app</string>
+    <string name="reborn_showcase_apps_text">Samsung, Google and system apps follow the same rules</string>
+    <string name="reborn_showcase_popups">Popups and notifications</string>
+    <string name="reborn_showcase_popups_text">Floating parts keep a hairline outline on black</string>
+    <string name="reborn_showcase_try">Try a look</string>
+    <string name="reborn_showcase_yours">Your look</string>
+    <string name="reborn_showcase_saved">Your saved look</string>
+    <string name="reborn_showcase_try_preview">Only a preview: nothing is saved or applied. Choose it in AMOLED Studio to use it.</string>
+    <string name="reborn_showcase_try_saved">Your saved look. Tap another one to preview it here.</string>
+
+    <!-- What's new (once per version, and from About) -->
+    <string name="reborn_new_overline">What\'s new</string>
+    <string name="reborn_new_lead">AMOLED for every app, rebuilt around a studio you can see into, on an engine that stays out of your way.</string>
+    <string name="reborn_new_studio">AMOLED Studio</string>
+    <string name="reborn_new_studio_text">Pick a look, compare it on a live before and after preview, and apply it in one tap.</string>
+    <string name="reborn_new_look">Levels and accent</string>
+    <string name="reborn_new_look_text">Pure, Dim, Elevated or Tinted surfaces, with Monet, One UI blue or your own accent.</string>
+    <string name="reborn_new_inspector">Inspector</string>
+    <string name="reborn_new_inspector_text">Every colour an app changes, stock to AMOLED, with the rule behind it. Keep one stock or pin your own.</string>
+    <string name="reborn_new_applied">Applied and Undo everything</string>
+    <string name="reborn_new_applied_text">Theme overlays, AMOLED and Quick Settings tweaks in one list, and one Undo for all of it.</string>
+    <string name="reborn_new_safety">Safe by design</string>
+    <string name="reborn_new_safety_text">A kill switch, a crash-loop guard for System UI, and no restarts of the phone, Bluetooth or keyboard processes.</string>
+    <string name="reborn_new_engine">A faster engine</string>
+    <string name="reborn_new_engine_text">Cached and batched. Measured on a Galaxy A36: about 100 s for a first run, a few seconds after that.</string>
+    <string name="reborn_new_retheme">Auto re-theme</string>
+    <string name="reborn_new_retheme_text">Apps you update get their AMOLED colours back on their own.</string>
+    <string name="reborn_new_done">Got it</string>
+    <string name="reborn_new_open_studio">Open AMOLED Studio</string>
+
+    <!-- About -->
+    <string name="reborn_about_title">About</string>
+    <string name="reborn_about_subtitle">Substratum Reborn</string>
+    <string name="reborn_about_name">Substratum Reborn</string>
+    <string name="reborn_about_version">Version</string>
+    <string name="reborn_about_version_value">%1$s (%2$d)</string>
+    <string name="reborn_about_build">Build</string>
+    <string name="reborn_about_engine">Engine</string>
+    <string name="reborn_about_engine_value">Fabricated overlays + LSPosed</string>
+    <string name="reborn_about_status">Engine and module</string>
+    <string name="reborn_about_more">More</string>
+    <string name="reborn_about_whats_new">What\'s new</string>
+    <string name="reborn_about_whats_new_text">This version\'s highlights</string>
+    <string name="reborn_about_source">Source code</string>
+    <string name="reborn_about_licences">Open-source licences</string>
+    <string name="reborn_about_licences_text">The libraries Reborn is built with, and their licences</string>
+    <string name="reborn_about_upstream">Original Substratum</string>
+    <string name="reborn_about_based_on">Based on Substratum (GPL-3.0) by Projekt Substratum</string>
+    <string name="reborn_about_licence_text">Substratum Reborn is free software under the GNU General Public License, version 3 or later, and comes with no warranty.</string>
+    <string name="reborn_about_themes_text">Compatible legacy Substratum themes still install and apply; rules themes open in AMOLED Studio.</string>
+
+    <!-- Launcher shortcuts -->
+    <string name="shortcut_studio">AMOLED Studio</string>
+    <string name="shortcut_studio_disabled">AMOLED Studio</string>
+    <string name="shortcut_applied">Applied</string>
+    <string name="shortcut_applied_disabled">Applied</string>
 
     <!-- Setup checklist -->
     <string name="reborn_setup_title">Set up Reborn</string>
@@ -500,4 +577,27 @@
     <string name="reborn_mock_dark_text">On as scheduled</string>
     <string name="reborn_mock_display">Display</string>
     <string name="reborn_mock_display_text">Brightness · Eye comfort shield</string>
+    <string name="reborn_mock_files">Files</string>
+    <string name="reborn_mock_storage">Internal storage</string>
+    <string name="reborn_mock_storage_text">41 GB of 128 GB used</string>
+    <string name="reborn_mock_documents">Documents</string>
+    <string name="reborn_mock_documents_text">24 items</string>
+    <string name="reborn_mock_downloads">Downloads</string>
+    <string name="reborn_mock_downloads_text">8 items</string>
+    <string name="reborn_mock_music">Music</string>
+    <string name="reborn_mock_music_text">132 items</string>
+    <string name="reborn_mock_pictures">Pictures</string>
+    <string name="reborn_mock_pictures_text">1,024 items</string>
+    <string name="reborn_mock_update_app">Software update</string>
+    <string name="reborn_mock_update_text">Your phone is up to date</string>
+    <string name="reborn_mock_weather_app">Weather</string>
+    <string name="reborn_mock_weather_text">Sunny all day, 21°</string>
+    <string name="reborn_mock_notes">Notes</string>
+    <string name="reborn_mock_note_one">Shopping list</string>
+    <string name="reborn_mock_note_one_text">Oat milk, coffee beans, lemons</string>
+    <string name="reborn_mock_note_two">Ideas</string>
+    <string name="reborn_mock_note_two_text">A darker wallpaper for the lock screen</string>
+    <string name="reborn_mock_menu_select">Select</string>
+    <string name="reborn_mock_menu_share">Share</string>
+    <string name="reborn_mock_menu_settings">Settings</string>
 </resources>

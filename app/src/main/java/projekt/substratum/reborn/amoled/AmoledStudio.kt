@@ -961,9 +961,8 @@ private fun PreviewCard(
             beforeLabel = stringResource(R.string.reborn_studio_stock),
             afterLabel = stringResource(R.string.reborn_studio_amoled),
             description = stringResource(R.string.reborn_studio_preview_description),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(22.dp)),
+            modifier = Modifier.fillMaxWidth(),
+            frameShape = RoundedCornerShape(22.dp),
         ) { side ->
             Column(
                 modifier = Modifier

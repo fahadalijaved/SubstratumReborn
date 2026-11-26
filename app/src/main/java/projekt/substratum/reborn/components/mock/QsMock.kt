@@ -6,6 +6,7 @@ package projekt.substratum.reborn.components.mock
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,11 +46,25 @@ import projekt.substratum.common.platform.AmoledPreview
 import projekt.substratum.common.platform.QsOptions
 
 /** A wallpaper behind the panel, so a see-through shade reads as see-through. */
-private val Wallpaper = Brush.linearGradient(
+internal val Wallpaper = Brush.linearGradient(
     listOf(Color(0xFF1C2B52), Color(0xFF3B2156), Color(0xFF0D3B3C)),
 )
 private val AlbumArt = Brush.linearGradient(listOf(Color(0xFFFF8A3D), Color(0xFFE8407A), Color(0xFF6A3DE8)))
-private val QsText = Color(0xFFFCFCFF)
+internal val QsText = Color(0xFFFCFCFF)
+
+/**
+ * One UI 9's blacked-out quick settings keep their shapes on black with a hairline: the tile
+ * container (qs_tile_layout_container_bg, #000) has a qs_tile_container_bg_border_color edge, and
+ * so does every round button that is off.
+ */
+internal val BlackoutEdge = Color(0xFF262626)
+
+/** A hairline [BlackoutEdge] around a black part, so it does not float. */
+internal fun Modifier.blackoutEdge(on: Boolean, shape: Shape, compact: Boolean = false): Modifier =
+    if (on) border(if (compact) 0.75.dp else 1.dp, BlackoutEdge, shape) else this
+
+/** A colour that would vanish on black (near-black, or mostly see-through) */
+internal fun Color.nearBlack(): Boolean = alpha < 0.35f || luminance() < 0.02f
 
 private val TileIcons = intArrayOf(
     R.drawable.ic_reborn_wifi, R.drawable.ic_reborn_bluetooth, R.drawable.ic_reborn_volume,
@@ -109,9 +126,9 @@ fun QsMock(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Bar(0.32f, 5.dp, QsText.copy(alpha = 0.85f))
                     Spacer(Modifier.weight(1f))
-                    Box(Modifier.size(7.dp).clip(CircleShape).background(tileOff))
+                    Box(Modifier.size(7.dp).clip(CircleShape).background(tileOff).blackoutEdge(amoled, CircleShape, true))
                     Spacer(Modifier.width(3.dp))
-                    Box(Modifier.size(7.dp).clip(CircleShape).background(tileOff))
+                    Box(Modifier.size(7.dp).clip(CircleShape).background(tileOff).blackoutEdge(amoled, CircleShape, true))
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -132,23 +149,38 @@ fun QsMock(
                             maxLines = 1,
                         )
                     }
-                    RoundIcon(R.drawable.ic_reborn_settings, tileOff, iconOff, 28.dp)
+                    RoundIcon(R.drawable.ic_reborn_settings, tileOff, iconOff, 28.dp, edge = amoled)
                     Spacer(Modifier.width(6.dp))
-                    RoundIcon(R.drawable.ic_reborn_power, tileOff, iconOff, 28.dp)
+                    RoundIcon(R.drawable.ic_reborn_power, tileOff, iconOff, 28.dp, edge = amoled)
                 }
             }
-            for (row in 0 until 2) {
-                Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                    for (col in 0 until 4) {
-                        val index = row * 4 + col
-                        val on = index in TilesOn
-                        Tile(
-                            aspect = rowAspect,
-                            container = if (on) tileOn else tileOff,
-                            content = if (on) iconOn else iconOff,
-                            icon = TileIcons[index],
-                            compact = compact,
-                        )
+            // The tile container: black with its hairline in the AMOLED look, invisible in stock
+            // (the same padding on both sides, so the two halves of a before/after line up)
+            val containerShape = RoundedCornerShape(if (compact) 10.dp else 20.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(containerShape)
+                    .background(if (amoled) Color.Black else Color.Transparent)
+                    .blackoutEdge(amoled, containerShape, compact)
+                    .padding(if (compact) 3.dp else 6.dp),
+                verticalArrangement = Arrangement.spacedBy(gap),
+            ) {
+                for (row in 0 until 2) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                        for (col in 0 until 4) {
+                            val index = row * 4 + col
+                            val on = index in TilesOn
+                            Tile(
+                                aspect = rowAspect,
+                                container = if (on) tileOn else tileOff,
+                                content = if (on) iconOn else iconOff,
+                                icon = TileIcons[index],
+                                compact = compact,
+                                // Off round buttons keep an outline on black
+                                edge = amoled && !on,
+                            )
+                        }
                     }
                 }
             }
@@ -180,11 +212,13 @@ fun QsMock(
                     }
                 }
             }
+            val mediaShape = RoundedCornerShape(if (compact) 8.dp else 20.dp)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(if (compact) 8.dp else 20.dp))
+                    .clip(mediaShape)
                     .background(media)
+                    .blackoutEdge(amoled && media.nearBlack(), mediaShape, compact)
                     .padding(if (compact) 5.dp else 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -238,13 +272,22 @@ fun QsMock(
 }
 
 @Composable
-private fun RowScope.Tile(aspect: Float, container: Color, content: Color, @DrawableRes icon: Int, compact: Boolean) {
+private fun RowScope.Tile(
+    aspect: Float,
+    container: Color,
+    content: Color,
+    @DrawableRes icon: Int,
+    compact: Boolean,
+    edge: Boolean,
+) {
+    val shape = RoundedCornerShape(percent = if (compact) 30 else 32)
     Box(
         modifier = Modifier
             .weight(1f)
             .aspectRatio(1f / aspect)
-            .clip(RoundedCornerShape(percent = if (compact) 30 else 32))
-            .background(container),
+            .clip(shape)
+            .background(container)
+            .blackoutEdge(edge, shape, compact),
         contentAlignment = Alignment.Center,
     ) {
         if (compact) {
@@ -266,12 +309,13 @@ private fun RowScope.Tile(aspect: Float, container: Color, content: Color, @Draw
 }
 
 @Composable
-private fun RoundIcon(@DrawableRes icon: Int, container: Color, content: Color, size: Dp) {
+private fun RoundIcon(@DrawableRes icon: Int, container: Color, content: Color, size: Dp, edge: Boolean) {
     Box(
         Modifier
             .size(size)
             .clip(CircleShape)
-            .background(container),
+            .background(container)
+            .blackoutEdge(edge, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(icon), contentDescription = null, tint = content, modifier = Modifier.size(size * 0.55f))

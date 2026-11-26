@@ -5,20 +5,45 @@
   ~ SPDX-License-Identifier: GPL-3.0-Or-Later
   -->
 
+<!--
+  Reborn's launcher shortcuts. AMOLED Studio and Applied open the Reborn shell on that tab:
+  LauncherActivity (the exported entry) passes the "tab" extra on to RebornActivity.
+  -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/app_shortcut_showcase"
-        android:shortcutDisabledMessage="@string/shortcut_store_disabled"
-        android:shortcutId="store"
-        android:shortcutLongLabel="@string/shortcut_store"
-        android:shortcutShortLabel="@string/shortcut_store"
+        android:icon="@drawable/app_shortcut_amoled"
+        android:shortcutDisabledMessage="@string/shortcut_studio_disabled"
+        android:shortcutId="studio"
+        android:shortcutLongLabel="@string/shortcut_studio"
+        android:shortcutShortLabel="@string/shortcut_studio"
         tools:targetApi="n_mr1">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="projekt.substratum.activities.launch.ShowcaseActivity"
-            android:targetPackage="projekt.substratum" />
+            android:targetClass="projekt.substratum.LauncherActivity"
+            android:targetPackage="projekt.substratum">
+            <extra
+                android:name="tab"
+                android:value="amoled" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/app_shortcut_applied"
+        android:shortcutDisabledMessage="@string/shortcut_applied_disabled"
+        android:shortcutId="applied"
+        android:shortcutLongLabel="@string/shortcut_applied"
+        android:shortcutShortLabel="@string/shortcut_applied"
+        tools:targetApi="n_mr1">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="projekt.substratum.LauncherActivity"
+            android:targetPackage="projekt.substratum">
+            <extra
+                android:name="tab"
+                android:value="applied" />
+        </intent>
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -31,19 +56,6 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetClass="projekt.substratum.activities.shortcuts.RescueActivity"
-            android:targetPackage="projekt.substratum" />
-    </shortcut>
-    <shortcut
-        android:enabled="true"
-        android:icon="@drawable/app_shortcut_overlay_manager"
-        android:shortcutDisabledMessage="@string/shortcut_overlay_manager_disabled"
-        android:shortcutId="overlaymanager"
-        android:shortcutLongLabel="@string/shortcut_overlay_manager"
-        android:shortcutShortLabel="@string/shortcut_overlay_manager"
-        tools:targetApi="n_mr1">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="projekt.substratum.activities.shortcuts.OverlayManagerActivity"
             android:targetPackage="projekt.substratum" />
     </shortcut>
 </shortcuts>

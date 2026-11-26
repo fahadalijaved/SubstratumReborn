@@ -241,8 +241,7 @@ public class ThemeFragment extends Fragment {
             menu.findItem(R.id.soft_reboot).setVisible(false);
         }
         if (!isOMS) menu.findItem(R.id.per_app).setVisible(false);
-        // The 2019 theme showcase is stale; Reborn's Themes tab lists what is installed
-        if (Systems.isXposedBackend(context)) menu.findItem(R.id.showcase).setVisible(false);
+        // The 2019 theme showcase is retired: Reborn's Themes tab lists what is installed
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
         MainActivity mainActivity = (MainActivity) getActivity();

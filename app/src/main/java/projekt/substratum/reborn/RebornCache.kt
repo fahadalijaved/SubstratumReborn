@@ -7,6 +7,7 @@ package projekt.substratum.reborn
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.amoled.AmoledSummary
 import projekt.substratum.reborn.applied.AppliedSnapshot
+import projekt.substratum.reborn.showcase.ShowcaseLooks
 import projekt.substratum.reborn.themes.ThemesSnapshot
 
 /**
@@ -25,4 +26,7 @@ object RebornCache {
 
     @Volatile
     var themes: ThemesSnapshot? = null
+
+    @Volatile
+    var showcase: ShowcaseLooks? = null
 }
