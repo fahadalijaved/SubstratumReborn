@@ -5,6 +5,7 @@
   ~ SPDX-License-Identifier: GPL-3.0-Or-Later
   -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -14,9 +15,12 @@
         android:fitsSystemWindows="true"
         tools:context=".MainActivity">
 
+        <!-- Takes the first focus so the search field does not raise the keyboard on open -->
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
 
             <ProgressBar
                 android:id="@+id/header_loading_bar"
@@ -26,12 +30,42 @@
                 android:layout_marginTop="-3dp"
                 android:indeterminate="true" />
 
+            <!-- Search by app label or package; selections survive filtering -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/overlay_search_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="12dp"
+                app:boxCornerRadiusBottomEnd="28dp"
+                app:boxCornerRadiusBottomStart="28dp"
+                app:boxCornerRadiusTopEnd="28dp"
+                app:boxCornerRadiusTopStart="28dp"
+                app:endIconMode="clear_text"
+                app:hintEnabled="false"
+                app:startIconDrawable="@drawable/ic_reborn_search"
+                app:startIconTint="?attr/colorOnSurfaceVariant">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/overlay_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/overlays_search_hint"
+                    android:imeOptions="actionSearch|flagNoExtractUi"
+                    android:inputType="text|textNoSuggestions"
+                    android:maxLines="1" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
             <RelativeLayout
                 android:id="@+id/toggle_zone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/overlay_search_layout"
                 android:layout_marginStart="14dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginEnd="7dp"
                 android:layout_marginBottom="12dp"
                 android:clickable="true"

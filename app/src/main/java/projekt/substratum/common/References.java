@@ -11,7 +11,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -53,6 +53,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -940,7 +941,7 @@ public class References {
         ScrollView sv = new ScrollView(context);
         sv.addView(table);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
         builder.setView(sv);
         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.cancel());
         return builder;

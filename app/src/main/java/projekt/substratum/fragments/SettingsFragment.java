@@ -8,7 +8,7 @@
 package projekt.substratum.fragments;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -32,6 +32,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.List;
@@ -98,6 +99,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         boolean isOMS = Systems.checkOMS(context);
         boolean hasThemeInterfacer = Systems.checkThemeInterfacer(context);
         boolean hasAndromeda = isAndromedaDevice(context);
+        boolean xposedEngine = Systems.isXposedBackend(context);
 
         // Initialize the XML file
         addPreferencesFromResource(R.xml.preference_fragment);
@@ -123,6 +125,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     LinearLayout layersView = sheetView.findViewById(R.id.layers_contributors);
                     LinearLayout githubSourceView = sheetView.findViewById(R.id.github_source);
                     LinearLayout teamView = sheetView.findViewById(R.id.team);
+                    // The 2019 team card is not part of Reborn
+                    if (xposedEngine) teamView.setVisibility(View.GONE);
                     translatorsView.setOnClickListener(v -> {
                         new TranslatorParser.TranslatorContributionDialog(this).execute();
                         sheetDialog.cancel();
@@ -130,7 +134,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     githubSourceView.setOnClickListener(v -> {
                         try {
                             String sourceURL;
-                            if (BuildConfig.DEBUG) {
+                            // Debug builds used to open the upstream commit tracker
+                            if (BuildConfig.DEBUG && !xposedEngine) {
                                 sourceURL = getString(R.string.substratum_github_commits);
                             } else {
                                 sourceURL = getString(R.string.substratum_github);
@@ -149,7 +154,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         sheetDialog.cancel();
                     });
                     contributorsView.setOnClickListener(v -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(getActivity());
                         builder.setItems(
                                 getResources().getStringArray(R.array.substratum_contributors),
                                 (dialog, item) -> {
@@ -161,7 +166,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         sheetDialog.cancel();
                     });
                     layersView.setOnClickListener(v -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(getActivity());
                         builder.setItems(
                                 getResources().getStringArray(R.array.layers_contributors),
                                 (dialog, item) -> {
@@ -173,7 +178,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         sheetDialog.cancel();
                     });
                     teamView.setOnClickListener(v -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(getActivity());
                         View teamViewLayout = View.inflate(context, R.layout.team_dialog, null);
                         CardView nicholasCard = teamViewLayout.findViewById(R.id.nicholas_card);
                         CardView sykoCard = teamViewLayout.findViewById(R.id.syko_card);
@@ -216,7 +221,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         // System Platform
         systemPlatform = getPreferenceManager().findPreference("system_platform");
-        if (isOMS && !hasAndromeda && !Systems.ATLEAST_PIE) {
+        if (isOMS && !hasAndromeda && !Systems.ATLEAST_PIE && !xposedEngine) {
             new ValidatorUtils.checkROMSupportList(this).execute(
                     getString(R.string.supported_roms_url),
                     SUPPORTED_ROMS_FILE);
@@ -268,7 +273,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         systemStatus.setIcon(certified ?
                 context.getDrawable(R.drawable.system_status_certified)
                 : context.getDrawable(R.drawable.system_status_uncertified));
-        if (BuildConfig.DEBUG && isOMS && (interfacer || systemService) && !hasAndromeda) {
+        if (BuildConfig.DEBUG && isOMS && (interfacer || systemService) && !hasAndromeda &&
+                !xposedEngine) {
             systemStatus.setOnPreferenceClickListener(preference -> {
                 if (References.isNetworkAvailable(context)) {
                     new ValidatorUtils.downloadRepositoryList(this).execute("");
@@ -405,7 +411,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         gridStyleCardsCount.setSummary(toFormat);
         gridStyleCardsCount.setOnPreferenceClickListener(
                 preference -> {
-                    AlertDialog.Builder numberPickerDialog = new AlertDialog.Builder(context);
+                    AlertDialog.Builder numberPickerDialog = new MaterialAlertDialogBuilder(context);
                     numberPickerDialog.setTitle(getString(R.string.grid_size_title));
 
                     NumberPicker numberPicker = new NumberPicker(context);
@@ -459,7 +465,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         prefs.edit().putBoolean("autosave_logchar", true).apply();
                         autosaveLogchar.setChecked(true);
                     } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                         builder.setTitle(R.string.logchar_dialog_title_delete_title);
                         builder.setMessage(R.string.logchar_dialog_title_delete_content);
                         builder.setNegativeButton(R.string.dialog_cancel,
@@ -487,7 +493,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 (preference, newValue) -> {
                     boolean isChecked = (Boolean) newValue;
                     if (isChecked) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                         builder.setTitle(R.string.break_compilation_dialog_title);
                         builder.setMessage(R.string.break_compilation_dialog_content);
                         builder.setNegativeButton(R.string.dialog_cancel,
@@ -560,7 +566,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     boolean isChecked = (Boolean) newValue;
                     if (!isChecked) {
                         AlertDialog.Builder builder =
-                                new AlertDialog.Builder(context);
+                                new MaterialAlertDialogBuilder(context);
                         builder.setTitle(R.string.theme_safety_dialog_title);
                         builder.setMessage(R.string.theme_safety_dialog_content);
                         builder.setNegativeButton(R.string.dialog_cancel,
@@ -706,7 +712,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     (preference, newValue) -> {
                         boolean isChecked = (Boolean) newValue;
                         if (isChecked) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                             builder.setTitle(R.string.settings_theme_auto_updater_dialog_title);
                             builder.setMessage(R.string.settings_theme_auto_updater_dialog_text);
                             builder.setNegativeButton(R.string.dialog_cancel,
@@ -765,7 +771,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                             boolean isChecked = (Boolean) newValue;
                             if (isChecked) {
                                 AlertDialog.Builder builder =
-                                        new AlertDialog.Builder(context);
+                                        new MaterialAlertDialogBuilder(context);
                                 builder.setTitle(
                                         R.string.settings_samsung_show_dangerous_overlays_warning_title);
                                 builder.setMessage(
@@ -798,7 +804,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             prioritySwitcher.setSummary(formatted);
             prioritySwitcher.setOnPreferenceClickListener(
                     preference -> {
-                        AlertDialog.Builder prioritySwitcherDialog = new AlertDialog.Builder(context);
+                        AlertDialog.Builder prioritySwitcherDialog = new MaterialAlertDialogBuilder(context);
                         prioritySwitcherDialog.setTitle(getString(R.string.legacy_preference_priority_title));
 
                         NumberPicker numberPicker = new NumberPicker(context);
@@ -824,6 +830,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         return false;
                     }
             );
+        }
+
+        // LSPosed engine: Andromeda, Samsung, Interfacer, priorities and the debug-only crash
+        // receiver of Substratum Service do not apply
+        if (xposedEngine) {
+            aboutAndromeda.setVisible(false);
+            aboutSamsung.setVisible(false);
+            aboutInterfacer.setVisible(false);
+            sungstromedaMode.setVisible(false);
+            showDangerousSamsung.setVisible(false);
+            prioritySwitcher.setVisible(false);
+            crashReceiver.setVisible(false);
         }
     }
 }

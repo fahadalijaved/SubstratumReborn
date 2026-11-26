@@ -213,13 +213,16 @@ public class XposedEntry implements IXposedHookZygoteInit, IXposedHookLoadPackag
                     fabricated = true;
                     continue;
                 }
+                // Values the fabricated overlay could not carry stay with the module
+                boolean keep = line.startsWith(XposedBackend.KEEP);
+                if (keep) line = line.substring(XposedBackend.KEEP.length());
                 int slash = line.indexOf('/');
                 if (slash <= 0) continue;
                 String type = line.substring(0, slash);
                 String resName = line.substring(slash + 1);
                 if (!FORWARDABLE.contains(type)) continue;
                 // The system Overlay Manager already applies these natively
-                if (fabricated && (type.equals("color") || type.equals("bool") ||
+                if (fabricated && !keep && (type.equals("color") || type.equals("bool") ||
                         type.equals("integer"))) continue;
                 int id = modRes.getIdentifier(resName, type, overlayPackage);
                 if (id == 0) continue;

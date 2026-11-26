@@ -212,13 +212,6 @@
     <string name="accept">Terima</string>
     <string name="deny">Tolak</string>
     <string name="permission_explanation_title">Ikhtisar Perizinan</string>
-    <string name="permission_explanation_text">Substratum mungkin tidak berfungsi seperti yang diharapkan tanpa ini
-      beberapa izin penting yang diberikan..\n\n<b>Penyimpanan: </b> Substratum perlu memanfaatkan milik Anda
-      penyimpanan internal untuk menyimpan arsip penyelamatan sistem Anda, yang terletak di
-      /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>
-      Substratum menggunakan Firebase Google untuk mengunduh informasi penting dari kami
-      terpusat real-time database untuk meningkatkan layanan inti dan peningkatan keamanan.
-      </string>
     <string name="priority_back_title">Kembali ke lapisan</string>
     <string name="menu_clean">Bersihkan lapisan yg terinstal</string>
     <string name="menu_disable">Nonaktifkan lapisan yg ter-install</string>

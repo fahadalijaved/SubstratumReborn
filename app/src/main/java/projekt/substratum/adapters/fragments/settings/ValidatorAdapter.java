@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.List;
 
 import projekt.substratum.R;
@@ -113,7 +115,7 @@ public class ValidatorAdapter extends RecyclerView.Adapter<ValidatorAdapter.View
                 String format = String.format(
                         context.getString(R.string.resource_commit_dialog_title),
                         Packages.getPackageName(context, pkg));
-                new android.app.AlertDialog.Builder(context)
+                new MaterialAlertDialogBuilder(context)
                         .setTitle(format)
                         .setMessage("\n" + errorLogs)
                         .setPositiveButton(R.string

@@ -48,6 +48,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
@@ -281,7 +282,7 @@ public class ProfileFragment extends Fragment {
                 if (projekt.substratum.common.Resources.isBootAnimationSupported(context))
                     items.add(getString(R.string.profile_boot_animation));
                 CharSequence[] dialogItems = items.toArray(new CharSequence[]{});
-                AlertDialog dialog = new AlertDialog.Builder(context)
+                AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                         .setTitle(R.string.profile_dialog_title)
                         .setMultiChoiceItems(dialogItems, null, (dialog1, which, isChecked) -> {
                             if (isChecked) {
@@ -289,7 +290,7 @@ public class ProfileFragment extends Fragment {
                                         .profile_boot_animation))
                                         && (Systems.getDeviceEncryptionStatus(context) > 1)
                                         && Systems.checkThemeInterfacer(context)) {
-                                    AlertDialog dialog2 = new AlertDialog.Builder(context)
+                                    AlertDialog dialog2 = new MaterialAlertDialogBuilder(context)
                                             .setTitle(R.string.root_required_title)
                                             .setMessage(R.string
                                                     .root_required_boot_animation_profile)
@@ -349,7 +350,7 @@ public class ProfileFragment extends Fragment {
             if (profileSelector.getSelectedItemPosition() > 0) {
                 String formatted = String.format(getString(R.string.delete_dialog_text),
                         profileSelector.getSelectedItem());
-                new AlertDialog.Builder(context)
+                new MaterialAlertDialogBuilder(context)
                         .setTitle(getString(R.string.delete_dialog_title))
                         .setMessage(formatted)
                         .setCancelable(false)
@@ -798,7 +799,7 @@ public class ProfileFragment extends Fragment {
             if (profileFragment.isAdded()) {
                 if (Systems.checkOMS(profileFragment.context)) {
                     if (!profileFragment.cannotRunOverlays.isEmpty()) {
-                        new AlertDialog.Builder(profileFragment.context)
+                        new MaterialAlertDialogBuilder(profileFragment.context)
                                 .setTitle(profileFragment.getString(R.string.restore_dialog_title))
                                 .setMessage(profileFragment.dialogMessage)
                                 .setCancelable(false)
@@ -930,7 +931,7 @@ public class ProfileFragment extends Fragment {
                         new ContinueRestore(profileFragment).execute();
                     }
                     AlertDialog.Builder alertDialogBuilder =
-                            new AlertDialog.Builder(profileFragment.context);
+                            new MaterialAlertDialogBuilder(profileFragment.context);
                     alertDialogBuilder
                             .setTitle(profileFragment.getString(
                                     R.string.legacy_dialog_soft_reboot_title));

@@ -27,6 +27,9 @@ class OverlaysInstance {
     double currentAmount;
     double totalAmount;
     int overlaysWaiting;
+    // One-tap Apply bookkeeping: overlay names that compiled, labels of those that did not
+    List<String> builtOverlays;
+    List<String> failedLabels;
 
     /**
      * Obtain the current instance
@@ -53,5 +56,7 @@ class OverlaysInstance {
         checkedOverlays = new ArrayList<>();
         currentAmount = 0;
         overlaysWaiting = 0;
+        builtOverlays = new ArrayList<>();
+        failedLabels = new ArrayList<>();
     }
 }

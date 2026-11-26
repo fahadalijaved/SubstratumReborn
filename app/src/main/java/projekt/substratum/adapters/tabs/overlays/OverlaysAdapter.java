@@ -21,7 +21,9 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import projekt.substratum.R;
 import projekt.substratum.common.platform.ThemeManager;
@@ -41,12 +43,53 @@ public class OverlaysAdapter extends RecyclerView.Adapter<OverlaysAdapter.ViewHo
     private static final String INSTALLED_DISABLED = "INSTALLED_DISABLED";
     private static final String NOT_INSTALLED = "NOT_INSTALLED";
     private final List<OverlaysItem> overlayList;
+    // What the search shows; selection lives in the items, so filtering never loses it
+    private List<OverlaysItem> visibleList;
+    private String filter = "";
     private List<String> overlayStateList;
 
     public OverlaysAdapter(List<OverlaysItem> overlayInfo, Context context) {
         super();
         overlayList = overlayInfo;
+        visibleList = overlayInfo;
         refreshOverlayStateList(context);
+    }
+
+    /**
+     * Show only the overlays whose app label or package contains the query (any case).
+     *
+     * @param query Search text, empty or null to show everything
+     */
+    public void setFilter(@Nullable String query) {
+        filter = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        if (filter.isEmpty()) {
+            visibleList = overlayList;
+        } else {
+            List<OverlaysItem> matches = new ArrayList<>();
+            for (OverlaysItem item : overlayList) {
+                if (matches(item, filter)) matches.add(item);
+            }
+            visibleList = matches;
+        }
+        notifyDataSetChanged();
+    }
+
+    private static boolean matches(OverlaysItem item, String query) {
+        String name = item.getName();
+        String pkg = item.getPackageName();
+        return (name != null && name.toLowerCase(Locale.ROOT).contains(query)) ||
+                (pkg != null && pkg.toLowerCase(Locale.ROOT).contains(query));
+    }
+
+    public boolean isFiltered() {
+        return !filter.isEmpty();
+    }
+
+    /**
+     * @return The overlays the search currently shows
+     */
+    public List<OverlaysItem> getVisibleList() {
+        return visibleList;
     }
 
     /**
@@ -356,7 +399,7 @@ public class OverlaysAdapter extends RecyclerView.Adapter<OverlaysAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder viewHolder,
                                  int position) {
 
-        OverlaysItem overlaysItem = overlayList.get(position);
+        OverlaysItem overlaysItem = visibleList.get(position);
         TabOverlaysItemBinding viewHolderBinding = viewHolder.getBinding();
         Context context = overlaysItem.getContext();
 
@@ -439,9 +482,12 @@ public class OverlaysAdapter extends RecyclerView.Adapter<OverlaysAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return overlayList.size();
+        return visibleList.size();
     }
 
+    /**
+     * @return Every overlay of the theme, shown or not
+     */
     public List<OverlaysItem> getOverlayList() {
         return overlayList;
     }

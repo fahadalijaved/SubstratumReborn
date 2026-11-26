@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.databinding.DataBindingUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -85,7 +86,7 @@ public class ManageSpaceActivity extends AppCompatActivity {
         });
 
         resetAppButton.setOnClickListener(v -> {
-            AlertDialog dialog = new AlertDialog.Builder(this)
+            AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.manage_space_reset_dialog_title)
                     .setMessage(R.string.manage_space_reset_dialog_content)
                     .setNegativeButton(android.R.string.no, (dialog1, which) -> dialog1.dismiss())

@@ -213,13 +213,6 @@
     <string name="accept">Elfogad</string>
     <string name="deny">Megtagadás</string>
     <string name="permission_explanation_title">Engedélyek áttekintése</string>
-    <string name="permission_explanation_text">A Substratum nem a várt módon működhet ezek nélkül a
-      kulcsfontosságú engedélyek megadása nélkül.\n\n<b>Tároló:</b> A Substratumnak szüksége van
-      a belső tároló használatára, hogy a rendszer-mentési archívumokat tárolja, itt:
-      /storage/emulated/0/substratum/.\n\n<b>Firebase:</b>
-      A Substratum a Google Firebase segítségével tölt le fontos információkat a központi
-      valós-idejű adatbázisunkból az alapvető szolgáltatások és biztonsági funkciók javításához.
-      </string>
     <string name="priority_back_title">Vissza a fedvényekhez</string>
     <string name="menu_clean">Telepített fedvények tisztítása</string>
     <string name="menu_disable">Telepített fedvények letiltása</string>

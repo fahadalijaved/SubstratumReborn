@@ -182,7 +182,6 @@
     <string name="accept">Accetta</string>
     <string name="deny">Nega</string>
     <string name="permission_explanation_title">Panoramica delle autorizzazioni</string>
-    <string name="permission_explanation_text">Substratum potrebbe non funzionare come dovrebbe senza alcune di queste autorizzazioni.\n\n<b>Archiviazione: </b>Substratum ha bisogno di accedere alla tua memoria interna per salvare i tuoi archivi di salvataggio del sistema, situati in /storage/emulated/0/substratum/.\n\n<b>Firebase: </b> Substratum utilizza il Firebase di Google per scaricare informazioni cruciali dal nostro database centralizzato in tempo reale per migliorare i servizi di base ed aumentare la sicurezza.      </string>
     <string name="priority_back_title">Torna alle sovrapposizioni</string>
     <string name="menu_clean">Pulisci le sovrapposizioni installate</string>
     <string name="menu_disable">Disabilita le sovrapposizioni installate</string>

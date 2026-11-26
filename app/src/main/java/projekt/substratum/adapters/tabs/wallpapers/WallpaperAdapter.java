@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.canhub.cropper.CropImage;
 import com.canhub.cropper.CropImageView;
@@ -67,7 +68,7 @@ public class WallpaperAdapter extends RecyclerView.Adapter<WallpaperAdapter.View
         context = wallpaperItem.getContext();
 
         viewHolderBinding.wallpaperCard.setOnClickListener(view -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
                     context, R.layout.tab_wallpaper_dialog);
             arrayAdapter.add(this.context.getString(R.string.wallpaper_dialog_wallpaper));

@@ -52,6 +52,11 @@ public class XposedBackend {
     public static final String ENABLED = ".enabled";
     public static final String FABRICATED = "fabricated=true";
     /**
+     * Prefix of an index line whose color, bool or integer the fabricated overlay could not
+     * carry (an unresolvable reference): the module keeps applying it.
+     */
+    public static final String KEEP = "keep:";
+    /**
      * AMOLED colors for one app, applied by resource id. The first line is
      * {@code # key=<versionKey>} of the app version the ids were read from; the module ignores
      * a file whose key does not match the installed app. Then one line per color:
@@ -181,15 +186,20 @@ public class XposedBackend {
             Log.e(TAG, "Overlay carries no resources: " + apkPath);
             return false;
         }
+        Set<String> leftToModule = new HashSet<>();
         boolean fabricated = workArea != null &&
-                FabricatedValues.register(context, new File(workArea), target, name) > 0;
+                FabricatedValues.register(context, new File(workArea), target, name,
+                        leftToModule) > 0;
         File index = new File(context.getCacheDir(), name + INDEX);
         try (FileWriter writer = new FileWriter(index)) {
             writer.write("target=" + target + '\n');
             writer.write("package=" + archive.packageName + '\n');
             // Tells the module to leave colors, bools and integers to the fabricated overlay
             if (fabricated) writer.write(FABRICATED + '\n');
-            for (String resource : resources) writer.write(resource + '\n');
+            for (String resource : resources) {
+                writer.write((fabricated && leftToModule.contains(resource) ? KEEP : "") +
+                        resource + '\n');
+            }
         } catch (IOException e) {
             Log.e(TAG, "Could not write overlay index", e);
             return false;

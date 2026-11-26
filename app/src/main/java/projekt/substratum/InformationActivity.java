@@ -62,6 +62,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.gordonwong.materialsheetfab.DimOverlayFrameLayout;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.gordonwong.materialsheetfab.MaterialSheetFabEventListener;
@@ -793,7 +794,10 @@ public class InformationActivity extends AppCompatActivity {
             localBroadcastManager.sendBroadcast(intent);
         });
 
-        if (!Systems.checkOMS(this) || (Systems.ATLEAST_PIE && !Systems.checkSubstratumService(context) && !BuildConfig.DEBUG))
+        // The LSPosed engine builds, enables and restarts in one go ('Apply selected')
+        if (!Systems.isXposedBackend(context) && (!Systems.checkOMS(this) ||
+                (Systems.ATLEAST_PIE && !Systems.checkSubstratumService(context) &&
+                        !BuildConfig.DEBUG)))
             compileEnableSelected.setVisibility(View.GONE);
         compileEnableSelected.setOnClickListener(v -> {
             materialSheetFab.setEventListener(new MaterialSheetFabEventListener() {
@@ -996,7 +1000,7 @@ public class InformationActivity extends AppCompatActivity {
             return true;
         } else if (switchId == R.id.clean) {
             // This cleans all the installed overlays for this theme
-            AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder1 = new MaterialAlertDialogBuilder(this);
             builder1.setTitle(themeName);
             builder1.setIcon(Packages.getAppIcon(context, themePid));
             builder1.setMessage(R.string.clean_dialog_body)
@@ -1040,7 +1044,7 @@ public class InformationActivity extends AppCompatActivity {
             return true;
         } else if (switchId == R.id.disable) {
             // This disables all the installed overlays for this theme
-            AlertDialog.Builder builder3 = new AlertDialog.Builder(InformationActivity.this);
+            AlertDialog.Builder builder3 = new MaterialAlertDialogBuilder(InformationActivity.this);
             builder3.setTitle(themeName);
             builder3.setIcon(Packages.getAppIcon(context, themePid));
             builder3.setMessage(R.string.disable_dialog_body)
@@ -1085,7 +1089,7 @@ public class InformationActivity extends AppCompatActivity {
             return true;
         } else if (switchId == R.id.enable) {
             // This enables all the installed overlays for this theme
-            AlertDialog.Builder builder4 = new AlertDialog.Builder(InformationActivity
+            AlertDialog.Builder builder4 = new MaterialAlertDialogBuilder(InformationActivity
                     .this);
             builder4.setTitle(themeName);
             builder4.setIcon(Packages.getAppIcon(context, themePid));
@@ -1131,7 +1135,7 @@ public class InformationActivity extends AppCompatActivity {
             builder4.show();
             return true;
         } else if (switchId == R.id.uninstall) {
-            AlertDialog.Builder builder5 = new AlertDialog.Builder(InformationActivity
+            AlertDialog.Builder builder5 = new MaterialAlertDialogBuilder(InformationActivity
                     .this);
             builder5.setTitle(themeName);
             builder5.setIcon(Packages.getAppIcon(context, themePid));

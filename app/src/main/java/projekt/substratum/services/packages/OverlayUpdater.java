@@ -8,7 +8,7 @@
 package projekt.substratum.services.packages;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -26,6 +26,7 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -554,8 +555,7 @@ public class OverlayUpdater extends BroadcastReceiver {
 
     static class UpdaterLogs extends BroadcastReceiver {
         static void invokeLogCharDialog(Context context, String errorLogs) {
-            AlertDialog.Builder builder = new AlertDialog.Builder
-                    (context)
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.logcat_dialog_title)
                     .setMessage('\n' + errorLogs)
                     .setNeutralButton(R.string

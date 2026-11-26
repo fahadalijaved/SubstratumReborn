@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import projekt.substratum.R;
 
@@ -23,7 +24,7 @@ public class ProfileErrorInfoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.restore_dialog_title))
                 .setMessage(getIntent().getStringExtra("dialog_message"))
                 .setCancelable(false)

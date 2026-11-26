@@ -41,6 +41,7 @@ public class ManagerItem implements Serializable {
     private String labelName;
     private boolean isSelected;
     private int activationValue;
+    private boolean activated;
     private Drawable mDrawable;
     private Drawable mTargetDrawable;
 
@@ -122,7 +123,12 @@ public class ManagerItem implements Serializable {
         return this.context;
     }
 
+    boolean isActivated() {
+        return this.activated;
+    }
+
     public void updateEnabledOverlays(boolean isActivated) {
+        this.activated = isActivated && !MainActivity.instanceBasedAndromedaFailure;
         this.activationValue =
                 (MainActivity.instanceBasedAndromedaFailure ?
                         this.context.getColor(R.color.overlay_installed_not_active) :

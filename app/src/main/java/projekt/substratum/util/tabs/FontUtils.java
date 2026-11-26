@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.lang.ref.WeakReference;
 
@@ -116,7 +117,7 @@ public class FontUtils {
                         ThemeManager.restartSystemUI(context);
                     } else if (!Systems.checkOMS(context)) {
                         AlertDialog.Builder alertDialogBuilder =
-                                new AlertDialog.Builder(context);
+                                new MaterialAlertDialogBuilder(context);
                         alertDialogBuilder.setTitle(context.getString(
                                 R.string.legacy_dialog_soft_reboot_title));
                         alertDialogBuilder.setMessage(context.getString(

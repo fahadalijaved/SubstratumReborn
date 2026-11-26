@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.thesurix.gesturerecycler.GestureAdapter;
 import com.thesurix.gesturerecycler.GestureManager;
 
@@ -93,7 +94,7 @@ public class PriorityListFragment extends Fragment {
      * Show dialog with instructions on adjusting priorities
      */
     private void showPriorityInstructions() {
-        new AlertDialog.Builder(context)
+        new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.priority_instructions_title)
                 .setMessage(R.string.priority_instructions_content)
                 .setPositiveButton(android.R.string.ok, (dialogInterface, i) ->

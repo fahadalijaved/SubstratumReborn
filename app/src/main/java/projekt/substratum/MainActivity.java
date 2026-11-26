@@ -9,7 +9,7 @@ package projekt.substratum;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -50,6 +50,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomnavigation.LabelVisibilityMode;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -101,6 +102,7 @@ import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_INTER
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_ANDROMEDA;
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_O_ROOTED;
 import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_SYSSERV;
+import static projekt.substratum.common.References.OVERLAY_MANAGER_SERVICE_XPOSED;
 import static projekt.substratum.common.References.SAMSUNG_THEME_ENGINE_N;
 import static projekt.substratum.common.References.SST_ADDON_PACKAGE;
 import static projekt.substratum.common.References.SUBSTRATUM_BUILDER;
@@ -223,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements
             bottomBar.getMenu().removeItem(R.id.tab_priorities);
             bottomBar.getMenu().removeItem(R.id.tab_profiles);
         }
+        // The LSPosed engine applies overlays in name order: priorities do nothing there
+        if (Systems.isXposedBackend(context)) bottomBar.getMenu().removeItem(R.id.tab_priorities);
 
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
         tx.replace(R.id.main, Fragment.instantiate(this, fragment));
@@ -325,6 +329,9 @@ public class MainActivity extends AppCompatActivity implements
         getSupportActionBar().setDisplayShowHomeEnabled(false);
 
         bottomBar.setLabelVisibilityMode(LabelVisibilityMode.LABEL_VISIBILITY_LABELED);
+        boolean xposedEngine = Systems.isXposedBackend(context);
+        // ThemeManager.setPriority does nothing on the LSPosed engine
+        if (xposedEngine) bottomBar.getMenu().removeItem(R.id.tab_priorities);
 
         bottomBar.setOnNavigationItemSelectedListener(item -> {
             int switchId = item.getItemId();
@@ -360,17 +367,20 @@ public class MainActivity extends AppCompatActivity implements
                 getIntent().getBooleanExtra("launch_manager_fragment", false)) {
             bottomBar.setSelectedItemId(R.id.tab_overlay_manager);
         } else {
-            if (savedInstanceState != null) {
+            if (savedInstanceState != null &&
+                    bottomBar.getMenu().findItem(
+                            savedInstanceState.getInt(SELECTED_TAB_ITEM)) != null) {
                 bottomBar.setSelectedItemId(savedInstanceState.getInt(SELECTED_TAB_ITEM));
             } else {
                 bottomBar.setSelectedItemId(R.id.tab_themes);
             }
         }
 
-        if (Systems.checkSubstratumService(getApplicationContext()) ||
-                Systems.checkThemeInterfacer(getApplicationContext())) {
+        // Substratum Service and Interfacer checks; the LSPosed engine uses neither
+        if (!xposedEngine && (Systems.checkSubstratumService(getApplicationContext()) ||
+                Systems.checkThemeInterfacer(getApplicationContext()))) {
             if (!Systems.authorizedToUseBackend(getApplicationContext())) {
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.backend_not_authorized_title)
                         .setMessage(R.string.backend_not_authorized_text)
                         .setPositiveButton(R.string.dialog_ok, (dialogInterface, i) -> {
@@ -390,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements
                         .show();
                 return;
             } else if (!checkSubstratumServiceApi(context)) {
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.sysserv_api_check_dialog_title)
                         .setMessage(R.string.sysserv_api_check_dialog_text)
                         .setPositiveButton(getString(R.string.dialog_ok), (dialogInterface, i) -> {
@@ -478,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements
                                 break;
                         }
                     };
-                    new AlertDialog.Builder(this)
+                    new MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.per_app_request_title)
                             .setMessage(R.string.per_app_draw_over_other_apps_request)
                             .setPositiveButton(R.string.dialog_ok, dialogClickListener)
@@ -499,7 +509,7 @@ public class MainActivity extends AppCompatActivity implements
                                 break;
                         }
                     };
-                    new AlertDialog.Builder(this)
+                    new MaterialAlertDialogBuilder(this)
                             .setTitle(R.string.per_app_request_title)
                             .setMessage(R.string.per_app_usage_stats_request)
                             .setPositiveButton(R.string.dialog_ok, dialogClickListener)
@@ -522,7 +532,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
             };
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.dialog_restart_systemui_title));
             builder.setMessage(getString(R.string.dialog_restart_systemui_content));
             builder.setPositiveButton(
@@ -543,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements
                         break;
                 }
             };
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.dialog_restart_reboot_title));
             builder.setMessage(getString(R.string.dialog_restart_reboot_content));
             builder.setPositiveButton(
@@ -564,7 +574,7 @@ public class MainActivity extends AppCompatActivity implements
                         break;
                 }
             };
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this);
             builder.setTitle(getString(R.string.dialog_restart_soft_reboot_title));
             builder.setMessage(getString(R.string.dialog_restart_soft_reboot_content));
             builder.setPositiveButton(
@@ -763,7 +773,7 @@ public class MainActivity extends AppCompatActivity implements
                 References.injectRescueArchives(context);
             } else {
                 // permission was not granted, show closing dialog
-                new AlertDialog.Builder(this)
+                new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.permission_not_granted_dialog_title)
                         .setMessage(R.string.permission_not_granted_dialog_message1)
                         .setPositiveButton(R.string.dialog_ok, (dialog, which) -> {
@@ -839,7 +849,7 @@ public class MainActivity extends AppCompatActivity implements
                         WRITE_EXTERNAL_STORAGE);
 
                 if (activity.permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                    new AlertDialog.Builder(activity)
+                    new MaterialAlertDialogBuilder(activity)
                             .setCancelable(false)
                             .setTitle(R.string.permission_explanation_title)
                             .setMessage(R.string.permission_explanation_text)
@@ -880,7 +890,7 @@ public class MainActivity extends AppCompatActivity implements
 
                                 if (!Systems.checkOMS(context) &&
                                         !prefs.contains("legacy_dismissal")) {
-                                    AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                                    AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                                     alert.setTitle(R.string.warning_title);
                                     if (isSamsungDevice(context)) {
                                         alert.setMessage(R.string.samsung_warning_content);
@@ -901,7 +911,7 @@ public class MainActivity extends AppCompatActivity implements
                                 if (Systems.checkOMS(context) &&
                                         Systems.isXiaomiDevice() &&
                                         !prefs.contains("xiaomi_enable_development")) {
-                                    AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                                    AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                                     alert.setTitle(R.string.warning_title);
                                     alert.setMessage(R.string.xiaomi_warning_content);
                                     alert.setPositiveButton(R.string.dialog_ok,
@@ -923,7 +933,7 @@ public class MainActivity extends AppCompatActivity implements
                                 if ((checkThemeSystemModule(context) ==
                                         OVERLAY_MANAGER_SERVICE_O_ROOTED) &&
                                         !prefs.contains("rooted_oms_dismissal")) {
-                                    AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                                    AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                                     alert.setTitle(R.string.rooted_oms_dialog_warning_title);
                                     alert.setMessage(R.string.rooted_oms_dialog_warning_text);
                                     alert.setPositiveButton(R.string.dialog_ok,
@@ -954,7 +964,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (!Systems.checkOMS(context) &&
                             !prefs.contains("legacy_dismissal")) {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                        AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                         alert.setTitle(R.string.warning_title);
                         if (isSamsungDevice(context)) {
                             alert.setMessage(R.string.samsung_warning_content);
@@ -975,7 +985,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (Systems.checkOMS(context) &&
                             Systems.isXiaomiDevice() &&
                             !prefs.contains("xiaomi_enable_development")) {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                        AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                         alert.setTitle(R.string.warning_title);
                         alert.setMessage(R.string.xiaomi_warning_content);
                         alert.setPositiveButton(R.string.dialog_ok,
@@ -1000,7 +1010,7 @@ public class MainActivity extends AppCompatActivity implements
                     if ((checkThemeSystemModule(context) ==
                             OVERLAY_MANAGER_SERVICE_O_ROOTED) &&
                             !prefs.contains("rooted_oms_dismissal")) {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                        AlertDialog.Builder alert = new MaterialAlertDialogBuilder(activity);
                         alert.setTitle(R.string.rooted_oms_dialog_warning_title);
                         alert.setMessage(R.string.rooted_oms_dialog_warning_text);
                         alert.setPositiveButton(R.string.dialog_ok,
@@ -1052,7 +1062,12 @@ public class MainActivity extends AppCompatActivity implements
                             activity.progressDialog.findViewById(R.id.close_button);
                     appCloseButton.setOnClickListener(v -> System.exit(0)); // Brutally exit!
                     appCloseButton.setVisibility(View.GONE);
-                    if (isSamsungDevice(context) && !Systems.isNewSamsungDeviceAndromeda(context)) {
+                    if (Systems.isXposedBackend(context)) {
+                        // Root went missing: the plain root message only, no Sungstratum,
+                        // Andromeda or Interfacer prompts on this engine
+                        appCloseButton.setVisibility(View.VISIBLE);
+                    } else if (isSamsungDevice(context) &&
+                            !Systems.isNewSamsungDeviceAndromeda(context)) {
                         TextView samsungTitle = activity.progressDialog.findViewById(
                                 R.id.sungstratum_title);
                         Button samsungButton = activity.progressDialog.findViewById(
@@ -1136,6 +1151,12 @@ public class MainActivity extends AppCompatActivity implements
             if (activity != null) {
                 Context context = activity.context;
                 int themeSystemModule = checkThemeSystemModule(context, true);
+
+                // LSPosed engine: root is all it needs (no Sungstratum, Andromeda, Interfacer or
+                // Substratum Service checks)
+                if (themeSystemModule == OVERLAY_MANAGER_SERVICE_XPOSED) {
+                    return !Root.checkRootAccess();
+                }
 
                 // Samsung mode, but what if package is not installed?
                 boolean samsungCheck = themeSystemModule == SAMSUNG_THEME_ENGINE_N;

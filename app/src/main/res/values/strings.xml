@@ -273,13 +273,7 @@
     <string name="accept">Accept</string>
     <string name="deny">Deny</string>
     <string name="permission_explanation_title">Permissions Overview</string>
-    <string name="permission_explanation_text">Substratum may not function as expected without these
-      few crucial permissions granted.\n\n<b>Storage: </b> Substratum needs to utilize your
-      internal storage to store your system rescue archives, located in
-      /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>
-      Substratum utilizes Google\'s Firebase to download crucial information from our
-      centralized real-time database to improve core services and security enhancements.
-      </string>
+    <string name="permission_explanation_text">Substratum needs a few permissions to work as expected.\n\n<b>Storage: </b>themes are unpacked, built and backed up in your internal storage, and system rescue archives are kept in /storage/emulated/0/substratum/.</string>
 
     <string name="priority_back_title">Back to overlays</string>
 
@@ -515,6 +509,35 @@
     <string name="fab_menu_enable_disable">Change overlay states</string>
     <string name="fab_menu_swap_toggle">Disable other themes</string>
     <string name="fab_menu_swap_toggle_legacy">Remove all existing</string>
+    <string name="fab_menu_apply_selected">Apply selected</string>
+
+    <!-- One-tap Apply summary -->
+    <string name="apply_summary_title">Applied</string>
+    <string name="apply_summary_title_partial">Applied, with errors</string>
+    <string name="apply_summary_title_none">Nothing applied</string>
+    <string name="apply_summary_built">built</string>
+    <string name="apply_summary_enabled">enabled</string>
+    <string name="apply_summary_failed">failed</string>
+    <string name="apply_summary_failed_names">Failed: %1$s</string>
+    <string name="apply_summary_systemui">System UI restarted to load the change.</string>
+    <string name="apply_summary_closed">Closed so they open with the change: %1$s.</string>
+    <string name="apply_summary_restart_needed">Restart needed: %1$s. These are never force-closed, so the change shows after their next start or a reboot.</string>
+    <string name="apply_summary_framework">Framework changes reach each app the next time it starts.</string>
+    <string name="apply_summary_not_enabled">Some built overlays could not be switched on. Select them and use Enable selected.</string>
+    <plurals name="apply_summary_turned_off">
+        <item quantity="one">%1$d other overlay was turned off to make way for these.</item>
+        <item quantity="other">%1$d other overlays were turned off to make way for these.</item>
+    </plurals>
+    <string name="apply_summary_done">Done</string>
+    <string name="apply_summary_log">Error log</string>
+
+    <!-- Manager rows -->
+    <string name="manager_chip_enabled">Enabled</string>
+    <string name="manager_chip_disabled">Disabled</string>
+
+    <!-- Overlays tab search -->
+    <string name="overlays_search_hint">Search apps or packages</string>
+    <string name="overlays_search_count">%1$d of %2$d</string>
 
     <string name="team_title_one">Leaders of Substratum</string>
     <string name="team_text_one">Not only did we create something that works for the users, but we worked in conjunction with themers to make it a wonderful theming engine for the community!</string>

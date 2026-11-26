@@ -7,11 +7,14 @@
 
 package projekt.substratum.adapters.fragments.manager;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -48,6 +51,7 @@ public class ManagerAdapter extends
         ManagerItemBinding viewHolderBinding = viewHolder.getBinding();
 
         viewHolderBinding.tvName.setTextColor(overlayList.get(position).getActivationValue());
+        bindStateChip(viewHolderBinding.stateChip, managerItem.isActivated());
 
         viewHolderBinding.chkSelected.setChecked(overlayList.get(position).isSelected());
         viewHolderBinding.chkSelected.setTag(overlayList.get(position));
@@ -92,6 +96,31 @@ public class ManagerAdapter extends
         }
         viewHolderBinding.setOverlay(managerItem);
         viewHolderBinding.executePendingBindings();
+    }
+
+    /**
+     * A status chip as in Reborn's Compose screens: icon and word on a tinted pill.
+     */
+    private static void bindStateChip(TextView chip, boolean enabled) {
+        Context context = chip.getContext();
+        int container = context.getColor(enabled ?
+                R.color.reborn_chip_ok_container : R.color.reborn_chip_off_container);
+        int accent = context.getColor(enabled ?
+                R.color.reborn_chip_ok_accent : R.color.reborn_chip_off_accent);
+        int text = context.getColor(enabled ?
+                R.color.reborn_chip_ok_text : R.color.reborn_chip_off_text);
+        chip.setText(enabled ? R.string.manager_chip_enabled : R.string.manager_chip_disabled);
+        chip.setTextColor(text);
+        chip.setBackgroundTintList(ColorStateList.valueOf(container));
+        Drawable icon = context.getDrawable(enabled ?
+                R.drawable.ic_reborn_ok : R.drawable.ic_reborn_off);
+        if (icon != null) {
+            icon = icon.mutate();
+            icon.setTint(accent);
+            int size = Math.round(16 * context.getResources().getDisplayMetrics().density);
+            icon.setBounds(0, 0, size, size);
+        }
+        chip.setCompoundDrawablesRelative(icon, null, null, null);
     }
 
     @Override

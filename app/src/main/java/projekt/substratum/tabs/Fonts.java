@@ -34,6 +34,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -286,7 +287,7 @@ public class Fonts extends Fragment {
                             Toast.LENGTH_SHORT)
                             .show();
                     final AlertDialog.Builder alertDialogBuilder =
-                            new AlertDialog.Builder(context);
+                            new MaterialAlertDialogBuilder(context);
                     alertDialogBuilder.setTitle(R.string.legacy_dialog_soft_reboot_title);
                     alertDialogBuilder.setMessage(R.string.legacy_dialog_soft_reboot_text);
                     alertDialogBuilder.setPositiveButton(android.R.string.ok,

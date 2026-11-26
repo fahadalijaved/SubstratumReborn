@@ -86,6 +86,23 @@
                     android:textStyle="bold"
                     app:text="@{overlay.labelName}" />
 
+                <!-- Enabled or Disabled as words and an icon, not only the name's color -->
+                <TextView
+                    android:id="@+id/state_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/reborn_chip_bg"
+                    android:drawablePadding="6dp"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="4dp"
+                    android:textAppearance="?attr/textAppearanceLabelLarge" />
+
                 <TextView
                     android:id="@+id/desc"
                     android:layout_width="match_parent"

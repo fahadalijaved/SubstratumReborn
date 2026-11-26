@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -238,7 +239,7 @@ public class Restore {
                                     .show();
                         }
                         AlertDialog.Builder alertDialogBuilder =
-                                new AlertDialog.Builder(context);
+                                new MaterialAlertDialogBuilder(context);
                         alertDialogBuilder
                                 .setTitle(context.getString(R.string
                                         .legacy_dialog_soft_reboot_title));

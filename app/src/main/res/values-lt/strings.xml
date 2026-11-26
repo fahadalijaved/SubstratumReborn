@@ -180,13 +180,6 @@
     <string name="accept">Priimti</string>
     <string name="deny">Atmesti</string>
     <string name="permission_explanation_title">Leidimų Apžvalga</string>
-    <string name="permission_explanation_text">\"Substratum\"  gali neveikti, kaip tikimasi be šių
-      kelių svarbių leidimų suteikimo.\n\n<b>Saugykla:</b>\"Substratum\" turi panaudoti jūsų
-      vidinę saugyklą, kad galėtu laikyti gelbėjimosi archyvus, kurie išsaugoti
-      /storage/emulated/0/substratum/.\n\n<b>"Firebase":</b>
-      \"Substratum\" naudoja \"Google Firebase\", kad atsisiųstų svarbios informacijos iš mūsų
-      centralizuotos realaus laiko duomenų bazės, kad pagerinti pagrindines paslaugas ir saugumo patobulinimus.
-      </string>
     <string name="priority_back_title">Sugrįžti į perdangas</string>
     <string name="menu_clean">Išvalyti įdiegtas perdangas</string>
     <string name="menu_disable">Išjungti įdiegtas perdangas</string>

@@ -9,7 +9,7 @@ package projekt.substratum.tabs;
 
 
 import android.app.ActivityManager;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -52,6 +52,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -188,6 +189,10 @@ public class Overlays extends Fragment {
     private LocalBroadcastManager localBroadcastManager;
     private RefreshReceiver refreshReceiver;
     private boolean firstStart = true;
+    // Overlay search: kept across list reloads; the select-all switch acts on what it shows
+    private String searchQuery = "";
+    private com.google.android.material.textfield.TextInputLayout searchLayout;
+    private boolean syncingToggle;
 
     /**
      * Scroll up the RecyclerView smoothly
@@ -276,6 +281,31 @@ public class Overlays extends Fragment {
         TextView toggleAllOverlaysText = viewBinding.toggleAllOverlaysText;
         RelativeLayout toggleZone = viewBinding.toggleZone;
         swipeRefreshLayout = viewBinding.swipeRefreshLayout;
+        searchLayout = viewBinding.overlaySearchLayout;
+        viewBinding.overlaySearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                searchQuery = s.toString();
+                applySearch();
+            }
+        });
+        viewBinding.overlaySearch.setOnEditorActionListener((v, actionId, event) -> {
+            // Close the keyboard; the list is filtered as you type
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager)
+                            v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            v.clearFocus();
+            return true;
+        });
 
         context = getContext();
         activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
@@ -356,12 +386,13 @@ public class Overlays extends Fragment {
         // Adjust the behaviour of the mix and match toggle in the sheet
         toggleAll.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
+                    if (syncingToggle) return;
                     try {
-                        overlayItemList = overlaysAdapter.getOverlayList();
-                        for (OverlaysItem currentOverlay : overlayItemList) {
+                        // While searching, only the overlays shown
+                        for (OverlaysItem currentOverlay : overlaysAdapter.getVisibleList()) {
                             currentOverlay.setSelected(isChecked);
-                            overlaysAdapter.notifyDataSetChanged();
                         }
+                        overlaysAdapter.notifyDataSetChanged();
                     } catch (Exception ignored) {
                         Log.e(SUBSTRATUM_BUILDER, "Window has lost connection with the host.");
                     }
@@ -370,12 +401,8 @@ public class Overlays extends Fragment {
         // Allow the user to toggle the select all switch by clicking on the bar above
         toggleZone.setOnClickListener(v -> {
             try {
+                // The switch's listener selects or clears what is shown
                 toggleAll.setChecked(!toggleAll.isChecked());
-                overlayItemList = overlaysAdapter.getOverlayList();
-                for (OverlaysItem currentOverlay : overlayItemList) {
-                    currentOverlay.setSelected(toggleAll.isChecked());
-                    overlaysAdapter.notifyDataSetChanged();
-                }
             } catch (Exception ignored) {
                 Log.e(SUBSTRATUM_BUILDER, "Window has lost connection with the host.");
             }
@@ -602,13 +629,47 @@ public class Overlays extends Fragment {
     }
 
     /**
+     * Filter the list by the search text, keep every selection, and show "n of total" while a
+     * search is active. The select-all switch follows what is shown.
+     */
+    void applySearch() {
+        if (overlaysAdapter == null) return;
+        overlaysAdapter.setFilter(searchQuery);
+        if (searchLayout != null) {
+            searchLayout.setSuffixText(overlaysAdapter.isFiltered() ?
+                    getString(R.string.overlays_search_count,
+                            overlaysAdapter.getItemCount(),
+                            overlaysAdapter.getOverlayList().size()) : null);
+        }
+        boolean allShownSelected = overlaysAdapter.getItemCount() > 0;
+        for (OverlaysItem item : overlaysAdapter.getVisibleList()) {
+            if (!item.isSelected()) {
+                allShownSelected = false;
+                break;
+            }
+        }
+        if (toggleAll != null && toggleAll.isChecked() != allShownSelected) {
+            syncingToggle = true;
+            toggleAll.setChecked(allShownSelected);
+            syncingToggle = false;
+        }
+    }
+
+    /**
+     * The error log of a one-tap Apply, from its summary dialog
+     */
+    void showErrorLog(CharSequence logs) {
+        if (isAdded() && context != null) invokeLogCharDialog(context, logs);
+    }
+
+    /**
      * Invoke the LogChar dialog with the logs inside
      *
      * @param context Self explanatory, bud.
      * @param logs    The series of logs that needs to be thrown to the user
      */
     private void invokeLogCharDialog(Context context, CharSequence logs) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.logcat_dialog_title)
                 .setMessage("\n" + logs)
                 .setNeutralButton(R.string
@@ -1480,6 +1541,7 @@ public class Overlays extends Fragment {
                 setViews(fragment, true);
                 fragment.overlaysAdapter = new OverlaysAdapter(adapterList, fragment.context);
                 fragment.recyclerView.setAdapter(fragment.overlaysAdapter);
+                if (!fragment.searchQuery.isEmpty()) fragment.applySearch();
                 fragment.recyclerView.getLayoutManager().scrollToPosition(
                         fragment.recyclerViewPosition);
                 fragment.overlaysAdapter.notifyDataSetChanged();

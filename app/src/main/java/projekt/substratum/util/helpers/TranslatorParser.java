@@ -7,7 +7,7 @@
 
 package projekt.substratum.util.helpers;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.os.AsyncTask;
 

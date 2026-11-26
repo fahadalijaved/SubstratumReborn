@@ -174,8 +174,6 @@
     <string name="accept">Accepter</string>
     <string name="deny">Refuser</string>
     <string name="permission_explanation_title">Aperçu des autorisations</string>
-    <string name="permission_explanation_text">Substrat peut ne pas fonctionner correctement sans que ces quelques autorisations cruciales soient accordées.\n\n<b>stockage: </b> Substratum a besoin d’utiliser votre stockage interne pour stocker vos archives de sauvetage du système, situés à /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>Substratum utilise le Firebase de Google pour télécharger des informations cruciales de notre base de données centralisée en temps réel pour perfectionner les services de base et améliorations de sécurité.
-      </string>
     <string name="priority_back_title">Retour aux surcouches</string>
     <string name="menu_clean">Nettoyer les surcouches</string>
     <string name="menu_disable">Désactiver les surcouches installées</string>

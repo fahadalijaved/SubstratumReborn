@@ -199,12 +199,6 @@
     <string name="accept">Aceptar</string>
     <string name="deny">Negar</string>
     <string name="permission_explanation_title">Explicación de permisos</string>
-    <string name="permission_explanation_text">Substratum puede no funcionar como se espera sin estos
-      pocos permisos cruciales.\n\n<b>Almacenamiento: </b> Substratum necesita utilizar su
-      almacenamiento interno para almacenar sus archivos de rescate del sistema, ubicados en
-      /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>
-      Substratum utiliza Firebase de Google para descargar información crucial de nuestra
-      base de datos en tiempo real para mejorar los servicios y las mejoras de seguridad.      </string>
     <string name="priority_back_title">Volver a las capas</string>
     <string name="menu_clean">Borrar capas instaladas</string>
     <string name="menu_disable">Desactivar capas instaladas</string>

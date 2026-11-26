@@ -29,4 +29,11 @@
 
     <color name="reborn_card">#FF121212</color>
     <color name="reborn_card_edge">#FF2A2A2A</color>
+
+    <color name="reborn_chip_ok_container">#FF0E2A17</color>
+    <color name="reborn_chip_ok_accent">#FF6DD58C</color>
+    <color name="reborn_chip_ok_text">#FFB4F1C3</color>
+    <color name="reborn_chip_off_container">#FF1E1E1E</color>
+    <color name="reborn_chip_off_accent">#FF938F99</color>
+    <color name="reborn_chip_off_text">#FFCAC4D0</color>
 </resources>

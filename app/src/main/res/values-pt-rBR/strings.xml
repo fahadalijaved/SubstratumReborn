@@ -195,13 +195,6 @@ corrigir coisas que não estão a receber temas em modo de compatibilidade, uma 
     <string name="accept">Aceitar</string>
     <string name="deny">Negar</string>
     <string name="permission_explanation_title">Visão Geral de Permissões</string>
-    <string name="permission_explanation_text">O Substratum pode não funcionar como esperado se
-        não tiver estas permissões essenciais garantidas.\n\n<b>Armazenamento: </b> O Substratum precisa de utilizar o seu
-        armazenamento interno para guardar os ficheiros de recuperação, localizados em
-        /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>
-        O Substratum utiliza o Firebase da Google para transferir em tempo real informações essenciais
-        da nossa base de dados centralizada para melhorar serviços base e obter atualizações de segurança.
-    </string>
     <string name="priority_back_title">Voltar para camadas</string>
     <string name="menu_clean">Limpar camadas</string>
     <string name="menu_disable">Desabilitar camadas instaladas</string>

@@ -207,13 +207,6 @@
     <string name="accept">Luba</string>
     <string name="deny">Keeldu</string>
     <string name="permission_explanation_title">Õiguste ülevaade</string>
-    <string name="permission_explanation_text">Substratum ei pruugi oodatult töötada ilma nende väheste
-      vajalike õiguste lubamiseta.\n\n<b>Mäluruum: </b> Substratum vajab sinu sisemälu,
-      et hoida sinu süsteemitaaste arhiive, mis asuvad kaustas
-      /storage/emulated/0/substratum/.\n\n<b>Firebase: </b>
-      Substratum kasutab Google Firebase\'i, et laadida alla vajalikku infot meie kesksest
-      reaalajas andmebaasist, et täiendada tuumteenuseid ja täiendada turvalisust.
-      </string>
     <string name="priority_back_title">Tagasi ülekatetele</string>
     <string name="menu_clean">Tühjenda installitud ülekatted</string>
     <string name="menu_disable">Keela installitud ülekatted</string>

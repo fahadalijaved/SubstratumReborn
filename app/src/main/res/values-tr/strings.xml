@@ -214,14 +214,6 @@
     <string name="accept">Kabut Et</string>
     <string name="deny">Reddet</string>
     <string name="permission_explanation_title">İzinlere Gözat</string>
-    <string name="permission_explanation_text">Substratum bu birkaç önemli izin verilmedikçe beklendiği gibi
-      çalışmayabilir.\n\n<b>Depolama:</b> Substratum
-      /storage/emulated/0/substratum/ konumunda bulunan sistem kurtarma
-      arşivlerinizi depolamak için dahili deponuzdan yararlanma ihtiyacı
-      duymaktadır.\n\n<b>Firebase: </b> Substratum, çekirdek hizmetleri ve güvenlik
-      geliştirmelerini iyileştirmek için merkezi gerçek zamanlı veri tabanımızdan önemli bilgileri indirmek
-      için Google\'ın Firebase\'ini kullanıyor.
-      </string>
     <string name="priority_back_title">Temalara geri dön</string>
     <string name="menu_clean">Yüklü temaları temizle</string>
     <string name="menu_disable">Yüklü temaları devre dışı bırak</string>

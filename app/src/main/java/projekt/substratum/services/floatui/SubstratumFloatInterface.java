@@ -8,7 +8,7 @@
 package projekt.substratum.services.floatui;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -33,6 +33,7 @@ import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -153,7 +154,7 @@ public class SubstratumFloatInterface extends Service implements FloatingViewLis
                 adapter = new ManagerAdapter(finalCheck);
 
                 // Initialize the AlertDialog Builder
-                AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.FloatUiDialog);
+                AlertDialog.Builder builder = new MaterialAlertDialogBuilder(this, R.style.FloatUiDialog);
                 builder.setPositiveButton(R.string.per_app_apply, (dialog, which) -> {
                     triggerServiceRestart = false;
                     triggerSystemuiRestart = false;
@@ -230,8 +231,7 @@ public class SubstratumFloatInterface extends Service implements FloatingViewLis
                 AlertDialog alertDialog = builder.create();
                 Window window = alertDialog.getWindow();
                 if (window != null) {
-                    window.setBackgroundDrawable(
-                            getDrawable(R.drawable.dialog_background));
+                    // The Material builder draws its own rounded surface
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         window.setType(LayoutParams.TYPE_APPLICATION_OVERLAY);
                     } else {

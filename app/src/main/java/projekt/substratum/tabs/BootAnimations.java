@@ -38,6 +38,7 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -268,7 +269,7 @@ public class BootAnimations extends Fragment {
                             null);
                 }
             } else {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                final AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                 builder.setTitle(R.string.root_required_title)
                         .setMessage(R.string.root_required_boot_animation)
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {

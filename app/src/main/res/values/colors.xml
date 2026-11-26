@@ -110,4 +110,12 @@
     <!-- Reborn cards in the XML screens: as Home's in Compose -->
     <color name="reborn_card">#FFF2F1F6</color>
     <color name="reborn_card_edge">#00000000</color>
+
+    <!-- Status chips in the XML screens: as Reborn's StatusChip in Compose -->
+    <color name="reborn_chip_ok_container">#FFD3F5DC</color>
+    <color name="reborn_chip_ok_accent">#FF1E8E3E</color>
+    <color name="reborn_chip_ok_text">#FF0B3D1D</color>
+    <color name="reborn_chip_off_container">#FFE8E7EC</color>
+    <color name="reborn_chip_off_accent">#FF79747E</color>
+    <color name="reborn_chip_off_text">#FF49454F</color>
 </resources>

@@ -8,7 +8,7 @@
 package projekt.substratum.activities.crash;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -128,7 +129,7 @@ public class SubstratumCrash extends Activity {
             }
         } else if (isSubstratumOverlayFault) {
             rescueMeButton.setVisibility(View.GONE);
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.error_dialog_samsung)
                     .setMessage(R.string.error_dialog_samsung_text)
                     .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
@@ -145,7 +146,7 @@ public class SubstratumCrash extends Activity {
             showText.setText(stacktrace);
             showText.setTextIsSelectable(true);
 
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.error_activity_log_dialog_title)
                     .setView(showText)
                     .setPositiveButton(R.string

@@ -33,6 +33,7 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -51,6 +52,7 @@ import projekt.substratum.common.commands.ElevatedCommands;
 import projekt.substratum.common.commands.FileOperations;
 import projekt.substratum.common.commands.SamsungOverlayCacher;
 import projekt.substratum.common.platform.ThemeManager;
+import projekt.substratum.common.platform.XposedBackend;
 import projekt.substratum.util.compilers.SubstratumBuilder;
 import projekt.substratum.util.helpers.Root;
 import projekt.substratum.util.views.Lunchbar;
@@ -97,6 +99,19 @@ final class OverlaysManager {
     }
 
     private static final String TAG = "OverlaysManager";
+
+    /**
+     * 'Apply selected' on the LSPosed engine: build, store, enable, restart the targets and show
+     * a summary, all from one tap.
+     */
+    static boolean isOneTapApply(Context context, String state) {
+        return COMPILE_ENABLE.equals(state) && context != null && Systems.isXposedBackend(context);
+    }
+
+    private static String labelOf(OverlaysItem item) {
+        String name = item.getName();
+        return (name == null || name.isEmpty()) ? item.getPackageName() : name;
+    }
 
     /**
      * Consolidated function to compile overlays
@@ -260,7 +275,7 @@ final class OverlaysManager {
                         Toast.LENGTH_SHORT).show();
                 assert overlays.context != null;
                 AlertDialog.Builder alertDialogBuilder =
-                        new AlertDialog.Builder(overlays.context);
+                        new MaterialAlertDialogBuilder(overlays.context);
                 alertDialogBuilder.setTitle(
                         overlays.getString(R.string.legacy_dialog_soft_reboot_title));
                 alertDialogBuilder.setMessage(
@@ -461,7 +476,8 @@ final class OverlaysManager {
                         break;
                     case COMPILE_ENABLE:
                     case COMPILE_UPDATE:
-                        if (isNewSamsungDevice() || isNewSamsungDeviceAndromeda(context)) {
+                        if (!Systems.isXposedBackend(context) &&
+                                (isNewSamsungDevice() || isNewSamsungDeviceAndromeda(context))) {
                             SamsungOverlayCacher samsungOverlayCacher =
                                     new SamsungOverlayCacher(context);
                             for (int i = 0; i <
@@ -476,8 +492,9 @@ final class OverlaysManager {
                         new FinishUpdateTask(overlays, state).execute();
                         if (overlays.currentInstance.hasFailed) {
                             overlays.failedFunction(context);
-                        } else {
-                            // Restart SystemUI if an enabled SystemUI overlay is updated
+                        } else if (!isOneTapApply(context, state)) {
+                            // Restart SystemUI if an enabled SystemUI overlay is updated (one-tap
+                            // Apply restarts every rebuilt target itself, once)
                             if (checkOMS(context)) {
                                 for (int i = 0; i <
                                         overlays.currentInstance.checkedOverlays.size(); i++) {
@@ -539,7 +556,7 @@ final class OverlaysManager {
                         (overlays.currentInstance.finalRunner.size() ==
                                 overlays.currentInstance.failCount)) {
                     AlertDialog.Builder alertDialogBuilder =
-                            new AlertDialog.Builder(context);
+                            new MaterialAlertDialogBuilder(context);
                     alertDialogBuilder
                             .setTitle(context.getString(R.string.legacy_dialog_soft_reboot_title));
                     alertDialogBuilder
@@ -966,7 +983,11 @@ final class OverlaysManager {
                                     } else {
                                         overlays.currentInstance.missingType3 = true;
                                     }
+                                    overlays.currentInstance.failedLabels.add(
+                                            labelOf(checked));
                                 } else {
+                                    overlays.currentInstance.builtOverlays.add(
+                                            checked.getFullOverlayParameters());
                                     if (overlays.compileInstance.specialSnowflake ||
                                             !overlays.compileInstance.noInstall.isEmpty()) {
                                         overlays.currentInstance.lateInstall.add(
@@ -1023,7 +1044,10 @@ final class OverlaysManager {
                                             Packages.getAppVersion(context, currentOverlay));
                                     overlays.currentInstance.failedPackages.append(")\n");
                                     overlays.currentInstance.hasFailed = true;
+                                    overlays.currentInstance.failedLabels.add(labelOf(checked));
                                 } else {
+                                    overlays.currentInstance.builtOverlays.add(
+                                            checked.getFullOverlayParameters());
                                     if (overlays.compileInstance.specialSnowflake ||
                                             !overlays.compileInstance.noInstall.isEmpty()) {
                                         overlays.currentInstance.lateInstall
@@ -1044,6 +1068,12 @@ final class OverlaysManager {
                         } catch (Exception e) {
                             e.printStackTrace();
                             Log.e(SUBSTRATUM_BUILDER, "Main function has unexpectedly stopped!");
+                            String label = labelOf(checked);
+                            if (!overlays.currentInstance.failedLabels.contains(label)) {
+                                overlays.currentInstance.failedLabels.add(label);
+                            }
+                            overlays.currentInstance.builtOverlays.remove(
+                                    checked.getFullOverlayParameters());
                         }
                     } else if (!state.equals(COMPILE_UPDATE)) {
                         String packageName = checked.getFullOverlayParameters();
@@ -1239,12 +1269,18 @@ final class OverlaysManager {
         final WeakReference<Overlays> ref;
         final WeakReference<Context> refContext;
         private final String state;
+        private final boolean oneTap;
+        // Taken now: the failure path hands the log to the LogChar bar and clears it
+        private final CharSequence errorLog;
+        private ApplySummary summary;
 
         FinishUpdateTask(Overlays overlays, String state) {
             super();
             ref = new WeakReference<>(overlays);
             refContext = new WeakReference<>(overlays.context);
             this.state = state;
+            oneTap = isOneTapApply(overlays.context, state);
+            errorLog = new StringBuilder(overlays.currentInstance.errorLogs);
         }
 
         @Override
@@ -1253,6 +1289,8 @@ final class OverlaysManager {
             Context context = refContext.get();
             if ((context != null) && (overlays != null)) {
                 if (overlays.compileDialog != null) overlays.compileDialog.dismiss();
+                // Enabling and restarting the targets takes a moment
+                if (oneTap) overlays.progressBar.setVisibility(View.VISIBLE);
 
                 // Add dummy intent to be able to close the notification on click
                 Intent notificationIntent = new Intent(context, InformationActivity.class);
@@ -1283,7 +1321,10 @@ final class OverlaysManager {
                     overlays.notifyManager.notify(
                             References.NOTIFICATION_ID_COMPILER, overlays.builder.build());
 
-                    if (overlays.currentInstance.missingType3) {
+                    if (oneTap) {
+                        // The summary dialog says it all; until then, the tab's progress bar
+                        Substratum.log(SUBSTRATUM_BUILDER, "One-tap Apply: enabling...");
+                    } else if (overlays.currentInstance.missingType3) {
                         currentShownLunchBar = Lunchbar.make(
                                 overlays.getActivityView(),
                                 overlays.context.getString(R.string.toast_compiled_missing),
@@ -1315,12 +1356,27 @@ final class OverlaysManager {
             Overlays overlays = ref.get();
             Context context = refContext.get();
             if ((context != null) && (overlays != null)) {
+                if (oneTap) overlays.progressBar.setVisibility(View.GONE);
+                if (oneTap && summary != null && overlays.isAdded()) {
+                    // Rows show their new state; what was applied is unticked
+                    overlays.getCurrentOverlays();
+                    for (OverlaysItem item : overlays.overlaysAdapter.getOverlayList()) {
+                        item.updateEnabledOverlays(overlays.currentInstanceOverlays);
+                    }
+                    for (OverlaysItem item : overlays.currentInstance.checkedOverlays) {
+                        item.setSelected(false);
+                    }
+                    overlays.overlaysAdapter.refreshOverlayStateList(overlays.context);
+                    overlays.applySearch();
+                    summary.show(overlays.getActivity(), summary.errorLog.length() == 0 ? null :
+                            () -> overlays.showErrorLog(summary.errorLog));
+                }
                 if (Systems.IS_OREO &&
                         isSystemSecurityPatchNewer(SECURITY_UPDATE_WARN_AFTER) &&
                         !checkSubstratumService(context)) {
                     if (!overlays.prefs.getBoolean("new_stock_dismissal", false)) {
                         AlertDialog.Builder alertDialogBuilder =
-                                new AlertDialog.Builder(overlays.context);
+                                new MaterialAlertDialogBuilder(overlays.context);
                         alertDialogBuilder.setTitle(
                                 overlays.getString(R.string.new_stock_commits_title));
                         // Start of message
@@ -1362,6 +1418,7 @@ final class OverlaysManager {
                 if (!overlays.currentInstance.hasFailed ||
                         (overlays.currentInstance.finalRunner.size() >
                                 overlays.currentInstance.failCount)) {
+                    List<String> disabledFirst = new ArrayList<>();
                     if (state.equals(COMPILE_ENABLE) && overlays.mixAndMatchMode) {
                         // Buffer the disableBeforeEnabling String
                         ArrayList<String> disableBeforeEnabling = new ArrayList<>();
@@ -1381,10 +1438,23 @@ final class OverlaysManager {
                                 }
                             }
                         }
-                        ThemeManager.disableOverlay(context, disableBeforeEnabling);
+                        if (oneTap) {
+                            // Their targets restart along with the new ones, once
+                            for (String overlay : disableBeforeEnabling) {
+                                if (XposedBackend.isEnabled(overlay)) disabledFirst.add(overlay);
+                            }
+                            XposedBackend.disable(disabledFirst);
+                        } else {
+                            ThemeManager.disableOverlay(context, disableBeforeEnabling);
+                        }
                     }
 
-                    if (state.equals(COMPILE_ENABLE)) {
+                    if (oneTap) {
+                        // Only what compiled; restarts each target once
+                        summary = ApplySummary.apply(context,
+                                overlays.currentInstance.builtOverlays, disabledFirst,
+                                overlays.currentInstance.failedLabels, errorLog);
+                    } else if (state.equals(COMPILE_ENABLE)) {
                         ThemeManager.enableOverlay(context, overlays.currentInstance.finalCommand);
                     }
 
@@ -1430,6 +1500,10 @@ final class OverlaysManager {
                             }
                         }, (long) REFRESH_WINDOW_DELAY);
                     }
+                }
+                if (oneTap && summary == null) {
+                    summary = ApplySummary.failedOnly(
+                            overlays.currentInstance.failedLabels, errorLog);
                 }
 
                 if (!overlays.currentInstance.lateInstall.isEmpty() &&

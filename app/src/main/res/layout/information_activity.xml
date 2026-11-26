@@ -140,11 +140,15 @@
                             android:layout_height="1dp"
                             android:background="@color/fab_menu_divider" />
 
+                        <!-- The main action: build, enable and restart in one tap -->
                         <TextView
                             android:id="@+id/compile_enable_selected"
                             style="@style/TextAppearance.MaterialSheetFab.Sheet.Item"
                             android:drawableStart="@drawable/fab_menu_compile_enable"
-                            android:text="@string/fab_menu_compile_enable" />
+                            android:drawableTint="?attr/colorPrimary"
+                            android:text="@string/fab_menu_apply_selected"
+                            android:textColor="?attr/colorPrimary"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/compile_update_selected"

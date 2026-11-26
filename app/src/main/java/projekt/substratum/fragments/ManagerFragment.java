@@ -44,6 +44,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 
@@ -333,7 +334,7 @@ public class ManagerFragment extends Fragment {
                 && !Systems.checkOMS(context)
                 && !prefs.getBoolean("seen_legacy_warning", false))
             if (getActivity() != null) {
-                new AlertDialog.Builder(getActivity(), R.style.Theme_AppCompat_Dialog_Alert)
+                new MaterialAlertDialogBuilder(getActivity())
                         .setNeutralButton(R.string.dialog_ok, (dialogInterface, i) -> {
                             prefs.edit().putBoolean("seen_legacy_warning", true).apply();
                             dialogInterface.dismiss();
@@ -1101,8 +1102,7 @@ public class ManagerFragment extends Fragment {
 
                     if (fragment.getActivity() != null) {
                         AlertDialog.Builder alertDialogBuilder =
-                                new AlertDialog.Builder(fragment.getActivity(),
-                                        R.style.Theme_AppCompat_Dialog_Alert);
+                                new MaterialAlertDialogBuilder(fragment.getActivity());
                         alertDialogBuilder
                                 .setTitle(fragment.getString(R.string
                                         .legacy_dialog_soft_reboot_title));

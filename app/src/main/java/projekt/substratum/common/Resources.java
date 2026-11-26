@@ -190,6 +190,8 @@ public class Resources {
 
     // This method checks whether custom boot animation is supported by the system
     public static boolean isBootAnimationSupported(final Context context) {
+        // The LSPosed engine has no boot animation path
+        if (Systems.isXposedBackend(context)) return false;
         return !isAndromedaDevice(context) && !isSamsungDevice(context);
     }
 

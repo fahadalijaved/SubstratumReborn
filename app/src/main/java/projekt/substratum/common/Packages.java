@@ -706,6 +706,7 @@ public class Packages {
                                                                   String searchFilter) {
         try {
             HashMap returnMap = new HashMap<>();
+            java.util.Set<String> namesakes = new java.util.HashSet<>();
             List<ResolveInfo> listOfThemes = getThemes(context);
             for (ResolveInfo ri : listOfThemes) {
                 String packageName = ri.activityInfo.packageName;
@@ -735,7 +736,19 @@ public class Packages {
                             appInfo.metaData.getString(metadataAuthor),
                             packageName
                     };
-                    returnMap.put(appInfo.metaData.getString(metadataName), data);
+                    String name = appInfo.metaData.getString(metadataName);
+                    // Two themes may share a name (a port next to its original): keep both,
+                    // told apart by version and package
+                    if (namesakes.contains(name) || returnMap.containsKey(name)) {
+                        String[] first = (String[]) returnMap.remove(name);
+                        if (first != null) {
+                            returnMap.put(namesakeLabel(context, name, first[1]), first);
+                        }
+                        namesakes.add(name);
+                        returnMap.put(namesakeLabel(context, name, packageName), data);
+                    } else {
+                        returnMap.put(name, data);
+                    }
                     Substratum.log(PACKAGE_TAG, "Loaded Substratum Theme: [" + packageName + ']');
                     if (ENABLE_PACKAGE_LOGGING)
                         PackageAnalytics.logPackageInfo(context, packageName);
@@ -748,6 +761,15 @@ public class Packages {
         } catch (Exception ignored) {
         }
         return null;
+    }
+
+    /**
+     * "Name (versionName · package)", for themes that share a name.
+     */
+    private static String namesakeLabel(Context context, String name, String packageName) {
+        String version = getAppVersion(context, packageName);
+        return name + " (" + ((version == null || version.isEmpty()) ? "" : version + " \u00b7 ") +
+                packageName + ')';
     }
 
     /**
