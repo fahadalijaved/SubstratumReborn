@@ -113,9 +113,12 @@ sealed interface ShowcaseMode {
         val onExplore: () -> Unit,
     ) : ShowcaseMode
 
-    /** A theme's page: its looks, the saved one checked; Quick Settings drawn with [qs] when given. */
+    /**
+     * A theme's page: its looks, the saved one checked; Quick Settings drawn with [qs] when given.
+     * [name] labels the after side while the looks are still being read.
+     */
     @Immutable
-    class Looks(val looks: ThemeLooks?, val qs: StudioState.QsSaved? = null) : ShowcaseMode
+    class Looks(val looks: ThemeLooks?, val qs: StudioState.QsSaved? = null, val name: String? = null) : ShowcaseMode
 }
 
 /** A chip under the pager: a theme or a look; [checked] marks the one in use or saved. */
@@ -171,7 +174,7 @@ fun ThemeShowcase(mode: ShowcaseMode, modifier: Modifier = Modifier, active: Boo
             selected = shown?.key
             onChip = { key -> trying = if (key == looks?.current) null else key }
             roles = shown?.roles ?: MockRoles.Empty
-            afterLabel = looks?.name ?: builtInName
+            afterLabel = looks?.name ?: mode.name ?: builtInName
             onOpen = null
             coverage = looks?.takeIf { it.drawnFromTheme }
         }

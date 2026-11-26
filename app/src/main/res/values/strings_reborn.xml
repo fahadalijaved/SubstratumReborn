@@ -278,6 +278,9 @@
     <string name="reborn_themes_search">Search themes</string>
     <string name="reborn_themes_no_match">No themes match</string>
     <string name="reborn_themes_no_match_text">Nothing installed matches “%1$s”.</string>
+    <string name="reborn_themes_header_line">%1$d installed · %2$d applied</string>
+    <string name="reborn_themes_filter_reborn">Reborn</string>
+    <string name="reborn_theme_applied_badge">Applied</string>
     <string name="reborn_themes_filter_all">All</string>
     <string name="reborn_themes_filter_engine">Reborn engine</string>
     <string name="reborn_themes_filter_classic">Classic</string>

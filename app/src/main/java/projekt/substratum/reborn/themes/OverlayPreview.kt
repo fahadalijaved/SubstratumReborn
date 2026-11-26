@@ -16,10 +16,11 @@ import org.xml.sax.InputSource
  * assets/overlays/<package>/ folders. Pure (javax.xml.parsers works on the JVM and on Android),
  * so OverlayPreviewTest runs it on fixture overlays.
  *
- * Where a colour is looked up, first found wins:
- * 1. `type3-common`, then the default type 3 folder, then `res`. The default type 3 folder is
- *    the one a build with the Overlays tab's first choice uses: none when the overlay has `res`
- *    (the default variant is built from it), else its first `type3_*` folder by name.
+ * Where a colour is looked up, first found wins. The folders are the ones a build with the
+ * Overlays tab's first choice (the default type 3 variant) compiles (tabs/OverlaysManager):
+ * 1. `res` alone when the overlay has it: the default variant is built from `res` only, without
+ *    `type3-common`. Without `res`, its first `type3_*` folder by name, then `type3-common` (a
+ *    variant's files are copied over the common ones).
  * 2. Inside each folder, `values-night*` before `values` (the preview is dark mode).
  * 3. Every XML file of a values folder counts, so the default type 1a file (`values/type1a.xml`)
  *    is merged with the rest.
@@ -48,13 +49,9 @@ object OverlayPreview {
      */
     fun layers(entries: Collection<String>): List<String> {
         val folders = entries.toSet()
-        val defaultType3 = if (RES in folders) null
-        else folders.filter { it.startsWith(TYPE3_PREFIX) && !it.contains('.') }.minOrNull()
-        return listOfNotNull(
-            TYPE3_COMMON.takeIf { it in folders },
-            defaultType3,
-            RES.takeIf { it in folders },
-        )
+        if (RES in folders) return listOf(RES)
+        val defaultType3 = folders.filter { it.startsWith(TYPE3_PREFIX) && !it.contains('.') }.minOrNull()
+        return listOfNotNull(defaultType3, TYPE3_COMMON.takeIf { it in folders })
     }
 
     /** The values folders of a layer worth reading, in order: night first. */

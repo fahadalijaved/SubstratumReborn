@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +33,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -110,6 +108,7 @@ import projekt.substratum.reborn.showcase.ShowcaseMode
 import projekt.substratum.reborn.showcase.ThemeShowcase
 import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.themes.ThemeItem
+import projekt.substratum.reborn.themes.MiniPreviewShape
 import projekt.substratum.reborn.themes.ThemeLooks
 import projekt.substratum.reborn.themes.ThemePreviews
 import projekt.substratum.reborn.themes.ThemeTile
@@ -403,7 +402,7 @@ private fun Header(text: String, onSeeAll: () -> Unit, modifier: Modifier = Modi
 /**
  * One line about the engine, opening the Engine screen: a status dot and "Engine ready · One UI 9 ·
  * LSPosed", or the status headline when something is wrong; "Finish setup" (opening the
- * checklist) while required setup steps are open.
+ * checklist over Engine, so back lands on Engine) while required setup steps are open.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -533,23 +532,24 @@ private fun MoreTile(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier,
     ) {
         Column(Modifier.padding(6.dp)) {
+            // As tall as a theme tile's preview, so the row lines up
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .aspectRatio(5f / 4f)
-                    .clip(RoundedCornerShape(20.dp))
+                    .height(92.dp)
+                    .clip(MiniPreviewShape)
                     .background(scheme.surfaceContainerHigh),
                 contentAlignment = Alignment.Center,
             ) {
                 ShapedIcon(
-                    icon = R.drawable.ic_reborn_create,
+                    icon = R.drawable.ic_reborn_add,
                     container = scheme.primaryContainer,
                     content = scheme.onPrimaryContainer,
-                    size = 56.dp,
+                    size = 52.dp,
                     shape = MaterialShapes.Cookie9Sided.toShape(),
                 )
             }
-            Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 6.dp)) {
+            Column(Modifier.padding(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 2.dp)) {
                 Text(
                     stringResource(R.string.reborn_home_more_themes),
                     style = MaterialTheme.typography.titleSmallEmphasized,

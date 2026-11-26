@@ -180,9 +180,19 @@ private fun steps(context: android.content.Context, s: RebornStatus.Snapshot): L
     return list
 }
 
-/** How many required setup steps are not done yet (Home's engine strip says "Finish setup" meanwhile). */
-internal fun openSetupSteps(context: android.content.Context, s: RebornStatus.Snapshot): Int =
-    steps(context, s).count { it.required && it.state != ChipState.OK }
+/**
+ * How many required setup steps are not done yet (Home's engine strip says "Finish setup"
+ * meanwhile). A module paused on purpose, or System UI still on the previous build (Home's "Update
+ * ready"), is not setup left to do: the strip says what Home's status says instead.
+ */
+internal fun openSetupSteps(context: android.content.Context, s: RebornStatus.Snapshot): Int {
+    val hb = s.heartbeat
+    val hooksAside = s.hooksPaused ||
+        (hb.present && hb.sinceBoot && !hb.current && !hb.guardTripped() && !hb.guardOff())
+    return steps(context, s).count {
+        it.required && it.state != ChipState.OK && !(hooksAside && it.title == R.string.reborn_step_hooks)
+    }
+}
 
 /**
  * The first-run checklist, also reachable from Home: root, the LSPosed module, its scope and the

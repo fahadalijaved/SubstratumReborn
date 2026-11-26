@@ -352,7 +352,7 @@ private fun ThemePage(
                 item(key = "preview_header") { SectionLabel(stringResource(R.string.reborn_theme_preview), Modifier.padding(horizontal = 20.dp)) }
                 item(key = "preview") {
                     ThemeShowcase(
-                        mode = ShowcaseMode.Looks(looks, qs = if (engine) qs else null),
+                        mode = ShowcaseMode.Looks(looks, qs = if (engine) qs else null, name = theme.name),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         active = replaceAsk == null && !confirmRemove,
                     )

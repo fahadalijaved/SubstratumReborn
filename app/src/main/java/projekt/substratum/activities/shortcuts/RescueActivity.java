@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +24,10 @@ import projekt.substratum.R;
 import projekt.substratum.Substratum;
 import projekt.substratum.common.Systems;
 import projekt.substratum.common.commands.SamsungOverlayCacher;
+import projekt.substratum.common.platform.QsOptions;
 import projekt.substratum.common.platform.ThemeManager;
+import projekt.substratum.common.platform.XposedBackend;
+import projekt.substratum.util.helpers.Root;
 
 import static projekt.substratum.common.References.SUBSTRATUM_PACKAGE;
 import static projekt.substratum.common.Resources.FRAMEWORK;
@@ -33,6 +37,7 @@ public class RescueActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pauseModule();
         if (Systems.isSamsungDevice(Substratum.getInstance())) {
             if (Systems.isNewSamsungDeviceAndromeda(Substratum.getInstance()) ||
                     Systems.isNewSamsungDevice()) {
@@ -64,5 +69,21 @@ public class RescueActivity extends AppCompatActivity {
             }, 500L);
         }
         finish();
+    }
+
+    /**
+     * Reborn's part of the rescue, off the main thread: the module's kill switch on, then System
+     * UI restarted so it comes back without the hooks (the Engine screen's Resume undoes it).
+     */
+    private static void pauseModule() {
+        new Thread(() -> {
+            try {
+                if (!Root.checkRootAccess()) return;
+                XposedBackend.setHooksPaused(true);
+                QsOptions.restartSystemUi();
+            } catch (Throwable t) {
+                Log.w("RebornRescue", "the module was not paused", t);
+            }
+        }, "reborn-rescue").start();
     }
 }

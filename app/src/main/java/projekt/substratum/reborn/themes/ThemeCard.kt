@@ -6,6 +6,7 @@ package projekt.substratum.reborn.themes
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
@@ -66,6 +65,8 @@ import projekt.substratum.Substratum
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.components.AppIcon
+import projekt.substratum.reborn.components.PaletteDots
+import projekt.substratum.reborn.components.PaletteRolesShort
 import projekt.substratum.reborn.components.PaletteStrip
 import projekt.substratum.reborn.components.TagChip
 import projekt.substratum.reborn.components.mock.MockRoles
@@ -85,14 +86,13 @@ fun kindPolygon(theme: ThemeItem): RoundedPolygon = when (theme.kind) {
     ThemeKind.HYBRID -> MaterialShapes.Clover8Leaf
 }
 
-/** The compact tile's preview: 20 dp corners inside the tile's 24 dp (pressShape) */
-private val PreviewShape = RoundedCornerShape(20.dp)
-
 /**
- * A compact theme tile for the Themes grid (two columns on a phone, about 190 dp tall): the
- * theme's art (rounded 20 dp) with its avatar, a small "In use" badge, then the name and one quiet
- * line (what it is, and who made it). The art, name and avatar are shared with the theme's page,
- * so a tap morphs into it. Corners spring tighter and the tile scales down while pressed.
+ * A compact theme tile for the Themes grid (two columns on a phone, about 150 dp tall): a 92 dp
+ * preview (a mini Quick Settings in the theme's colours, its kind's shape and avatar, a small
+ * "Applied" badge when it is in use), then the name with its palette dots and one quiet line (what
+ * it is, and who made it). In use, the tile has a 2 dp primary ring. The preview, name and avatar
+ * are shared with the theme's page, so a tap morphs into it. Corners spring tighter and the tile
+ * scales down while pressed.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -109,6 +109,10 @@ fun ThemeTile(
     val scale = pressScale(interaction, pressed = 0.96f)
     val inUse = stringResource(R.string.reborn_theme_in_use)
     val looks by rememberThemeLooks(theme)
+    // A classic theme that names too few of the preview's colours: its icon's colours instead
+    val tint by rememberThemeTint(theme, needed = !theme.kind.engine && looks?.previewable != true)
+    val mini = remember(looks, tint) { miniColors(looks, tint) }
+    val card = scheme.surfaceContainerLow
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -131,61 +135,47 @@ fun ThemeTile(
             )
             .semantics { if (theme.inUse) stateDescription = inUse },
         shape = shape,
-        color = scheme.surfaceContainerLow,
+        color = card,
+        border = if (theme.inUse) BorderStroke(2.dp, scheme.primary) else null,
     ) {
         Column(Modifier.padding(6.dp)) {
-            Box(
-                Modifier
-                    .themeShared(SharedKeys.art(theme.id))
-                    .fillMaxWidth()
-                    .aspectRatio(5f / 4f)
-                    .clip(PreviewShape),
+            ThemeMiniPreview(theme, mini)
+            Row(
+                Modifier.padding(start = 6.dp, end = 4.dp, top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                ThemeHero(theme, Modifier.fillMaxSize(), compact = true)
-                KindAvatar(
-                    theme,
-                    Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(8.dp)
-                        .themeShared(SharedKeys.avatar(theme.id)),
-                    size = 32.dp,
-                )
-                if (theme.inUse) {
-                    InUseBadge(
-                        Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp),
-                    )
-                }
-                // The saved look's palette, once the theme has enough colours of its own
-                val shown = looks?.takeIf { it.previewable }?.shown
-                if (shown != null) {
-                    PalettePill(
-                        shown.roles,
-                        Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp)
-                            .themeShared(SharedKeys.palette(theme.id)),
-                        ring = scheme.surfaceContainerLow,
-                    )
-                }
-            }
-            Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 6.dp)) {
                 Text(
                     theme.name,
                     style = MaterialTheme.typography.titleSmallEmphasized,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.themeShared(SharedKeys.name(theme.id)),
+                    modifier = Modifier
+                        .weight(1f)
+                        .themeShared(SharedKeys.name(theme.id)),
                 )
-                Text(
-                    tileLine(theme),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = scheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Spacer(Modifier.width(6.dp))
+                // The look's palette once the theme has enough colours of its own, else the tile's
+                val shown = looks?.takeIf { it.previewable }?.shown
+                if (shown != null) {
+                    PaletteStrip(
+                        shown.roles,
+                        Modifier.themeShared(SharedKeys.palette(theme.id)),
+                        ring = card,
+                        dot = 10.dp,
+                        shown = PaletteRolesShort,
+                    )
+                } else {
+                    PaletteDots(listOf(mini.page, mini.tileOff, mini.tileOn), ring = card, dot = 10.dp)
+                }
             }
+            Text(
+                tileLine(theme),
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 6.dp, end = 6.dp, bottom = 2.dp),
+            )
         }
     }
 }
@@ -203,22 +193,6 @@ fun PalettePill(
             .padding(horizontal = 3.dp, vertical = 2.dp),
     ) {
         PaletteStrip(roles, ring = ring)
-    }
-}
-
-/** A small check pill on a tile's art: the theme is on now. */
-@Composable
-private fun InUseBadge(modifier: Modifier = Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier
-            .background(scheme.primary, CircleShape)
-            .padding(start = 6.dp, end = 8.dp, top = 3.dp, bottom = 3.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(painterResource(R.drawable.ic_reborn_check), contentDescription = null, tint = scheme.onPrimary, modifier = Modifier.size(14.dp))
-        Spacer(Modifier.width(3.dp))
-        Text(stringResource(R.string.reborn_theme_in_use), style = MaterialTheme.typography.labelSmall, color = scheme.onPrimary, maxLines = 1)
     }
 }
 

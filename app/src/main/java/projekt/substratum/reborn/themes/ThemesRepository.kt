@@ -222,6 +222,34 @@ fun loadHero(context: Context, theme: ThemeItem, width: Int): Hero {
     return Hero(image, light, deep).also { heroCache.put(key, it) }
 }
 
+/** Two colours of a theme's icon (ARGB): what a tile is painted in when the theme names too few of its own. */
+@Immutable
+class ThemeTint(val light: Int, val deep: Int)
+
+/** Icon colours by package and update */
+private val tintCache = LruCache<String, ThemeTint>(96)
+
+private fun tintKey(theme: ThemeItem) = "${theme.pkg}@${theme.updated}"
+
+fun cachedTint(theme: ThemeItem): ThemeTint? = tintCache.get(tintKey(theme))
+
+/** Blocking (PackageManager, a 96 px icon): [theme]'s icon colours, the default ones when unreadable. */
+fun loadTint(context: Context, theme: ThemeItem): ThemeTint {
+    val key = tintKey(theme)
+    tintCache.get(key)?.let { return it }
+    var light = 0xFF3A3F58.toInt()
+    var deep = 0xFF0B0C12.toInt()
+    try {
+        val icon = context.packageManager.getApplicationIcon(theme.pkg).toBitmap(96, 96)
+        val palette = Palette.from(icon).generate()
+        light = palette.getVibrantColor(palette.getLightVibrantColor(palette.getDominantColor(light)))
+        deep = palette.getDarkMutedColor(palette.getDarkVibrantColor(deep))
+    } catch (e: Exception) {
+        // the default colours
+    }
+    return ThemeTint(light, deep).also { tintCache.put(key, it) }
+}
+
 // Installing
 
 sealed interface InstallResult {

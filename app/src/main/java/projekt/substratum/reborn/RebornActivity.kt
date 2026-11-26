@@ -435,7 +435,8 @@ private fun RouteContent(
     when (route) {
         Route.Home -> HomeScreen(
             onOpenEngine = { navigator.push(Route.Engine) },
-            onOpenSetup = { navigator.push(Route.Setup) },
+            // Through Engine (as the setup link does), so back from the checklist lands on Engine
+            onOpenSetup = { navigator.open(RebornTab.Home, listOf(Route.Engine, Route.Setup)) },
             onOpenStudio = onOpenStudioInUse,
             onOpenTheme = { navigator.push(Route.Theme(it)) },
             onOpenThemes = { navigator.select(RebornTab.Themes) },

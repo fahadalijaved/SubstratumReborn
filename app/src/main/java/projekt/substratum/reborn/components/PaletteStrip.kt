@@ -38,11 +38,14 @@ val PaletteRoles = listOf(
     AmoledPreview.POPUP_OUTLINE,
 )
 
+/** The palette's first three: page, cards and accent (a compact tile's dots). */
+val PaletteRolesShort = PaletteRoles.take(3)
+
 /**
  * A theme look's palette: five overlapping circles (page, cards, accent, text, outline) with a
  * ring in the [ring] colour (the card it sits on). Colours spring on change. Its content
  * description names them ("Palette: black page, dark grey cards, teal accent"), so colour is
- * never the only signal.
+ * never the only signal. [shown]: the roles drawn ([PaletteRoles], or [PaletteRolesShort]).
  */
 @Composable
 fun PaletteStrip(
@@ -50,11 +53,12 @@ fun PaletteStrip(
     modifier: Modifier = Modifier,
     ring: Color = LocalRebornColors.current.card,
     dot: Dp = 14.dp,
+    shown: List<String> = PaletteRoles,
 ) {
     val context = LocalContext.current
-    val argb = PaletteRoles.map(roles::after)
+    val argb = shown.map(roles::after)
     val description = remember(argb) { paletteDescription(context, argb) }
-    val colors = PaletteRoles.mapIndexed { i, role -> mockColor(Color(argb[i]), "palette_$role") }
+    val colors = shown.mapIndexed { i, role -> mockColor(Color(argb[i]), "palette_$role") }
     PaletteDots(colors, modifier, ring = ring, dot = dot, description = description)
 }
 

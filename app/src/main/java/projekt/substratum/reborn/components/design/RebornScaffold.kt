@@ -52,8 +52,16 @@ fun ActionIcon(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    /** On a tonal container (a tab's main action in its bar, like Themes' search) */
+    tonal: Boolean = false,
 ) {
-    IconButton(onClick = onClick, shapes = IconButtonDefaults.shapes(), modifier = modifier, enabled = enabled) {
+    IconButton(
+        onClick = onClick,
+        shapes = IconButtonDefaults.shapes(),
+        modifier = modifier,
+        enabled = enabled,
+        colors = if (tonal) IconButtonDefaults.filledTonalIconButtonColors() else IconButtonDefaults.iconButtonColors(),
+    ) {
         Icon(painterResource(icon), contentDescription)
     }
 }

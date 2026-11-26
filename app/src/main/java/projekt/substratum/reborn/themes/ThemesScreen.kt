@@ -5,6 +5,7 @@
 package projekt.substratum.reborn.themes
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,11 +14,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -30,20 +31,20 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.material3.toShape
@@ -65,8 +66,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
@@ -102,26 +104,28 @@ import projekt.substratum.reborn.nav.ThemeId
 /** Which themes the catalogue shows. */
 private enum class ThemeFilter(val label: Int) {
     All(R.string.reborn_themes_filter_all),
-    Engine(R.string.reborn_themes_filter_engine),
+    Reborn(R.string.reborn_themes_filter_reborn),
     Classic(R.string.reborn_themes_filter_classic),
-    InUse(R.string.reborn_themes_filter_in_use);
+    BuiltIn(R.string.reborn_themes_builtin);
 
     fun matches(theme: ThemeItem): Boolean = when (this) {
         All -> true
-        Engine -> theme.kind.engine
+        Reborn -> theme.kind == ThemeKind.ENGINE || theme.kind == ThemeKind.HYBRID
         Classic -> theme.kind.classic
-        InUse -> theme.inUse
+        BuiltIn -> theme.builtIn
     }
 }
 
-/** More than this many themes: the filter chips show. */
-private const val FILTERS_FROM = 3
+/** More than this many themes: the filter row shows. */
+private const val FILTERS_FROM = 1
 
 /**
- * The Themes tab, the heart of Reborn: the built-in themes first, then every installed theme
- * (Reborn engine and classic) as compact tiles in a grid, two columns on a phone, and ways to get
- * more. A tap opens the theme's page ([onOpenTheme]); a long press, an installed theme's sheet.
- * Search opens over the list. "Add a theme" sits beside the floating bar.
+ * The Themes tab, the heart of Reborn: one grid of compact tiles, two columns on a phone, the
+ * built-in themes first, then every installed theme (Reborn engine and classic), and ways to get
+ * more. The header is the title with "N installed · M applied", a tonal search button (the search
+ * opens over the list) and a connected filter row (All, Reborn, Classic, Built in). A tap opens the
+ * theme's page ([onOpenTheme]); a long press, an installed theme's sheet. "Add a theme" sits beside
+ * the floating bar.
  *
  * @param onOpenCreate Selects the Create tab ("Build your own")
  * @param reselect The tab's reselect count: scrolls to the top and expands the bar
@@ -157,7 +161,7 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                 FabMenuItem(stringResource(R.string.reborn_install_file), R.drawable.ic_reborn_file, installer::pickFile),
                 FabMenuItem(stringResource(R.string.reborn_themes_build_own), R.drawable.ic_reborn_create, onOpenCreate),
             ),
-            icon = R.drawable.ic_reborn_create,
+            icon = R.drawable.ic_reborn_add,
             contentDescription = stringResource(R.string.reborn_add_theme),
             visible = (fabBesideBar || fabVisible) && installer.installing == null,
         )
@@ -173,7 +177,7 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
     val animate = remember { !entered }
     LaunchedEffect(Unit) { entered = true }
 
-    // Search: one state and one query for the bar in the list and the full-screen results
+    // Search: the header's button opens it over the list, results as the user types
     val searchState = rememberSearchBarState()
     val query = rememberTextFieldState()
     val searchField: @Composable () -> Unit = {
@@ -203,14 +207,19 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
 
     RebornFlexibleScaffold(
         title = stringResource(R.string.reborn_tab_themes),
-        subtitle = snapshot?.let { pluralStringResource(R.plurals.reborn_themes_count, it.themes.size, it.themes.size) },
+        subtitle = snapshot?.let { data ->
+            stringResource(R.string.reborn_themes_header_line, data.themes.size, data.themes.count { it.inUse })
+        },
+        // A compact header, so the grid starts high
+        large = false,
         scrollBehavior = scrollBehavior,
         // The bar's nested scroll is the pull to refresh's (below), so a pull expands the bar first
         connectScroll = false,
         actions = {
             ActionIcon(R.drawable.ic_reborn_search, stringResource(R.string.reborn_themes_search), {
                 scope.launch { searchState.animateToExpanded() }
-            })
+            }, tonal = true)
+            Spacer(Modifier.width(4.dp))
             RebornOverflow {
                 listOf(
                     MenuGroup(
@@ -241,15 +250,17 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
         val data = snapshot
         val showFilters = (data?.themes?.size ?: 0) > FILTERS_FROM
         val shown = if (showFilters) filter else ThemeFilter.All
-        val builtIns = remember(data, shown) { data?.builtIns.orEmpty().filter(shown::matches) }
-        val installed = remember(data, shown) { data?.installed.orEmpty().filter(shown::matches) }
+        // One grid: the built-ins first, then the installed themes, no section gaps between them
+        val tiles = remember(data, shown) {
+            (data?.builtIns.orEmpty() + data?.installed.orEmpty()).filter(shown::matches)
+        }
         RebornPullToRefresh(
             refreshing = themes.refreshing,
             onRefresh = themes.refresh,
             modifier = Modifier.padding(top = padding.calculateTopPadding()),
             scrollConnection = scrollBehavior.nestedScrollConnection,
         ) {
-            // Compact tiles, two columns on a phone; search, filters and section headers span the row
+            // Compact tiles, two columns on a phone; the filters and "Get more" span the row
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 156.dp),
                 state = list,
@@ -260,59 +271,40 @@ fun ThemesScreen(onOpenTheme: (ThemeId) -> Unit, onOpenCreate: () -> Unit, resel
                     top = 4.dp,
                     bottom = padding.calculateBottomPadding() + 16.dp,
                 ),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                fullLine(key = "search", contentType = "search") {
-                    SearchBar(
-                        state = searchState,
-                        inputField = searchField,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
                 if (showFilters) {
                     fullLine(key = "filters", contentType = "filters") {
-                        Filters(filter, data?.themes.orEmpty()) { filter = it }
+                        Filters(filter) { filter = it }
                     }
                 }
                 if (data == null) {
                     fullLine(key = "loading") { PageLoading(height = 320.dp) }
                 } else {
-                    if (builtIns.isNotEmpty()) {
-                        fullLine(key = "builtin_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_builtin)) }
-                        items(builtIns, key = { it.id.key }, contentType = { "theme" }) { theme ->
-                            Entrance(0, animate) {
-                                ThemeTile(
-                                    theme = theme,
-                                    onOpen = { onOpenTheme(theme.id) },
-                                    onLongPress = null,
-                                )
-                            }
+                    items(tiles, key = { it.id.key }, contentType = { "theme" }) { theme ->
+                        val index = tiles.indexOf(theme)
+                        Entrance(index.coerceAtMost(6), animate) {
+                            ThemeTile(
+                                theme = theme,
+                                onOpen = { onOpenTheme(theme.id) },
+                                onLongPress = if (theme.builtIn) null else ({ sheetFor = theme.pkg }),
+                            )
                         }
                     }
-                    fullLine(key = "installed_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_installed)) }
                     when {
-                        data.installed.isEmpty() -> fullLine(key = "empty") {
+                        // Only the built-ins: what to do instead (under them)
+                        data.installed.isEmpty() && shown == ThemeFilter.All -> fullLine(key = "empty") {
                             NoThemes(
                                 title = stringResource(R.string.reborn_themes_empty),
                                 text = stringResource(R.string.reborn_themes_empty_text),
                             )
                         }
-                        installed.isEmpty() -> fullLine(key = "no_match") {
+                        tiles.isEmpty() -> fullLine(key = "no_match") {
                             NoThemes(
                                 title = stringResource(R.string.reborn_themes_no_match),
                                 text = stringResource(R.string.reborn_themes_filter_none, stringResource(shown.label)),
                             )
-                        }
-                        else -> items(installed, key = { it.id.key }, contentType = { "theme" }) { theme ->
-                            val index = data.installed.indexOf(theme) + 1
-                            Entrance(index.coerceAtMost(6), animate) {
-                                ThemeTile(
-                                    theme = theme,
-                                    onOpen = { onOpenTheme(theme.id) },
-                                    onLongPress = { sheetFor = theme.pkg },
-                                )
-                            }
                         }
                     }
                     fullLine(key = "more_header", contentType = "header") { Header(stringResource(R.string.reborn_themes_get_more)) }
@@ -415,25 +407,49 @@ private fun Header(text: String) {
     SectionLabel(text, Modifier.padding(top = 6.dp))
 }
 
+/** The connected filter row: All, Reborn, Classic, Built in; the chosen one widens with a check. */
 @Composable
-private fun Filters(selected: ThemeFilter, themes: List<ThemeItem>, onSelect: (ThemeFilter) -> Unit) {
+private fun Filters(selected: ThemeFilter, onSelect: (ThemeFilter) -> Unit) {
     val haptics = LocalHapticFeedback.current
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(ThemeFilter.entries, key = { it.name }) { f ->
-            val isSelected = f == selected
-            FilterChip(
-                selected = isSelected,
-                onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    onSelect(f)
-                },
-                label = {
-                    Text(stringResource(R.string.reborn_studio_filter_count, stringResource(f.label), themes.count(f::matches)))
-                },
-                leadingIcon = if (isSelected) {
-                    { Icon(painterResource(R.drawable.ic_reborn_check), null, Modifier.size(18.dp)) }
-                } else null,
+    val entries = ThemeFilter.entries
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+    ) {
+        entries.forEachIndexed { index, f ->
+            val checked = f == selected
+            val weight by animateFloatAsState(
+                if (checked) 1.4f else 1f,
+                MaterialTheme.motionScheme.defaultSpatialSpec(),
+                label = "filterWeight",
             )
+            ToggleButton(
+                checked = checked,
+                onCheckedChange = {
+                    if (!checked) {
+                        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        onSelect(f)
+                    }
+                },
+                modifier = Modifier
+                    .weight(weight)
+                    .heightIn(min = 40.dp)
+                    .semantics { role = Role.RadioButton },
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    entries.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                },
+                contentPadding = PaddingValues(horizontal = 6.dp),
+            ) {
+                if (checked) {
+                    Icon(painterResource(R.drawable.ic_reborn_check), contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                }
+                Text(stringResource(f.label), maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }

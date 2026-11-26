@@ -27,9 +27,11 @@ class OverlayPreviewTest {
     @Test
     fun layersFollowTheDefaultBuild() {
         assertEquals(listOf("res"), OverlayPreview.layers(listOf("res", "type1a_Blue.xml", "version")))
-        assertEquals(listOf("type3-common", "res"), OverlayPreview.layers(listOf("type3_Dark", "type3-common", "res")))
-        // No res: the first type 3 folder by name is the default
-        assertEquals(listOf("type3-common", "type3_Amber"), OverlayPreview.layers(listOf("type3_Night", "type3-common", "type3_Amber")))
+        // The default variant is built from res alone: type3-common only joins a chosen type 3 variant
+        assertEquals(listOf("res"), OverlayPreview.layers(listOf("type3_Dark", "type3-common", "res")))
+        // No res: the first type 3 folder by name, copied over type3-common
+        assertEquals(listOf("type3_Amber", "type3-common"), OverlayPreview.layers(listOf("type3_Night", "type3-common", "type3_Amber")))
+        assertEquals(listOf("type3-common"), OverlayPreview.layers(listOf("type3-common", "version")))
         assertEquals(emptyList<String>(), OverlayPreview.layers(listOf("type1a", "version")))
     }
 
@@ -55,7 +57,7 @@ class OverlayPreviewTest {
         val overlay = mapOf(
             "res/values/colors.xml" to res("page" to "#ff000001", "card" to "#ff000002", "title" to "#ff000003"),
             "res/values-night/colors.xml" to res("card" to "#ff000012"),
-            "type3-common/values/colors.xml" to res("title" to "#ff000023"),
+            "type3-common/values/colors.xml" to res("title" to "#ff000023", "summary" to "#ff000024"),
             "type3_Other/values/colors.xml" to res("page" to "#ff000031"),
         )
         val colors = OverlayPreview.resolve(
@@ -63,13 +65,15 @@ class OverlayPreviewTest {
                 target("page", settings, "page"),
                 target("card", settings, "card"),
                 target("title", settings, "title"),
+                target("summary", settings, "summary"),
             ),
             mapOf(settings to overlay),
         )
-        // res is there, so the type 3 variant is not the default build
+        // res is there: the default build is res alone, neither type3-common nor a variant
         assertEquals(0xff000001.toInt(), colors["page"])
         assertEquals(0xff000012.toInt(), colors["card"])
-        assertEquals(0xff000023.toInt(), colors["title"])
+        assertEquals(0xff000003.toInt(), colors["title"])
+        assertFalse("summary" in colors)
     }
 
     @Test
@@ -77,9 +81,15 @@ class OverlayPreviewTest {
         val overlay = mapOf(
             "type3_Zinc/values/colors.xml" to res("page" to "#ff000009"),
             "type3_Amber/values/colors.xml" to res("page" to "#ff0000aa"),
+            "type3-common/values/colors.xml" to res("page" to "#ff0000bb", "card" to "#ff0000cc"),
         )
-        val colors = OverlayPreview.resolve(listOf(target("page", settings, "page")), mapOf(settings to overlay))
+        val colors = OverlayPreview.resolve(
+            listOf(target("page", settings, "page"), target("card", settings, "card")),
+            mapOf(settings to overlay),
+        )
+        // The variant's files win over the common ones; what only type3-common names still counts
         assertEquals(0xff0000aa.toInt(), colors["page"])
+        assertEquals(0xff0000cc.toInt(), colors["card"])
     }
 
     @Test

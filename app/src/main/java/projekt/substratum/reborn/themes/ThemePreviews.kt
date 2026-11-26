@@ -104,6 +104,13 @@ object ThemePreviews {
         } catch (e: Exception) {
             Log.w(TAG, "no previews for ${theme.id.key}: $e")
             return null
+        } catch (e: StackOverflowError) {
+            // A third-party theme's XML nested past reason: no preview rather than a crash
+            Log.w(TAG, "no previews for ${theme.id.key}: $e")
+            return null
+        } catch (e: OutOfMemoryError) {
+            Log.w(TAG, "no previews for ${theme.id.key}: $e")
+            return null
         }
         // One entry per theme: an older look's previews go
         val prefix = theme.id.key + "@"
@@ -198,10 +205,17 @@ object ThemePreviews {
         return files
     }
 
-    /** The file as text, or null when it is too large for a colours file. */
+    /** The file as text, or null when it is too large for a colours file (never read past the cap). */
     private fun readCapped(input: InputStream): String? {
-        val bytes = input.readBytes()
-        return if (bytes.size > MAX_XML) null else String(bytes, Charsets.UTF_8)
+        val out = java.io.ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
+        while (true) {
+            val n = input.read(buffer)
+            if (n < 0) break
+            if (out.size() + n > MAX_XML) return null
+            out.write(buffer, 0, n)
+        }
+        return String(out.toByteArray(), Charsets.UTF_8)
     }
 
     @StringRes
