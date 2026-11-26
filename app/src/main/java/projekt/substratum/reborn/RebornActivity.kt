@@ -274,18 +274,20 @@ fun RebornApp(link: MutableState<RebornLink?>) {
                     ) {
                         Box(contentAlignment = Alignment.BottomCenter) {
                             // A soft fade under the bar, so a list scrolling beneath it does not
-                            // fight its icons (draws only: touches go through to the list)
+                            // fight its icons (draws only: touches go through to the list): 112 dp
+                            // over a gesture bar, the page colour at the bottom, 65 % of it 38 %
+                            // up, clear at the top, the whole at 90 %
                             val page = MaterialTheme.colorScheme.background
                             val inset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                             Box(
                                 Modifier
                                     .fillMaxWidth()
-                                    .height(inset + RebornNavBarDefaults.ContentSpace + 24.dp)
+                                    .height(inset + RebornNavBarDefaults.ContentSpace)
                                     .background(
                                         Brush.verticalGradient(
                                             0f to ComposeColor.Transparent,
-                                            0.55f to page.copy(alpha = 0.7f),
-                                            1f to page.copy(alpha = 0.92f),
+                                            0.62f to page.copy(alpha = 0.65f * 0.9f),
+                                            1f to page.copy(alpha = 0.9f),
                                         ),
                                     ),
                             )

@@ -4,6 +4,7 @@
  */
 package projekt.substratum.reborn.themes
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
@@ -11,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -62,6 +65,7 @@ import androidx.graphics.shapes.RoundedPolygon
 import kotlinx.coroutines.withContext
 import projekt.substratum.R
 import projekt.substratum.Substratum
+import projekt.substratum.common.platform.AmoledLevel
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.components.AppIcon
@@ -87,12 +91,13 @@ fun kindPolygon(theme: ThemeItem): RoundedPolygon = when (theme.kind) {
 }
 
 /**
- * A compact theme tile for the Themes grid (two columns on a phone, about 150 dp tall): a 92 dp
- * preview (a mini Quick Settings in the theme's colours, its kind's shape and avatar, a small
- * "Applied" badge when it is in use), then the name with its palette dots and one quiet line (what
- * it is, and who made it). In use, the tile has a 2 dp primary ring. The preview, name and avatar
- * are shared with the theme's page, so a tap morphs into it. Corners spring tighter and the tile
- * scales down while pressed.
+ * A theme card for the Themes grid (two columns on a phone, 150 dp tall): a 92 dp preview (a mini
+ * Quick Settings in the theme's colours with its identity shape, and a small "Applied" badge when
+ * it is in use) 6 dp inside the card, then the name with its palette dots and one quiet line
+ * ("Author · Kind"). In use, the card has a 2 dp primary ring. The preview and the name are shared
+ * with the theme's page, so a tap morphs into it. A classic theme's promo image is never drawn
+ * here (it stays on its page): its overlays' colours are. Pressed, the card scales down, its
+ * corners open up and the identity shape turns.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -105,17 +110,19 @@ fun ThemeTile(
     val scheme = MaterialTheme.colorScheme
     val haptics = LocalHapticFeedback.current
     val interaction = remember { MutableInteractionSource() }
-    val shape = pressShape(interaction, rest = 24.dp, pressed = 18.dp)
-    val scale = pressScale(interaction, pressed = 0.96f)
+    val pressed by interaction.collectIsPressedAsState()
+    val shape = pressShape(interaction, rest = 24.dp, pressed = 32.dp)
+    val scale = pressScale(interaction, pressed = 0.965f)
     val inUse = stringResource(R.string.reborn_theme_in_use)
     val looks by rememberThemeLooks(theme)
     // A classic theme that names too few of the preview's colours: its icon's colours instead
     val tint by rememberThemeTint(theme, needed = !theme.kind.engine && looks?.previewable != true)
     val mini = remember(looks, tint) { miniColors(looks, tint) }
-    val card = scheme.surfaceContainerLow
+    val card = scheme.surfaceContainer
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 150.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -139,7 +146,7 @@ fun ThemeTile(
         border = if (theme.inUse) BorderStroke(2.dp, scheme.primary) else null,
     ) {
         Column(Modifier.padding(6.dp)) {
-            ThemeMiniPreview(theme, mini)
+            ThemeMiniPreview(theme, mini, pressed = pressed)
             Row(
                 Modifier.padding(start = 6.dp, end = 4.dp, top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -153,28 +160,28 @@ fun ThemeTile(
                         .weight(1f)
                         .themeShared(SharedKeys.name(theme.id)),
                 )
-                Spacer(Modifier.width(6.dp))
-                // The look's palette once the theme has enough colours of its own, else the tile's
+                Spacer(Modifier.width(8.dp))
+                // The look's palette once the theme has enough colours of its own, else the card's
                 val shown = looks?.takeIf { it.previewable }?.shown
                 if (shown != null) {
                     PaletteStrip(
                         shown.roles,
                         Modifier.themeShared(SharedKeys.palette(theme.id)),
                         ring = card,
-                        dot = 10.dp,
+                        dot = 13.dp,
                         shown = PaletteRolesShort,
                     )
                 } else {
-                    PaletteDots(listOf(mini.page, mini.tileOff, mini.tileOn), ring = card, dot = 10.dp)
+                    PaletteDots(listOf(mini.page, mini.tileOn, mini.secondAccent()), ring = card, dot = 13.dp)
                 }
             }
             Text(
-                tileLine(theme),
-                style = MaterialTheme.typography.labelSmall,
+                themeByline(theme, looks),
+                style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 6.dp, end = 6.dp, bottom = 2.dp),
+                modifier = Modifier.padding(horizontal = 6.dp),
             )
         }
     }
@@ -197,21 +204,34 @@ fun PalettePill(
 }
 
 /**
- * A tile's quiet line: what the theme is and who made it ("Classic · Jane"); for namesakes (two
- * themes with one name), the package and version that tell them apart.
+ * A card's quiet line: who made the theme and what it is ("Kiln Studio · Reborn", the kinds named
+ * as the filters name them); a built-in, "Built in" and its saved look ("Built in · Pure"); for
+ * namesakes (two themes with one name), the package and version that tell them apart.
  */
 @Composable
-private fun tileLine(theme: ThemeItem): String {
-    if (theme.builtIn) return stringResource(R.string.reborn_builtin_byline)
+internal fun themeByline(theme: ThemeItem, looks: ThemeLooks? = null): String {
+    if (theme.builtIn) {
+        val level = looks?.level ?: return stringResource(R.string.reborn_builtin_byline)
+        return stringResource(R.string.reborn_theme_tile_line, stringResource(R.string.reborn_themes_builtin), stringResource(levelName(level)))
+    }
     if (theme.namesake) return stringResource(R.string.reborn_theme_package_version, theme.pkg, theme.version ?: "–")
     val kind = stringResource(
         when (theme.kind) {
-            ThemeKind.ENGINE -> R.string.reborn_theme_chip_rules
-            ThemeKind.HYBRID -> R.string.reborn_theme_kind_hybrid
+            ThemeKind.ENGINE -> R.string.reborn_themes_filter_reborn
+            ThemeKind.HYBRID -> R.string.reborn_theme_kind_reborn_classic
             else -> R.string.reborn_themes_filter_classic
         },
     )
-    return if (theme.author.isBlank()) kind else stringResource(R.string.reborn_theme_tile_line, kind, theme.author)
+    return if (theme.author.isBlank()) kind else stringResource(R.string.reborn_theme_tile_line, theme.author, kind)
+}
+
+/** The engine level's short name ("Pure", "Dim", "Elevated", "Tinted"). */
+@StringRes
+fun levelName(level: AmoledLevel): Int = when (level) {
+    AmoledLevel.PURE -> R.string.amoled_level_pure
+    AmoledLevel.DIM -> R.string.amoled_level_dim
+    AmoledLevel.ELEVATED -> R.string.amoled_level_elevated
+    AmoledLevel.TINTED -> R.string.amoled_level_tinted
 }
 
 /** The theme's icon on its kind's shape: the app icon, or for a built-in its own glyph. */

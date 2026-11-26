@@ -28,6 +28,10 @@ object RebornCache {
     @Volatile
     var themes: ThemesSnapshot? = null
 
+    /** Apps installed since the engine theme was applied that it has not read yet (Home) */
+    @Volatile
+    var newApps: List<String>? = null
+
     /**
      * Each theme's previews ([projekt.substratum.reborn.themes.ThemePreviews]), keyed by its id,
      * its last update and the look they were drawn with

@@ -4,7 +4,6 @@
  */
 package projekt.substratum.reborn.home
 
-import android.text.format.DateUtils
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -17,17 +16,20 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -39,19 +41,25 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ButtonGroupScope
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -59,11 +67,13 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import projekt.substratum.R
 import projekt.substratum.common.platform.AmoledJobs
-import projekt.substratum.common.platform.AmoledLevel
 import projekt.substratum.common.platform.AmoledPresets
 import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.amoled.AmoledSummary
@@ -71,16 +81,15 @@ import projekt.substratum.reborn.amoled.JobProgress
 import projekt.substratum.reborn.amoled.JobUi
 import projekt.substratum.reborn.applied.AppliedSnapshot
 import projekt.substratum.reborn.applied.AppliedSource
-import projekt.substratum.reborn.components.ChipState
-import projekt.substratum.reborn.components.HeroShape
-import projekt.substratum.reborn.components.MorphingShape
-import projekt.substratum.reborn.components.PaletteStrip
-import projekt.substratum.reborn.components.StatusChip
-import projekt.substratum.reborn.components.design.overline
+import projekt.substratum.reborn.components.AmbientMorph
+import projekt.substratum.reborn.components.AppIcon
+import projekt.substratum.reborn.components.design.RebornRounded
+import projekt.substratum.reborn.components.design.softTitle
 import projekt.substratum.reborn.nav.ThemeId
 import projekt.substratum.reborn.theme.LocalRebornColors
 import projekt.substratum.reborn.themes.ThemeLooks
 import projekt.substratum.reborn.themes.ThemesSnapshot
+import projekt.substratum.reborn.themes.levelName
 
 /** The engine theme's name: the one in use, else the built-in Reborn AMOLED (also for its starter APK). */
 @Composable
@@ -110,8 +119,8 @@ internal fun nowTheme(applied: AppliedSnapshot?): ThemeId? = when {
     else -> classicInUse(applied)?.let { ThemeId.Apk(it.pkg) }
 }
 
-/** What the Now card shows. */
-private sealed interface Now {
+/** What the Now card (and the quick actions under it) show. */
+internal sealed interface Now {
     data object Reading : Now
     data object Stock : Now
     data class Applying(val job: JobUi, val name: String) : Now
@@ -119,43 +128,21 @@ private sealed interface Now {
         val id: ThemeId,
         val name: String,
         val amoled: AmoledSummary,
-        val classic: ClassicInUse?,
-        val classicName: String?,
     ) : Now {
         /** On, but no apply ever finished recording its time */
         val interrupted: Boolean get() = amoled.appliedAt <= 0L
         val needsReapply: Boolean get() = interrupted || amoled.restartNeeded > 0
     }
-    data class Classic(val id: ThemeId, val name: String, val overlays: Int) : Now
+    data class Classic(val id: ThemeId, val pkg: String, val name: String, val overlays: Int) : Now
 }
 
-/**
- * Home's lead: the theme in use, as a colour-blocked card. Its name and look on the accent block
- * (with the look's palette and a slowly breathing shape), the count of apps it themes, when it was
- * applied (and whether it survived a reboot, needs a restart or was interrupted), then Customize
- * and Change theme. While the engine works it shows the job's progress; on a stock phone it
- * points to Themes.
- *
- * @param looks The previews of the theme in use ([nowTheme]), for its palette and look summary
- */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+/** What is applied now, from the Applied read, the themes and the engine's running job. */
 @Composable
-fun NowCard(
-    applied: AppliedSnapshot?,
-    themes: ThemesSnapshot?,
-    job: JobUi?,
-    looks: ThemeLooks?,
-    onCustomize: () -> Unit,
-    onChangeTheme: () -> Unit,
-    onOpenTheme: (ThemeId) -> Unit,
-    onReapply: () -> Unit,
-    onOpenStudio: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+internal fun nowState(applied: AppliedSnapshot?, themes: ThemesSnapshot?, job: JobUi?): Now {
     val builtIn = stringResource(R.string.reborn_builtin_amoled_name)
     val engineName = amoledName(applied?.amoled)
     val running = job?.takeIf { it.kind != AmoledJobs.Kind.SET_ENABLED }
-    val now: Now = when {
+    return when {
         running != null -> {
             val id = ThemeId.ofPackage(running.theme ?: applied?.amoled?.theme)
             Now.Applying(running, themes?.find(id)?.name ?: if (id == ThemeId.RebornAmoled) builtIn else engineName)
@@ -163,21 +150,77 @@ fun NowCard(
         applied == null -> Now.Reading
         applied.amoled.enabled -> {
             val id = ThemeId.ofPackage(applied.amoled.theme)
-            val classic = classicInUse(applied)
-            Now.Engine(
-                id = id,
-                name = themes?.find(id)?.name ?: engineName,
-                amoled = applied.amoled,
-                classic = classic,
-                classicName = classic?.let { c -> themes?.find(ThemeId.Apk(c.pkg))?.name ?: c.label ?: c.pkg },
-            )
+            Now.Engine(id = id, name = themes?.find(id)?.name ?: engineName, amoled = applied.amoled)
         }
         else -> classicInUse(applied)?.let { c ->
             val id = ThemeId.Apk(c.pkg)
-            Now.Classic(id, themes?.find(id)?.name ?: c.label ?: c.pkg, c.overlays)
+            Now.Classic(id, c.pkg, themes?.find(id)?.name ?: c.label ?: c.pkg, c.overlays)
         } ?: Now.Stock
     }
+}
+
+/** The blocks' corners: 32 dp outside, 8 dp where they meet. */
+private enum class BlockShape(val shape: RoundedCornerShape) {
+    Top(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 8.dp, bottomEnd = 8.dp)),
+    Bottom(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 32.dp, bottomEnd = 32.dp)),
+    BottomStart(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 32.dp, bottomEnd = 8.dp)),
+    BottomEnd(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 32.dp)),
+}
+
+/** The theme's name on the accent block: 44/46 sp, weight 650, ROND 100. */
+private val NowTitle: TextStyle
+    @Composable get() = MaterialTheme.typography.displayMedium.copy(
+        fontFamily = RebornRounded,
+        fontWeight = FontWeight(650),
+        fontSize = 44.sp,
+        lineHeight = 46.sp,
+        letterSpacing = (-1).sp,
+    )
+
+/** The count on the tertiary block: 52/56 sp, weight 650, ROND 100, tabular figures. */
+private val NowCount: TextStyle
+    @Composable get() = MaterialTheme.typography.displayLarge.copy(
+        fontFamily = RebornRounded,
+        fontWeight = FontWeight(650),
+        fontSize = 52.sp,
+        lineHeight = 56.sp,
+        letterSpacing = (-1.5).sp,
+        fontFeatureSettings = "tnum",
+    )
+
+/** The chips' 13 sp bold label */
+private val ChipText: TextStyle
+    @Composable get() = MaterialTheme.typography.labelLargeEmphasized.copy(fontSize = 13.sp, lineHeight = 20.sp)
+
+/**
+ * Home's lead, the theme in use as one colour-blocked card (blocks 4 dp apart, 32 dp outside, 8 dp
+ * where they meet). Block A, in the theme's accent: a live dot and "Now", the theme's name, its
+ * look and accent as chips, and a black Cookie9Sided ↔ Sunny shape breathing off its top right
+ * edge with the theme's glyph. Under it, block B (tertiary): how many apps it themes (opening
+ * Applied); block C: what changed since the last apply (new apps, with their icons; apps to
+ * restart; an interrupted apply). With nothing applied, A says so with "Pick a theme", and B and C
+ * count the installed themes and point to Create. While the engine works, its progress replaces
+ * B and C.
+ *
+ * @param installedThemes The themes Themes lists (for the stock card)
+ * @param newApps Apps installed since the last apply the engine has not read ([readNewApps])
+ * @param running The ambient shape moves (false while About or a sheet covers Home)
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun NowCard(
+    now: Now,
+    looks: ThemeLooks?,
+    installedThemes: Int?,
+    newApps: List<String>?,
+    onPickTheme: () -> Unit,
+    onOpenCreate: () -> Unit,
+    onOpenApplied: () -> Unit,
+    modifier: Modifier = Modifier,
+    running: Boolean = true,
+) {
     val motion = MaterialTheme.motionScheme
+    val overline = stringResource(R.string.reborn_now_overline)
     AnimatedContent(
         targetState = now,
         contentKey = { it::class },
@@ -190,28 +233,30 @@ fun NowCard(
     ) { state ->
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             when (state) {
-                Now.Reading -> AccentBlock(
-                    overline = stringResource(R.string.reborn_now_overline),
-                    title = stringResource(R.string.reborn_reading),
-                    live = false,
-                )
-                Now.Stock -> {
-                    AccentBlock(
-                        overline = stringResource(R.string.reborn_now_overline),
-                        title = stringResource(R.string.reborn_now_stock_title),
-                        supporting = stringResource(R.string.reborn_now_stock_text),
-                        live = false,
-                        shape = BlockShape.Single,
+                Now.Reading -> {
+                    AccentBlock(overline, stringResource(R.string.reborn_reading), live = false, R.drawable.ic_reborn_themes_filled, running)
+                    BlockRow(
+                        count = { CountBlock("–", stringResource(R.string.reborn_now_apps_themed), null, it) },
+                        detail = { DetailBlock(stringResource(R.string.reborn_now_since), "–", emptyList(), null, it) },
                     )
-                    Actions(
-                        primary = stringResource(R.string.reborn_now_explore) to R.drawable.ic_reborn_themes,
-                        onPrimary = onChangeTheme,
+                }
+                Now.Stock -> {
+                    AccentBlock(overline, stringResource(R.string.reborn_now_none_title), live = false, R.drawable.ic_reborn_themes_filled, running) {
+                        PickButton(onPickTheme)
+                    }
+                    BlockRow(
+                        count = {
+                            CountBlock(installedThemes?.toString() ?: "–", stringResource(R.string.reborn_now_themes_installed), onPickTheme, it)
+                        },
+                        detail = {
+                            DetailBlock(stringResource(R.string.reborn_now_start_fresh), stringResource(R.string.reborn_now_make_own), emptyList(), onOpenCreate, it)
+                        },
                     )
                 }
                 is Now.Applying -> {
                     AccentBlock(
-                        overline = stringResource(R.string.reborn_now_overline),
-                        title = stringResource(
+                        overline,
+                        stringResource(
                             when (state.job.kind) {
                                 AmoledJobs.Kind.REMOVE -> R.string.reborn_now_removing
                                 AmoledJobs.Kind.RESTORE -> R.string.reborn_now_restoring
@@ -220,7 +265,8 @@ fun NowCard(
                             state.name,
                         ),
                         live = true,
-                        shape = BlockShape.Top,
+                        R.drawable.ic_reborn_amoled_filled,
+                        running,
                     )
                     Surface(
                         shape = BlockShape.Bottom.shape,
@@ -229,82 +275,38 @@ fun NowCard(
                     ) {
                         Box(Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) { JobProgress(state.job) }
                     }
-                    Actions(
-                        primary = stringResource(R.string.reborn_now_open_studio) to R.drawable.ic_reborn_tune,
-                        onPrimary = onOpenStudio,
-                    )
                 }
                 is Now.Engine -> {
-                    AccentBlock(
-                        overline = stringResource(R.string.reborn_now_overline),
-                        title = state.name,
-                        supporting = lookSummary(looks?.takeIf { it.id == state.id }, state.amoled.themed),
-                        looks = looks?.takeIf { it.id == state.id },
-                        live = true,
-                        shape = BlockShape.Top,
+                    val own = looks?.takeIf { it.id == state.id }
+                    AccentBlock(overline, state.name, live = true, R.drawable.ic_reborn_amoled_filled, running) {
+                        own?.level?.let { DarkChip(stringResource(levelName(it)), R.drawable.ic_reborn_amoled_filled) }
+                        accentName(own?.accent)?.let { LineChip(stringResource(it), R.drawable.ic_reborn_themes) }
+                    }
+                    val restart = state.amoled.restartNeeded
+                    val apps = newApps
+                    val none = emptyList<String>()
+                    val (value, icons) = when {
+                        state.interrupted -> stringResource(R.string.reborn_now_interrupted) to none
+                        restart > 0 -> pluralStringResource(R.plurals.reborn_now_to_restart, restart, restart) to none
+                        apps == null -> "–" to none
+                        apps.isNotEmpty() -> pluralStringResource(R.plurals.reborn_now_new_apps, apps.size, apps.size) to apps
+                        else -> stringResource(R.string.reborn_now_up_to_date) to none
+                    }
+                    BlockRow(
+                        count = { CountBlock(state.amoled.themed.toString(), stringResource(R.string.reborn_now_apps_themed), onOpenApplied, it) },
+                        detail = { DetailBlock(stringResource(R.string.reborn_now_since), value, icons, null, it) },
                     )
-                    CountRow(
-                        count = state.amoled.themed,
-                        countLabel = stringResource(R.string.reborn_now_apps_themed),
-                        detailTitle = when {
-                            state.interrupted -> stringResource(R.string.reborn_now_applied_unknown)
-                            else -> stringResource(R.string.reborn_now_applied_at, relativeTime(state.amoled.appliedAt))
-                        },
-                    ) {
-                        if (state.classic != null && state.classicName != null) {
-                            Text(
-                                pluralStringResource(R.plurals.reborn_now_plus_overlays, state.classic.overlays,
-                                    state.classic.overlays, state.classicName),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        EngineChips(state)
-                    }
-                    if (state.needsReapply) {
-                        Actions(
-                            primary = stringResource(R.string.reborn_now_reapply) to R.drawable.ic_reborn_refresh,
-                            onPrimary = onReapply,
-                            secondary = stringResource(R.string.reborn_now_customize),
-                            onSecondary = onCustomize,
-                        )
-                    } else {
-                        Actions(
-                            primary = stringResource(R.string.reborn_now_customize) to R.drawable.ic_reborn_tune,
-                            onPrimary = onCustomize,
-                            secondary = stringResource(R.string.reborn_now_change),
-                            onSecondary = onChangeTheme,
-                        )
-                    }
                 }
                 is Now.Classic -> {
-                    val own = looks?.takeIf { it.id == state.id && it.coverage > 0 }
-                    AccentBlock(
-                        overline = stringResource(R.string.reborn_now_overline),
-                        title = state.name,
-                        supporting = pluralStringResource(R.plurals.reborn_now_overlays, state.overlays, state.overlays),
-                        looks = own,
-                        live = true,
-                        shape = BlockShape.Top,
-                    )
-                    CountRow(
-                        count = state.overlays,
-                        countLabel = stringResource(R.string.reborn_now_overlays_on),
-                        detailTitle = stringResource(R.string.reborn_now_classic),
-                    ) {
-                        Text(
-                            stringResource(R.string.reborn_now_classic_text),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    AccentBlock(overline, state.name, live = true, R.drawable.ic_reborn_applied_filled, running) {
+                        DarkChip(stringResource(R.string.reborn_now_chip_classic), R.drawable.ic_reborn_applied_filled)
+                        LineChip(pluralStringResource(R.plurals.reborn_now_overlays, state.overlays, state.overlays), R.drawable.ic_reborn_layers)
                     }
-                    Actions(
-                        primary = stringResource(R.string.reborn_now_options) to R.drawable.ic_reborn_layers,
-                        onPrimary = { onOpenTheme(state.id) },
-                        secondary = stringResource(R.string.reborn_now_change),
-                        onSecondary = onChangeTheme,
+                    BlockRow(
+                        count = { CountBlock(state.overlays.toString(), stringResource(R.string.reborn_now_overlays_on), onOpenApplied, it) },
+                        detail = {
+                            DetailBlock(stringResource(R.string.reborn_now_classic), stringResource(R.string.reborn_now_classic_native), emptyList(), null, it)
+                        },
                     )
                 }
             }
@@ -312,91 +314,83 @@ fun NowCard(
     }
 }
 
-/** The blocks' corners: 32 dp outside, 8 dp where they meet. */
-private enum class BlockShape(val shape: RoundedCornerShape) {
-    Single(RoundedCornerShape(32.dp)),
-    Top(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp, bottomStart = 8.dp, bottomEnd = 8.dp)),
-    Bottom(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 32.dp, bottomEnd = 32.dp)),
-    BottomStart(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 32.dp, bottomEnd = 8.dp)),
-    BottomEnd(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 32.dp)),
-}
-
 /**
- * The accent block: the theme's colour (primaryFixedDim), a live dot and "Now", the name in a
- * display face, a line about it and its palette; a shape breathes in its corner.
+ * Block A: 196 dp in the theme's accent (primaryFixedDim; primaryFixed in light mode, as the
+ * mockup's light frame has it) with onPrimaryFixed content. The overline, the name on up to two
+ * lines, then [bottom] (chips, or the stock card's button) 20 dp from the bottom; a 164 dp black
+ * Cookie9Sided ↔ Sunny shape (7 s, one turn a minute) sits partly off the top right edge with
+ * [icon] in primaryFixedDim.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AccentBlock(
     overline: String,
     title: String,
     live: Boolean,
-    supporting: String? = null,
-    looks: ThemeLooks? = null,
-    shape: BlockShape = BlockShape.Top,
+    @DrawableRes icon: Int,
+    running: Boolean,
+    bottom: @Composable RowScope.() -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
-    val container = scheme.primaryFixedDim
+    val dark = LocalRebornColors.current.dark
+    val container = if (dark) scheme.primaryFixedDim else scheme.primaryFixed
     val content = scheme.onPrimaryFixed
     Surface(
-        shape = shape.shape,
+        shape = BlockShape.Top.shape,
         color = container,
         contentColor = content,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Box(Modifier.clipToBounds()) {
+        Box(Modifier.heightIn(min = 196.dp)) {
             Box(
                 Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 34.dp, y = (-18).dp)
-                    .size(150.dp)
-                    .graphicsLayer { alpha = 0.9f },
+                    .offset(x = 34.dp, y = 16.dp)
+                    .size(164.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                MorphingShape(HeroShape.Calm, Color.Black.copy(alpha = 0.18f), Modifier.size(150.dp))
+                AmbientMorph(
+                    from = MaterialShapes.Cookie9Sided,
+                    to = MaterialShapes.Sunny,
+                    color = Color.Black,
+                    modifier = Modifier.fillMaxSize(),
+                    periodMillis = 7000,
+                    turnMillis = 60000,
+                    running = running,
+                )
+                Icon(painterResource(icon), contentDescription = null, tint = scheme.primaryFixedDim, modifier = Modifier.size(52.dp))
             }
             Column(
                 Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 168.dp)
-                    .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 22.dp),
+                    .heightIn(min = 196.dp)
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LiveDot(live, content)
                     Spacer(Modifier.width(8.dp))
-                    Text(overline, style = MaterialTheme.typography.overline, color = content)
+                    Text(overline, style = MaterialTheme.typography.labelLargeEmphasized, color = content)
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(6.dp))
                 Text(
                     title,
-                    style = MaterialTheme.typography.displaySmallEmphasized,
+                    style = NowTitle,
                     color = content,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .padding(end = 56.dp)
+                        // Wraps before the shape, as "Reborn⏎AMOLED"
+                        .padding(end = 72.dp)
                         .semantics { heading() },
                 )
-                if (supporting != null) {
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        supporting,
-                        style = MaterialTheme.typography.bodyLargeEmphasized,
-                        color = content.copy(alpha = 0.82f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                val shown = looks?.shown
-                if (shown != null) {
-                    Spacer(Modifier.height(14.dp))
-                    PaletteStrip(shown.roles, ring = container)
-                }
+                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, content = bottom)
             }
         }
     }
 }
 
-/** An 8 dp dot whose ring pulses out while something is live. */
+/** An 8 dp dot whose ring pulses out (0 → 7 dp, 35 % → clear, every 2.4 s) while something is live. */
 @Composable
 private fun LiveDot(live: Boolean, color: Color) {
     val transition = rememberInfiniteTransition(label = "live")
@@ -406,184 +400,317 @@ private fun LiveDot(live: Boolean, color: Color) {
         animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart),
         label = "livePulse",
     )
-    Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+    Canvas(Modifier.size(8.dp)) {
+        val r = size.minDimension / 2f
         if (live) {
-            Box(
-                Modifier
-                    .size(8.dp + 14.dp * pulse)
-                    .graphicsLayer { alpha = 0.35f * (1f - pulse) }
-                    .background(color, CircleShape),
-            )
+            val p = (pulse / 0.7f).coerceAtMost(1f)
+            if (p < 1f) drawCircle(color.copy(alpha = 0.35f * (1f - p)), radius = r + 7.dp.toPx() * p)
         }
-        Box(
-            Modifier
-                .size(8.dp)
-                .background(if (live) color else color.copy(alpha = 0.5f), CircleShape),
-        )
+        drawCircle(if (live) color else color.copy(alpha = 0.5f), radius = r)
     }
 }
 
-/** The count block (tertiary) and the detail block side by side. */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+/** The look chip: black, with primaryFixed text and a filled glyph. */
 @Composable
-private fun CountRow(
-    count: Int,
-    countLabel: String,
-    detailTitle: String,
-    detail: @Composable () -> Unit,
-) {
-    val scheme = MaterialTheme.colorScheme
-    val dark = LocalRebornColors.current.dark
+private fun DarkChip(text: String, @DrawableRes icon: Int) {
+    val tint = MaterialTheme.colorScheme.primaryFixed
+    Row(
+        Modifier
+            .height(32.dp)
+            .background(Color.Black, CircleShape)
+            .padding(start = 10.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(text, style = ChipText, color = tint, maxLines = 1)
+    }
+}
+
+/** The accent chip: a 1.5 dp outline in the block's content colour at 28 %. */
+@Composable
+private fun LineChip(text: String, @DrawableRes icon: Int) {
+    val content = MaterialTheme.colorScheme.onPrimaryFixed
+    Row(
+        Modifier
+            .height(32.dp)
+            .border(1.5.dp, content.copy(alpha = 0.28f), CircleShape)
+            .padding(start = 10.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = content, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(text, style = ChipText, color = content, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+/** The stock card's way out: a black "Pick a theme" button (to Themes). */
+@Composable
+private fun PickButton(onClick: () -> Unit) {
+    val haptics = LocalHapticFeedback.current
+    Button(
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+            onClick()
+        },
+        shapes = ButtonDefaults.shapes(),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = MaterialTheme.colorScheme.primaryFixed),
+        contentPadding = PaddingValues(start = 12.dp, end = 16.dp),
+        modifier = Modifier.height(40.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_reborn_themes), contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.reborn_now_pick), style = MaterialTheme.typography.labelLargeEmphasized)
+    }
+}
+
+/** Blocks B and C side by side, 4 dp apart, as tall as the taller one (120 dp at least). */
+@Composable
+private fun BlockRow(count: @Composable (Modifier) -> Unit, detail: @Composable (Modifier) -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Surface(
-            shape = BlockShape.BottomStart.shape,
-            color = if (dark) scheme.tertiaryContainer else scheme.tertiaryFixedDim,
-            contentColor = if (dark) scheme.onTertiaryContainer else scheme.onTertiaryFixed,
-            modifier = Modifier
+        count(
+            Modifier
                 .weight(1f)
                 .fillMaxHeight(),
-        ) {
+        )
+        detail(
+            Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+        )
+    }
+}
+
+/** A block's surface, a button when it leads somewhere. */
+@Composable
+private fun BlockSurface(
+    shape: Shape,
+    container: Color,
+    content: Color,
+    onClick: (() -> Unit)?,
+    modifier: Modifier,
+    body: @Composable () -> Unit,
+) {
+    if (onClick != null) {
+        Surface(onClick = onClick, shape = shape, color = container, contentColor = content, modifier = modifier, content = body)
+    } else {
+        Surface(shape = shape, color = container, contentColor = content, modifier = modifier, content = body)
+    }
+}
+
+/**
+ * Block B: tertiaryFixedDim (tertiaryFixed in light mode), the count in the rounded face with
+ * tabular figures, its label, and a Clover4Leaf plate with a check at the top right.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun CountBlock(count: String, label: String, onClick: (() -> Unit)?, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val dark = LocalRebornColors.current.dark
+    val content = scheme.onTertiaryFixed
+    val plate = MaterialShapes.Clover4Leaf.toShape()
+    BlockSurface(
+        shape = BlockShape.BottomStart.shape,
+        container = if (dark) scheme.tertiaryFixedDim else scheme.tertiaryFixed,
+        content = content,
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 120.dp),
+    ) {
+        Box(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+                Text(count, style = NowCount, color = content, maxLines = 1)
+                Spacer(Modifier.height(4.dp))
                 Text(
-                    count.toString(),
-                    style = MaterialTheme.typography.displayMediumEmphasized.copy(fontFeatureSettings = "tnum"),
-                    color = if (dark) scheme.tertiary else scheme.onTertiaryFixed,
-                    maxLines = 1,
-                )
-                Text(countLabel, style = MaterialTheme.typography.labelLargeEmphasized, maxLines = 2)
-            }
-        }
-        Surface(
-            shape = BlockShape.BottomEnd.shape,
-            color = scheme.surfaceContainerHigh,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-        ) {
-            Column(
-                Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    detailTitle,
-                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    label,
+                    style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = content.copy(alpha = 0.8f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                detail()
+            }
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 14.dp, end = 14.dp)
+                    .size(36.dp)
+                    .clip(plate)
+                    .background(content),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_reborn_check),
+                    contentDescription = null,
+                    tint = scheme.tertiaryFixedDim,
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
 }
 
-/** Survived a reboot, apps that need a restart, an interrupted apply. */
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Block C (surfaceContainerHigh): a 12 sp label, the value at 22 sp, and up to three overlapping
+ * app icons (2.5 dp ring in the block's colour) with "+N" for the rest.
+ */
 @Composable
-private fun EngineChips(state: Now.Engine) {
-    val amoled = state.amoled
-    if (!state.interrupted && !amoled.survivedReboot && amoled.restartNeeded <= 0) return
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+private fun DetailBlock(key: String, value: String, apps: List<String>, onClick: (() -> Unit)?, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val container = scheme.surfaceContainerHigh
+    BlockSurface(
+        shape = BlockShape.BottomEnd.shape,
+        container = container,
+        content = scheme.onSurface,
+        onClick = onClick,
+        modifier = modifier.heightIn(min = 120.dp),
     ) {
-        if (state.interrupted) StatusChip(stringResource(R.string.reborn_amoled_interrupted), ChipState.Warn)
-        if (amoled.survivedReboot) StatusChip(stringResource(R.string.reborn_survived_reboot), ChipState.OK)
-        if (amoled.restartNeeded > 0) {
-            StatusChip(stringResource(R.string.reborn_restart_needed, amoled.restartNeeded), ChipState.Warn)
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+            Text(
+                key,
+                style = MaterialTheme.typography.labelMediumEmphasized,
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                value,
+                style = MaterialTheme.typography.softTitle,
+                maxLines = if (apps.isEmpty()) 2 else 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (apps.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                AppStack(apps, ring = container)
+            }
         }
     }
 }
 
-/** The card's buttons: the main action filled, the other tonal, both 56 dp. */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+/** Up to three app icons, 28 dp with 9 dp corners, overlapping by 6 dp; "+N" for the rest. */
 @Composable
-private fun Actions(
-    primary: Pair<String, Int>,
-    onPrimary: () -> Unit,
-    secondary: String? = null,
-    onSecondary: () -> Unit = {},
+private fun AppStack(apps: List<String>, ring: Color) {
+    val corner = RoundedCornerShape(9.dp)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy((-11).dp)) {
+            apps.take(3).forEach { pkg ->
+                Box(
+                    Modifier
+                        .size(33.dp)
+                        .background(ring, RoundedCornerShape(11.5.dp))
+                        .padding(2.5.dp),
+                ) {
+                    AppIcon(pkg, Modifier.clip(corner), size = 28.dp, shape = corner)
+                }
+            }
+        }
+        if (apps.size > 3) {
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "+" + (apps.size - 3),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * The quick actions under the Now card: Re-apply, Customize and Undo as one ButtonGroup of 56 dp
+ * tonal buttons (Undo a little narrower); a pressed one widens and its neighbours make room.
+ * Re-apply turns filled when the theme needs it (an apply was interrupted, apps wait for a
+ * restart).
+ */
+@Composable
+internal fun NowActions(
+    reapplyEnabled: Boolean,
+    reapplyFilled: Boolean,
+    undoEnabled: Boolean,
+    onReapply: () -> Unit,
+    onCustomize: () -> Unit,
+    onUndo: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val haptics = LocalHapticFeedback.current
-    val height = ButtonDefaults.MediumContainerHeight
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
+    val reapply = stringResource(R.string.reborn_now_reapply)
+    val customize = stringResource(R.string.reborn_now_customize)
+    val undo = stringResource(R.string.reborn_now_undo)
+    val sources = remember { List(3) { MutableInteractionSource() } }
+    ButtonGroup(
+        overflowIndicator = { ButtonGroupDefaults.OverflowIndicator(it) },
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Button(
-            onClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                onPrimary()
-            },
-            shapes = ButtonDefaults.shapesFor(height),
-            contentPadding = ButtonDefaults.contentPaddingFor(height),
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(min = height),
-        ) {
-            ButtonContent(primary.first, primary.second)
-        }
-        if (secondary != null) {
-            FilledTonalButton(
-                onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-                    onSecondary()
-                },
-                shapes = ButtonDefaults.shapesFor(height),
-                contentPadding = ButtonDefaults.contentPaddingFor(height),
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = height),
-            ) {
-                Text(secondary, style = ButtonDefaults.textStyleFor(height), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
+        actionItem(sources[0], 1f, reapply, R.drawable.ic_reborn_refresh, reapplyEnabled, reapplyFilled, HapticFeedbackType.Confirm, onReapply)
+        actionItem(sources[1], 1.1f, customize, R.drawable.ic_reborn_tune, true, false, HapticFeedbackType.ContextClick, onCustomize)
+        actionItem(sources[2], 0.8f, undo, R.drawable.ic_reborn_undo, undoEnabled, false, HapticFeedbackType.ContextClick, onUndo)
     }
 }
 
-@Composable
-private fun ButtonContent(label: String, @DrawableRes icon: Int) {
-    val height = ButtonDefaults.MediumContainerHeight
-    Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(ButtonDefaults.iconSizeFor(height)))
-    Spacer(Modifier.width(8.dp))
-    Text(label, style = ButtonDefaults.textStyleFor(height), maxLines = 1, overflow = TextOverflow.Ellipsis)
+private fun ButtonGroupScope.actionItem(
+    interaction: MutableInteractionSource,
+    weight: Float,
+    label: String,
+    @DrawableRes icon: Int,
+    enabled: Boolean,
+    filled: Boolean,
+    haptic: HapticFeedbackType,
+    onClick: () -> Unit,
+) {
+    customItem(
+        buttonGroupContent = {
+            val haptics = LocalHapticFeedback.current
+            val height = ButtonDefaults.MediumContainerHeight
+            Button(
+                onClick = {
+                    haptics.performHapticFeedback(haptic)
+                    onClick()
+                },
+                enabled = enabled,
+                shapes = ButtonDefaults.shapesFor(height),
+                colors = if (filled) ButtonDefaults.buttonColors() else ButtonDefaults.filledTonalButtonColors(),
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                interactionSource = interaction,
+                modifier = Modifier
+                    .weight(weight)
+                    .heightIn(min = height)
+                    .animateWidth(interaction),
+            ) {
+                Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(ButtonDefaults.iconSizeFor(height)))
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    label,
+                    style = ButtonDefaults.textStyleFor(height).copy(fontWeight = FontWeight.SemiBold),
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        },
+        menuContent = { state ->
+            DropdownMenuItem(
+                text = { Text(label) },
+                onClick = {
+                    state.dismiss()
+                    onClick()
+                },
+                enabled = enabled,
+                leadingIcon = { Icon(painterResource(icon), contentDescription = null) },
+            )
+        },
+    )
 }
 
-/** "Elevated · Monet accent · 229 apps": the level, the accent (when one is chosen) and the app count. */
-@Composable
-private fun lookSummary(looks: ThemeLooks?, apps: Int): String {
-    val parts = ArrayList<String>()
-    looks?.level?.let { parts += stringResource(levelName(it)) }
-    accentName(looks?.accent)?.let { parts += stringResource(it) }
-    parts += pluralStringResource(R.plurals.reborn_now_apps, apps, apps)
-    return parts.joinToString(" · ")
-}
-
-private fun levelName(level: AmoledLevel): Int = when (level) {
-    AmoledLevel.PURE -> R.string.amoled_level_pure
-    AmoledLevel.DIM -> R.string.amoled_level_dim
-    AmoledLevel.ELEVATED -> R.string.amoled_level_elevated
-    AmoledLevel.TINTED -> R.string.amoled_level_tinted
-}
-
+/** The accent's short name for the chip ("Monet", "One UI blue", "Sprite teal", "White", "Custom"). */
 private fun accentName(accent: String?): Int? = when {
     accent == null || accent == AmoledPresets.ACCENT_NONE -> null
-    accent == AmoledPresets.ACCENT_MONET -> R.string.reborn_now_accent_monet
-    accent == AmoledPresets.ACCENT_ONEUI -> R.string.reborn_now_accent_oneui
+    accent == AmoledPresets.ACCENT_MONET -> R.string.reborn_now_chip_monet
+    accent == AmoledPresets.ACCENT_ONEUI -> R.string.amoled_accent_oneui
     accent == AmoledPresets.ACCENT_SPRITE -> R.string.amoled_accent_sprite
-    accent == AmoledPresets.ACCENT_WHITE -> R.string.reborn_now_accent_white
-    AmoledPresets.isCustom(accent) -> R.string.reborn_now_accent_custom
+    accent == AmoledPresets.ACCENT_WHITE -> R.string.reborn_now_chip_white
+    AmoledPresets.isCustom(accent) -> R.string.reborn_now_chip_custom
     else -> null
 }
-
-@Composable
-private fun relativeTime(time: Long): String =
-    if (time <= 0L) stringResource(R.string.reborn_never)
-    else DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(),
-        DateUtils.MINUTE_IN_MILLIS).toString()

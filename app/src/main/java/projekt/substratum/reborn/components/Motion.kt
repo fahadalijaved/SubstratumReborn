@@ -21,10 +21,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -37,6 +39,8 @@ import androidx.compose.material3.toPath
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.cos
 
 /**
  * Staggered entrance: item [index] fades and springs up a beat after the one before it. Only
@@ -75,6 +79,46 @@ private fun shapesOf(shape: HeroShape): Pair<RoundedPolygon, RoundedPolygon> = w
     HeroShape.Alarm -> MaterialShapes.Burst to MaterialShapes.SoftBoom
     HeroShape.Idle -> MaterialShapes.Circle to MaterialShapes.Cookie4Sided
     HeroShape.Bloom -> MaterialShapes.Flower to MaterialShapes.SoftBurst
+}
+
+/**
+ * A screen's one ambient shape: a slow morph from [from] to [to] and back every [periodMillis]
+ * (resting a beat at each end), turning once every [turnMillis]. Only the drawing reads the clock,
+ * so it never recomposes; [running] false holds it where it is (the screen is covered).
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun AmbientMorph(
+    from: RoundedPolygon,
+    to: RoundedPolygon,
+    color: Color,
+    modifier: Modifier = Modifier,
+    periodMillis: Int = 7000,
+    turnMillis: Int = 60000,
+    running: Boolean = true,
+) {
+    val morph = remember(from, to) { Morph(from, to) }
+    val path = remember { Path() }
+    var time by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(running) {
+        if (!running) return@LaunchedEffect
+        val start = withFrameMillis { it } - time
+        while (true) withFrameMillis { time = it - start }
+    }
+    Canvas(modifier) {
+        val now = time
+        val phase = (now % periodMillis).toFloat() / periodMillis
+        val wave = 0.5f - 0.5f * cos(phase * 2f * PI.toFloat())
+        val k = ((wave - 0.12f) / 0.76f).coerceIn(0f, 1f).let { it * it * (3f - 2f * it) }
+        morph.toPath(k, path)
+        val turn = (now % turnMillis).toFloat() / turnMillis * 360f
+        withTransform({
+            rotate(turn)
+            scale(size.width, size.height, pivot = Offset.Zero)
+        }) {
+            drawPath(path, color)
+        }
+    }
 }
 
 /**

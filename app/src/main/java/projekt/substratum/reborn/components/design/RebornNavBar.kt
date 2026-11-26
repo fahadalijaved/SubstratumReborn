@@ -19,6 +19,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
@@ -175,10 +177,10 @@ fun RebornNavBar(
         content = {
             Surface(
                 shape = CircleShape,
-                color = if (colors.dark) scheme.surfaceContainerHighest else scheme.surfaceContainer,
-                tonalElevation = 3.dp,
+                // surfaceContainerHigh with a 1 dp light edge on true black; white in light mode
+                color = if (colors.dark) scheme.surfaceContainerHigh else scheme.surfaceContainerLowest,
                 shadowElevation = 6.dp,
-                border = if (colors.dark) BorderStroke(1.dp, colors.cardBorder) else null,
+                border = if (colors.dark) BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)) else null,
             ) {
                 Row(
                     Modifier
@@ -229,35 +231,49 @@ fun RebornNavBar(
     }
 }
 
+/**
+ * One destination: 48 dp, an icon at rest; selected, a primary pill (16 dp before the filled icon,
+ * 20 dp after the label) that springs open. Pressed, its corners tighten to 14 dp.
+ */
 @Composable
 private fun NavItem(dest: NavDest, selected: Boolean, badge: Boolean, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val motion = MaterialTheme.motionScheme
     val container by animateColorAsState(
-        if (selected) scheme.secondaryContainer else Color.Transparent,
+        if (selected) scheme.primary else Color.Transparent,
         motion.defaultEffectsSpec(),
         label = "navPill",
     )
     val content by animateColorAsState(
-        if (selected) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+        if (selected) scheme.onPrimary else scheme.onSurfaceVariant,
         motion.defaultEffectsSpec(),
         label = "navContent",
     )
+    val start by animateDpAsState(if (selected) 16.dp else 12.dp, motion.fastSpatialSpec(), label = "navStart")
+    val end by animateDpAsState(if (selected) 20.dp else 12.dp, motion.fastSpatialSpec(), label = "navEnd")
+    val interaction = remember { MutableInteractionSource() }
+    val shape = pressShape(interaction, rest = 24.dp, pressed = 14.dp)
     val label = stringResource(dest.label)
     Row(
         Modifier
             .height(48.dp)
-            .clip(CircleShape)
+            .clip(shape)
             .background(container)
-            .selectable(selected = selected, onClick = onClick, role = Role.Tab)
-            .padding(horizontal = 12.dp),
+            .selectable(
+                selected = selected,
+                onClick = onClick,
+                role = Role.Tab,
+                interactionSource = interaction,
+                indication = ripple(),
+            )
+            .padding(start = start, end = end),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // The label is only drawn when selected: unselected, the icon says it
         NavIcon(dest, selected, badge, tint = content, description = if (selected) null else label)
         AnimatedVisibility(
             visible = selected,
-            enter = fadeIn(motion.defaultEffectsSpec()) + expandHorizontally(motion.defaultSpatialSpec(), expandFrom = Alignment.Start),
+            enter = fadeIn(motion.defaultEffectsSpec()) + expandHorizontally(motion.fastSpatialSpec(), expandFrom = Alignment.Start),
             exit = fadeOut(motion.fastEffectsSpec()) + shrinkHorizontally(motion.fastSpatialSpec(), shrinkTowards = Alignment.Start),
         ) {
             Text(
@@ -266,7 +282,7 @@ private fun NavItem(dest: NavDest, selected: Boolean, badge: Boolean, onClick: (
                 color = content,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.padding(start = 8.dp, end = 4.dp),
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
     }
@@ -278,9 +294,9 @@ private fun NavIcon(dest: NavDest, selected: Boolean, badge: Boolean, tint: Colo
     val pop = remember { Animatable(1f) }
     var settled by remember { mutableStateOf(false) }
     LaunchedEffect(selected) {
-        // Pop only when the user selects it, not on first composition
+        // Pop (1 → 1.16 → 1) only when the user selects it, not on first composition
         if (selected && settled) {
-            pop.snapTo(0.8f)
+            pop.animateTo(1.16f, motion.fastSpatialSpec())
             pop.animateTo(1f, motion.fastSpatialSpec())
         }
         settled = true

@@ -279,6 +279,8 @@
     <string name="reborn_themes_no_match">No themes match</string>
     <string name="reborn_themes_no_match_text">Nothing installed matches “%1$s”.</string>
     <string name="reborn_themes_header_line">%1$d installed · %2$d applied</string>
+    <string name="reborn_themes_installed_n">%1$d installed</string>
+    <string name="reborn_themes_applied_n">%1$d applied</string>
     <string name="reborn_themes_filter_reborn">Reborn</string>
     <string name="reborn_theme_applied_badge">Applied</string>
     <string name="reborn_themes_filter_all">All</string>
@@ -704,8 +706,8 @@
     <string name="reborn_home_your_themes">Your themes</string>
     <string name="reborn_home_more_themes">Install or create</string>
     <string name="reborn_home_more_themes_text">From a file, or your own</string>
-    <string name="reborn_home_create_title">Create a theme</string>
-    <string name="reborn_home_create_text">Start from your look, test it live, share it as a Reborn engine theme</string>
+    <string name="reborn_home_create_title">Make your own theme</string>
+    <string name="reborn_home_create_text">Palette, preview, export</string>
     <string name="reborn_home_tile_apps">apps themed</string>
     <string name="reborn_home_tile_overlays">overlays on</string>
     <string name="reborn_home_tile_qs">Quick Settings tweaks</string>
@@ -753,6 +755,38 @@
         <item quantity="one">+ %1$d overlay from %2$s</item>
         <item quantity="other">+ %1$d overlays from %2$s</item>
     </plurals>
+
+    <!-- Home (2.4): the brand bar, the colour-blocked Now card, quick actions, Try next -->
+    <string name="reborn_home_brand_sub">Substratum</string>
+    <string name="reborn_engine_pill_ok">All good</string>
+    <string name="reborn_engine_pill_update">Update ready</string>
+    <string name="reborn_engine_pill_checking">Checking</string>
+    <string name="reborn_engine_pill_setup">Finish setup</string>
+    <string name="reborn_engine_pill_description">Engine status: %1$s</string>
+    <string name="reborn_now_none_title">No theme yet</string>
+    <string name="reborn_now_pick">Pick a theme</string>
+    <string name="reborn_now_since">Since last apply</string>
+    <plurals name="reborn_now_new_apps">
+        <item quantity="one">%1$d new app</item>
+        <item quantity="other">%1$d new apps</item>
+    </plurals>
+    <string name="reborn_now_up_to_date">Up to date</string>
+    <string name="reborn_now_interrupted">Interrupted</string>
+    <plurals name="reborn_now_to_restart">
+        <item quantity="one">%1$d to restart</item>
+        <item quantity="other">%1$d to restart</item>
+    </plurals>
+    <string name="reborn_now_classic_native">Applied natively</string>
+    <string name="reborn_now_themes_installed">themes installed</string>
+    <string name="reborn_now_start_fresh">Or start fresh</string>
+    <string name="reborn_now_make_own">Make your own</string>
+    <string name="reborn_now_chip_classic">Classic</string>
+    <string name="reborn_now_chip_monet">Monet</string>
+    <string name="reborn_now_chip_white">White</string>
+    <string name="reborn_now_chip_custom">Custom</string>
+    <string name="reborn_now_undo">Undo</string>
+    <string name="reborn_home_try_next">Try next</string>
+    <string name="reborn_theme_kind_reborn_classic">Reborn and Classic</string>
 
     <!-- The Engine screen -->
     <string name="reborn_engine_title">Engine</string>
