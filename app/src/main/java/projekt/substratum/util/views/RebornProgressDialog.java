@@ -113,7 +113,10 @@ public final class RebornProgressDialog {
     }
 
     private AlertDialog build() {
-        View view = LayoutInflater.from(context).inflate(R.layout.reborn_progress_dialog, null, false);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        // Inflated in the dialog's own themed context, so the body takes the dialog's colours
+        View view = LayoutInflater.from(builder.getContext())
+                .inflate(R.layout.reborn_progress_dialog, null, false);
         messageView = view.findViewById(R.id.reborn_progress_message);
         bar = view.findViewById(R.id.reborn_progress_bar);
         messageView.setText(message);
@@ -121,7 +124,7 @@ public final class RebornProgressDialog {
         bar.setVisibility(horizontal ? View.VISIBLE : View.GONE);
         bar.setMax(max);
         bar.setProgressCompat(progress, false);
-        AlertDialog built = new MaterialAlertDialogBuilder(context)
+        AlertDialog built = builder
                 .setTitle(title)
                 .setView(view)
                 .setCancelable(cancelable)

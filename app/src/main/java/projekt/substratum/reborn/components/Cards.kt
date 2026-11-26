@@ -187,7 +187,10 @@ fun ActionTile(
     }
 }
 
-/** A banner for something that needs fixing, with its Fix button. */
+/**
+ * A banner for something that needs fixing, with its Fix button. [busy] disables the button (any
+ * action is running); [working] shows the in-button indicator, for the action this banner started.
+ */
 @Composable
 fun FixBanner(
     title: String,
@@ -197,6 +200,7 @@ fun FixBanner(
     modifier: Modifier = Modifier,
     warning: Boolean = false,
     busy: Boolean = false,
+    working: Boolean = busy,
 ) {
     val colors = LocalRebornColors.current
     val status = if (warning) colors.warn else colors.error
@@ -237,16 +241,20 @@ fun FixBanner(
                 },
                 enabled = !busy,
                 shapes = ButtonDefaults.shapes(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = status.accent,
-                    contentColor = status.onAccent,
-                    // Busy keeps the accent: the in-button indicator says it is working
-                    disabledContainerColor = status.accent,
-                    disabledContentColor = status.onAccent,
-                ),
+                colors = if (working) {
+                    ButtonDefaults.buttonColors(
+                        containerColor = status.accent,
+                        contentColor = status.onAccent,
+                        // Working keeps the accent: the in-button indicator says it is working
+                        disabledContainerColor = status.accent,
+                        disabledContentColor = status.onAccent,
+                    )
+                } else {
+                    ButtonDefaults.buttonColors(containerColor = status.accent, contentColor = status.onAccent)
+                },
                 contentPadding = PaddingValues(horizontal = 18.dp),
             ) {
-                BusyLabel(busy) { Text(fixLabel, maxLines = 1) }
+                BusyLabel(working) { Text(fixLabel, maxLines = 1) }
             }
         }
     }

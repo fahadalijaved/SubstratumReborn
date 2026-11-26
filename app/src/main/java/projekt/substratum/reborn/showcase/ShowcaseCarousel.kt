@@ -10,9 +10,7 @@ import android.view.accessibility.AccessibilityManager
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -400,7 +398,7 @@ private fun PageDots(count: Int, current: Int, onPick: (Int) -> Unit) {
             val on = index == current
             val width by animateDpAsState(
                 if (on) 22.dp else 8.dp,
-                spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMediumLow),
+                MaterialTheme.motionScheme.fastSpatialSpec(),
                 label = "dotWidth",
             )
             val color by animateColorAsState(

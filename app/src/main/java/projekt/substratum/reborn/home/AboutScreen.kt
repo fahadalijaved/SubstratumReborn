@@ -232,6 +232,8 @@ fun AboutScreen(onBack: () -> Unit, onWhatsNew: () -> Unit) {
                         stringResource(R.string.reborn_about_licences),
                         stringResource(R.string.reborn_about_licences_text),
                         scheme.tertiaryContainer, scheme.onTertiaryContainer, MaterialShapes.Pentagon.toShape(),
+                        // An in-app screen, not a browser
+                        external = false,
                         onClick = { openLicences(context, colors.dark) },
                     ),
                     Link(

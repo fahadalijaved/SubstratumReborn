@@ -13,9 +13,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -64,8 +62,11 @@ fun RebornSwitch(
 
 /**
  * The state-based Slider (the value/onValueChange overload is deprecated in material3 1.5.0)
- * behind the old value/onValueChange API, so call sites only change the name. The state follows
- * [value] whenever the user is not dragging. Steps tick with SegmentFrequentTick.
+ * behind the old value/onValueChange API, so call sites only change the name. Controlled, as the
+ * deprecated overload was: the thumb shows [value], also while dragging, so a caller that snaps
+ * (the QS rows stops) or clamps what it gets is what the user sees. The finger position is kept
+ * by the state itself, so the drag continues from where the finger is. Steps tick with
+ * SegmentFrequentTick.
  */
 @Composable
 fun RebornSlider(
@@ -79,21 +80,25 @@ fun RebornSlider(
     track: (@Composable (SliderState) -> Unit)? = null,
 ) {
     val haptics = LocalHapticFeedback.current
-    val state = rememberSliderState(value = value, steps = steps, trackRange = valueRange)
-    SideEffect { if (!state.isDragging && state.value != value) state.value = value }
+    // Exactly what the deprecated value overload does: one state per steps/range, set from the
+    // caller's value on every composition (before the Slider reads it)
+    val state = remember(steps, valueRange) { SliderState(value, steps, valueRange) }
+    state.value = value
     val interaction = remember { MutableInteractionSource() }
     Slider(
         state = state,
         onValueChange = {
             if (steps > 0 && it != state.value) haptics.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-            state.value = it // the state form needs this, or the thumb never moves
+            // The caller stores it (snapped or not); the next composition moves the thumb there
             onValueChange(it)
         },
         modifier = modifier,
         enabled = enabled,
         onValueChangeFinished = onValueChangeFinished,
         interactionSource = interaction,
-        track = track ?: { s -> SliderDefaults.Track(sliderState = s, trackCornerSize = 8.dp, modifier = Modifier.height(16.dp)) },
+        track = track ?: { s ->
+            SliderDefaults.Track(sliderState = s, trackCornerSize = 8.dp, enabled = enabled, modifier = Modifier.height(16.dp))
+        },
     )
 }
 

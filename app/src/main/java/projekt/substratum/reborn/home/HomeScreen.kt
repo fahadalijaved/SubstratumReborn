@@ -171,6 +171,15 @@ fun HomeScreen(
         }
     }
 
+    /** The [act] key a fix runs under (null: it opens another app), for its banner's indicator. */
+    fun actionKey(fix: Fix): String? = when (fix) {
+        Fix.Engine -> "engine"
+        Fix.RestartSystemUi -> "restart"
+        Fix.ResetGuard -> "guard"
+        Fix.ResumeHooks -> "pause"
+        Fix.RootManager, Fix.Lsposed -> null
+    }
+
     fun fix(fix: Fix) {
         when (fix) {
             Fix.RootManager -> scope.launch {
@@ -259,6 +268,8 @@ fun HomeScreen(
                         onFix = { fix(issue.fix) },
                         warning = issue.warning,
                         busy = busy != null,
+                        // Only the banner whose fix is running shows the indicator
+                        working = busy != null && busy == actionKey(issue.fix),
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -267,6 +278,7 @@ fun HomeScreen(
                         HooksUpdateCard(
                             update = update,
                             busy = busy != null,
+                            working = busy == "restart",
                             onRestart = { confirm = Confirm.RestartSystemUi },
                             modifier = Modifier.animateItem(),
                         )
@@ -569,7 +581,13 @@ private fun AmoledCard(amoled: AmoledSummary?, onClick: () -> Unit) {
  * a restart of System UI loads the new ones. Tonal, not a warning.
  */
 @Composable
-private fun HooksUpdateCard(update: HooksUpdate, busy: Boolean, onRestart: () -> Unit, modifier: Modifier = Modifier) {
+private fun HooksUpdateCard(
+    update: HooksUpdate,
+    busy: Boolean,
+    working: Boolean,
+    onRestart: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val scheme = MaterialTheme.colorScheme
     val haptics = LocalHapticFeedback.current
     Surface(
@@ -608,15 +626,22 @@ private fun HooksUpdateCard(update: HooksUpdate, busy: Boolean, onRestart: () ->
                     },
                     enabled = !busy,
                     shapes = ButtonDefaults.shapes(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = scheme.onSecondaryContainer,
-                        contentColor = scheme.secondaryContainer,
-                        // Busy keeps the colours: the in-button indicator says it is working
-                        disabledContainerColor = scheme.onSecondaryContainer,
-                        disabledContentColor = scheme.secondaryContainer,
-                    ),
+                    colors = if (working) {
+                        ButtonDefaults.buttonColors(
+                            containerColor = scheme.onSecondaryContainer,
+                            contentColor = scheme.secondaryContainer,
+                            // Working keeps the colours: the in-button indicator says it is working
+                            disabledContainerColor = scheme.onSecondaryContainer,
+                            disabledContentColor = scheme.secondaryContainer,
+                        )
+                    } else {
+                        ButtonDefaults.buttonColors(
+                            containerColor = scheme.onSecondaryContainer,
+                            contentColor = scheme.secondaryContainer,
+                        )
+                    },
                 ) {
-                    BusyLabel(busy) {
+                    BusyLabel(working) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(painterResource(R.drawable.ic_reborn_restart), contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))

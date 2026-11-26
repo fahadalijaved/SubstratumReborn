@@ -64,7 +64,11 @@ fun RebornNavBar(
     ShortNavigationBar(
         modifier = modifier.drawWithContent {
             drawContent()
-            if (colors.dark) drawLine(edge, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx())
+            if (colors.dark) {
+                // Inside the bar's top edge (a line on y = 0 would draw half over the page)
+                val w = 1.dp.toPx()
+                drawLine(edge, Offset(0f, w / 2), Offset(size.width, w / 2), w)
+            }
         },
         containerColor = if (colors.dark) scheme.background else scheme.surfaceContainer,
     ) {
