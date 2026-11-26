@@ -194,8 +194,11 @@ public final class SystemAmoled {
         awaitStock(context, pkg);
         String key = versionKey(context, pkg);
         List<AmoledChange> changes;
+        // The app's stock accent, read with the colors (once the overlay is enabled again it
+        // would show the chosen accent instead)
+        int[] stockPrimary = {AmoledPalette.ONEUI_BLUE};
         try {
-            changes = compute(context, pkg, rules);
+            changes = compute(context, pkg, rules, stockPrimary);
         } catch (Throwable t) {
             // Keep what the app had
             Log.w(TAG, "Skipping " + pkg + ", keeping its previous colors: " + t);
@@ -240,7 +243,7 @@ public final class SystemAmoled {
                 if (!rejected.contains("color/" + change.name)) applied.add(change);
             }
             File file = AmoledChange.save(context, new AmoledChange.Record(pkg,
-                    rules.level().key(), rules.accent(), primary50(context, pkg), route.name(),
+                    rules.level().key(), rules.accent(), stockPrimary[0], route.name(),
                     key, System.currentTimeMillis(), applied));
             if (file != null) changesFile = file.getAbsolutePath();
         } else {
@@ -1032,6 +1035,18 @@ public final class SystemAmoled {
      */
     static List<AmoledChange> compute(Context context, String pkg, AmoledRules rules)
             throws PackageManager.NameNotFoundException {
+        return compute(context, pkg, rules, null);
+    }
+
+    /**
+     * {@link #compute(Context, String, AmoledRules)}
+     *
+     * @param stockPrimary If not null, [0] is set to the app's stock basic_token_primary_50 (dark
+     *                     mode), read with the colors
+     */
+    static List<AmoledChange> compute(Context context, String pkg, AmoledRules rules,
+                                      int[] stockPrimary)
+            throws PackageManager.NameNotFoundException {
         Context app = context.createPackageContext(pkg, Context.CONTEXT_IGNORE_SECURITY);
         Configuration night = new Configuration(app.getResources().getConfiguration());
         night.uiMode = (night.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
@@ -1044,6 +1059,7 @@ public final class SystemAmoled {
         TypedValue dayRaw = new TypedValue();
         TypedValue dayValue = new TypedValue();
         int primary50 = primary50(res, pkg);
+        if (stockPrimary != null && stockPrimary.length > 0) stockPrimary[0] = primary50;
 
         List<AmoledChange> changes = new ArrayList<>();
         TypedValue tv = new TypedValue();
@@ -1129,14 +1145,6 @@ public final class SystemAmoled {
             // none
         }
         return AmoledPalette.ONEUI_BLUE;
-    }
-
-    private static int primary50(Context context, String pkg) {
-        try {
-            return primary50(nightResources(context, pkg), pkg);
-        } catch (PackageManager.NameNotFoundException | RuntimeException e) {
-            return AmoledPalette.ONEUI_BLUE;
-        }
     }
 
     /**

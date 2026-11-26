@@ -56,11 +56,14 @@ public class AmoledAccentTest {
         // A grey shade stays grey (chroma 0 scales the accent's chroma to 0)
         Hct grey = Hct.fromInt(AmoledPalette.toneSwap(0xff808080, SPRITE, BLUE));
         assertTrue(grey.getChroma() < 2);
-        // A white accent lifts light shades towards white, keeps dark ones
-        Hct light = Hct.fromInt(AmoledPalette.toneSwap(0xff387aff, 0xffffffff, BLUE));
-        assertTrue(light.getTone() > 85 && light.getChroma() < 4);
-        Hct dark = Hct.fromInt(AmoledPalette.toneSwap(0xff091429, 0xffffffff, BLUE));
-        assertEquals(Hct.fromInt(0xff091429).getTone(), dark.getTone(), 1.0);
+        // A white accent gives neutral shades at the stock tones, so white text and thumbs on
+        // an accent fill keep their contrast
+        for (int stock : new int[]{0xff387aff, 0xff598fff, 0xff091429, 0xfff5f8ff}) {
+            Hct swapped = Hct.fromInt(AmoledPalette.toneSwap(stock, 0xffffffff, BLUE));
+            assertEquals("tone of " + hex(stock), Hct.fromInt(stock).getTone(),
+                    swapped.getTone(), 1.0);
+            assertTrue("chroma of " + hex(stock), swapped.getChroma() < 4);
+        }
     }
 
     @Test

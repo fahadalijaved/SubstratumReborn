@@ -267,11 +267,16 @@ public final class AmoledJobs {
     }
 
     /**
-     * A newer job of the same kind waits in the queue: for an APPLY_ALL, running this one would
-     * only be redone by it.
+     * A newer job of the same kind and rules theme waits in the queue: for an APPLY_ALL, running
+     * this one would only be redone by it.
      */
     public static boolean hasNewerWaiting(Job job) {
-        for (Job other : WAITING) if (other.kind == job.kind && other.id > job.id) return true;
+        for (Job other : WAITING) {
+            if (other.kind == job.kind && other.id > job.id &&
+                    java.util.Objects.equals(other.theme, job.theme)) {
+                return true;
+            }
+        }
         return false;
     }
 

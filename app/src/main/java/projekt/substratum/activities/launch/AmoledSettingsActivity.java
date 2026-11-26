@@ -202,6 +202,13 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(R.string.system_amoled_remove, (d, w) -> {
                     if (needsRoot()) return;
+                    // A look change waiting to apply would apply AMOLED again right after the
+                    // removal: it stays saved for the next apply instead
+                    main.removeCallbacks(applyLook);
+                    lookApplyPending = false;
+                    lookNote.setVisibility(View.GONE);
+                    amoledOn = false;
+                    updateQsApply();
                     AmoledJobs.remove(this);
                     showRunning(getString(R.string.system_amoled_removing));
                 })
@@ -616,12 +623,10 @@ public class AmoledSettingsActivity extends AppCompatActivity {
                 main.removeCallbacks(applyLook);
                 applyLookNow();
             }
-            // Keeps the rules' track color
-            QsOptions chosen = QsOptions.read();
             float rows = slider.getValue() / 100f;
-            chosen.aspect = rows >= QsOptions.STOCK_ASPECT - 0.005f ? 0 : rows;
-            chosen.shade = shade.isChecked();
-            chosen.track = track.isChecked();
+            float chosenAspect = rows >= QsOptions.STOCK_ASPECT - 0.005f ? 0 : rows;
+            boolean chosenShade = shade.isChecked();
+            boolean chosenTrack = track.isChecked();
             String tileChoice = tileOf(tiles.getCheckedButtonId());
             String previousTile = tileChoice();
             prefs.edit().putString(AmoledRules.PREF_ACTIVE_TILE, tileChoice)
@@ -648,6 +653,11 @@ public class AmoledSettingsActivity extends AppCompatActivity {
             // Written and carried out in one task: leaving or recreating the screen right after
             // the tap neither loses the apply nor hands work to a stopped executor
             worker.execute(() -> {
+                // Read here (a file): keeps the rules' track color
+                QsOptions chosen = QsOptions.read();
+                chosen.aspect = chosenAspect;
+                chosen.shade = chosenShade;
+                chosen.track = chosenTrack;
                 boolean written = chosen.write(app);
                 if (written) {
                     if (colorsChanged) {

@@ -182,8 +182,10 @@ public final class AmoledPalette {
      * A shade of the stock accent as the same shade of another accent, in Material's HCT color
      * space: the accent's hue, its chroma scaled by how colorful this shade is next to the stock
      * accent (0 to 1.2 times), and the shade's own tone. So One UI's light and dark accent steps
-     * keep their contrast with text and surfaces. A grey or white accent lifts the light shades
-     * towards white, so it reads as white rather than grey. The stock alpha is kept.
+     * keep their contrast with text and surfaces: white text, switch thumbs and check marks on an
+     * accent fill stay readable. A grey or white accent therefore gives neutral shades at the
+     * stock tones (the active quick settings tile takes the accent itself). The stock alpha is
+     * kept.
      *
      * @param primary50 The stock accent the shades were made from
      */
@@ -193,9 +195,7 @@ public final class AmoledPalette {
         Hct reference = Hct.fromInt(primary50 | 0xff000000);
         double ratio = reference.getChroma() < 1 ? 1 :
                 Math.max(0, Math.min(1.2, shade.getChroma() / reference.getChroma()));
-        double tone = shade.getTone();
-        if (target.getChroma() < 8 && tone >= 50) tone = 85 + (tone - 50) * 0.3;
-        int rgb = Hct.from(target.getHue(), target.getChroma() * ratio, tone).toInt();
+        int rgb = Hct.from(target.getHue(), target.getChroma() * ratio, shade.getTone()).toInt();
         return (stock & 0xff000000) | (rgb & 0x00ffffff);
     }
 
