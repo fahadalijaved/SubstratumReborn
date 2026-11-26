@@ -169,6 +169,15 @@ public final class AmoledJobs {
     }
 
     /**
+     * Whether a {@link #remove} has something to take away: AMOLED is applied as the state file
+     * says, or the module flag it leaves is still there. Blocking (files).
+     */
+    public static boolean isApplied(Context context) {
+        if (new java.io.File(XposedBackend.DIR, XposedBackend.AMOLED_FLAG).exists()) return true;
+        return AmoledState.exists(context) && AmoledState.read(context).enabled;
+    }
+
+    /**
      * Register the fabricated overlays again after a reboot (needs root, shows no UI).
      */
     public static void restore(Context context) {

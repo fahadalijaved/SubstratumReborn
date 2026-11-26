@@ -6,6 +6,7 @@ package projekt.substratum.reborn.home
 
 import android.text.format.DateUtils
 import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -42,6 +43,7 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -55,13 +57,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -70,8 +76,10 @@ import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.RebornCache
 import projekt.substratum.reborn.amoled.AmoledSummary
-import projekt.substratum.reborn.amoled.AppliedNow
-import projekt.substratum.reborn.amoled.readAppliedNow
+import projekt.substratum.reborn.applied.AppliedRepository
+import projekt.substratum.reborn.applied.AppliedSnapshot
+import projekt.substratum.reborn.applied.AppliedSource
+import projekt.substratum.reborn.applied.QsOption
 import projekt.substratum.reborn.components.ActionTile
 import projekt.substratum.reborn.components.ChipState
 import projekt.substratum.reborn.components.ConfirmDialog
@@ -96,6 +104,7 @@ private enum class Confirm { Pause, Resume, SoftReboot }
 fun HomeScreen(
     onOpenSetup: () -> Unit,
     onOpenAmoled: () -> Unit,
+    onOpenApplied: () -> Unit,
 ) {
     val context = LocalContext.current
     val snackbar = rememberSnackbar()
@@ -105,8 +114,10 @@ fun HomeScreen(
     val status by rememberRoot(resume, refresh, initial = RebornCache.status) {
         RebornStatus.read(context).also { RebornCache.status = it }
     }
-    val applied by rememberRoot(resume, refresh, initial = RebornCache.applied) {
-        readAppliedNow(context).also { RebornCache.applied = it }
+    // The same read as the Applied tab: one source of truth for what is applied
+    val appliedVersion by AppliedRepository.version.collectAsStateWithLifecycle()
+    val applied by rememberRoot(resume, refresh, appliedVersion, initial = RebornCache.applied) {
+        AppliedRepository.read(context).also { RebornCache.applied = it }
     }
     val model = remember(status) { status?.let { describe(context, it) } }
     var busy by remember { mutableStateOf<String?>(null) }
@@ -245,13 +256,22 @@ fun HomeScreen(
                 )
             }
             item(key = "applied_header") {
-                Entrance(1, animate) { SectionHeader(stringResource(R.string.reborn_applied_now)) }
+                Entrance(1, animate) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionHeader(stringResource(R.string.reborn_applied_now), Modifier.weight(1f))
+                        TextButton(onClick = onOpenApplied, modifier = Modifier.padding(top = 10.dp)) {
+                            Text(stringResource(R.string.reborn_see_all))
+                            Spacer(Modifier.width(4.dp))
+                            Icon(painterResource(R.drawable.ic_reborn_chevron), contentDescription = null, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
             }
             item(key = "amoled") {
                 Entrance(2, animate) { AmoledCard(applied?.amoled, onOpenAmoled) }
             }
             item(key = "applied_tiles") {
-                Entrance(3, animate) { AppliedTiles(applied) }
+                Entrance(3, animate) { AppliedTiles(applied, onOpenApplied) }
             }
             item(key = "actions_header") {
                 Entrance(4, animate) { SectionHeader(stringResource(R.string.reborn_quick_actions)) }
@@ -270,6 +290,11 @@ fun HomeScreen(
                         onPause = { confirm = if (model?.hooksPaused == true) Confirm.Resume else Confirm.Pause },
                         onSoftReboot = { confirm = Confirm.SoftReboot },
                         onSetup = onOpenSetup,
+                        onUndoAll = {
+                            val snapshot = applied
+                            if (snapshot == null) snackbar(context.getString(R.string.reborn_reading))
+                            else AppliedRepository.askUndo(snapshot.undoPlan())
+                        },
                     )
                 }
             }
@@ -506,7 +531,7 @@ private fun relativeTime(time: Long): String =
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun AppliedTiles(applied: AppliedNow?) {
+private fun AppliedTiles(applied: AppliedSnapshot?, onOpenApplied: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -518,6 +543,7 @@ private fun AppliedTiles(applied: AppliedNow?) {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
+            onClick = onOpenApplied,
             contentPadding = PaddingValues(18.dp),
         ) {
             ShapedIcon(
@@ -529,7 +555,7 @@ private fun AppliedTiles(applied: AppliedNow?) {
             )
             Spacer(Modifier.height(14.dp))
             Text(
-                text = applied?.overlays?.toString() ?: "–",
+                text = applied?.count(AppliedSource.THEME_OVERLAY, true)?.toString() ?: "–",
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -543,6 +569,7 @@ private fun AppliedTiles(applied: AppliedNow?) {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
+            onClick = onOpenApplied,
             contentPadding = PaddingValues(18.dp),
         ) {
             ShapedIcon(
@@ -559,25 +586,27 @@ private fun AppliedTiles(applied: AppliedNow?) {
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(10.dp))
-            val qs = applied?.qs
-            val amoledOn = applied?.amoled?.enabled == true
-            if (qs == null) {
+            if (applied == null) {
                 Text(stringResource(R.string.reborn_reading), style = MaterialTheme.typography.bodyMedium)
             } else {
+                // The options as Applied lists them: shade and tracks act only while AMOLED is on
+                val shade = applied.qs(QsOption.SHADE)
+                val tracks = applied.qs(QsOption.TRACK)
+                val rows = applied.qs(QsOption.ROWS)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusChip(
                         stringResource(R.string.reborn_qs_shade),
-                        if (qs.shade && amoledOn) ChipState.OK else ChipState.Off,
+                        if (shade?.enabled == true) ChipState.OK else ChipState.Off,
                     )
                     StatusChip(
                         stringResource(R.string.reborn_qs_tracks),
-                        if (qs.track && amoledOn) ChipState.OK else ChipState.Off,
+                        if (tracks?.enabled == true) ChipState.OK else ChipState.Off,
                     )
                     StatusChip(
-                        if (qs.aspect > 0f) stringResource(R.string.reborn_qs_rows,
-                            String.format(Locale.US, "%.2f", qs.aspect))
+                        if (rows?.enabled == true) stringResource(R.string.reborn_qs_rows,
+                            String.format(Locale.US, "%.2f", rows.value?.toFloatOrNull() ?: 0f))
                         else stringResource(R.string.reborn_qs_rows_stock),
-                        if (qs.aspect > 0f) ChipState.OK else ChipState.Off,
+                        if (rows?.enabled == true) ChipState.OK else ChipState.Off,
                     )
                 }
             }
@@ -594,6 +623,7 @@ private fun QuickActions(
     onPause: () -> Unit,
     onSoftReboot: () -> Unit,
     onSetup: () -> Unit,
+    onUndoAll: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val colors = LocalRebornColors.current
@@ -661,6 +691,54 @@ private fun QuickActions(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
+            )
+        }
+        WideActionTile(
+            icon = R.drawable.ic_reborn_undo,
+            title = stringResource(R.string.reborn_action_undo_all),
+            subtitle = stringResource(R.string.reborn_action_undo_all_text),
+            onClick = onUndoAll,
+            container = colors.warn.container,
+            content = colors.warn.accent,
+        )
+    }
+}
+
+/** A full-width quick action: the shape and icon, title and detail side by side. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun WideActionTile(
+    @DrawableRes icon: Int,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    container: Color,
+    content: Color,
+) {
+    val haptics = LocalHapticFeedback.current
+    SectionCard(
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+            onClick()
+        },
+        contentPadding = PaddingValues(18.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            ShapedIcon(icon, container, content, size = 52.dp, shape = MaterialShapes.Burst.toShape())
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                painterResource(R.drawable.ic_reborn_chevron),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

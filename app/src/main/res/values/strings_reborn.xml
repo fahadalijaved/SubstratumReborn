@@ -186,12 +186,140 @@
     </plurals>
     <string name="reborn_themes_empty">No themes yet</string>
     <string name="reborn_theme_failed">This theme did not open</string>
-    <string name="reborn_themes_empty_text">Classic Substratum can install the bundled Reborn AMOLED theme.</string>
+    <string name="reborn_themes_empty_text">Install the bundled Reborn AMOLED, or a Substratum theme APK you already have on this phone.</string>
+    <string name="reborn_themes_search">Search themes</string>
+    <string name="reborn_themes_no_match">No themes match</string>
+    <string name="reborn_themes_no_match_text">Nothing installed matches “%1$s”.</string>
+    <string name="reborn_theme_by">by %1$s</string>
+    <string name="reborn_theme_by_version">by %1$s · %2$s</string>
+    <string name="reborn_theme_package_version">%1$s · %2$s</string>
+    <string name="reborn_theme_chip_rules">Rules theme: every app</string>
+    <string name="reborn_theme_chip_overlays">Overlays</string>
+    <string name="reborn_theme_chip_wallpapers">Wallpapers</string>
+    <string name="reborn_theme_open">Open</string>
+    <string name="reborn_theme_open_rules">Opens in AMOLED Studio</string>
+    <string name="reborn_theme_open_overlays">Pick overlays, then Build &amp; Enable</string>
+    <string name="reborn_theme_app_info">App info</string>
+    <string name="reborn_theme_app_info_text">Storage, permissions and version in Settings</string>
+    <string name="reborn_theme_shortcut">Create shortcut</string>
+    <string name="reborn_theme_shortcut_text">Pin this theme to the home screen</string>
+    <string name="reborn_theme_shortcut_done">Confirm the shortcut in the launcher\'s dialog</string>
+    <string name="reborn_theme_uninstall">Uninstall</string>
+    <string name="reborn_theme_uninstall_text">Removes the theme app. Overlays it applied stay until you turn them off in Applied.</string>
+    <string name="reborn_theme_shortcut_label">%1$s (%2$s)</string>
+    <string name="reborn_discover">Discover</string>
+    <string name="reborn_discover_starter_title">Reborn AMOLED</string>
+    <string name="reborn_discover_starter_text">True black for every app, built into Reborn. Installs in seconds and opens in AMOLED Studio.</string>
+    <string name="reborn_discover_install">Install</string>
+    <string name="reborn_discover_file_title">Install theme from file</string>
+    <string name="reborn_discover_file_text">Pick a Substratum theme APK on this phone. Reborn checks that it is a theme, then installs it with root.</string>
+    <string name="reborn_discover_file_action">Choose APK…</string>
+    <string name="reborn_install_file">Install theme from file…</string>
+    <string name="reborn_installing">Installing…</string>
+    <string name="reborn_install_done">%1$s installed</string>
+    <string name="reborn_install_not_theme">That APK is not a Substratum theme: nothing was installed</string>
+    <string name="reborn_install_failed">Install failed: %1$s</string>
+    <string name="reborn_install_failed_plain">Install failed</string>
+    <string name="reborn_open">Open</string>
 
     <!-- Applied tab -->
-    <string name="reborn_applied_soon">Everything applied, in one place</string>
-    <string name="reborn_applied_soon_text">Compiled overlays, AMOLED and quick settings tweaks will be listed here with one Undo. Until then the Classic overlay manager has the overlays.</string>
-    <string name="reborn_applied_open_manager">Open overlay manager</string>
+    <string name="reborn_applied_subtitle">%1$d on · %2$d off · %3$s</string>
+    <plurals name="reborn_applied_apps">
+        <item quantity="one">%d app</item>
+        <item quantity="other">%d apps</item>
+    </plurals>
+    <string name="reborn_applied_undo_all">Undo all</string>
+    <string name="reborn_applied_search">Search apps and themes</string>
+    <string name="reborn_applied_filter_all">All</string>
+    <string name="reborn_applied_filter_overlays">Theme overlays</string>
+    <string name="reborn_applied_filter_amoled">AMOLED</string>
+    <string name="reborn_applied_filter_qs">Quick Settings</string>
+    <string name="reborn_applied_filter_on">Enabled</string>
+    <string name="reborn_applied_filter_off">Off</string>
+    <string name="reborn_applied_state_on">Enabled</string>
+    <string name="reborn_applied_state_off">Off</string>
+    <string name="reborn_applied_source_theme">Theme: %1$s</string>
+    <string name="reborn_applied_source_overlay">Compiled overlay</string>
+    <string name="reborn_applied_source_amoled">AMOLED</string>
+    <string name="reborn_applied_source_qs">Quick Settings</string>
+    <string name="reborn_applied_android">Android system</string>
+    <string name="reborn_applied_group_counts">%1$d on · %2$d off</string>
+    <string name="reborn_applied_overlay_title">Compiled overlay</string>
+    <string name="reborn_applied_overlay_fabricated">Fabricated values · %1$s</string>
+    <string name="reborn_applied_amoled_title">AMOLED colours</string>
+    <string name="reborn_applied_route_overlay">Fabricated overlay</string>
+    <string name="reborn_applied_route_module">LSPosed module</string>
+    <string name="reborn_applied_detail_join">%1$s · %2$s</string>
+    <string name="reborn_applied_restart_app">restart needed</string>
+    <string name="reborn_applied_qs_shade_detail">Solid black behind notifications and Quick Settings</string>
+    <string name="reborn_applied_qs_track_detail">Brightness and volume sliders in near-black</string>
+    <string name="reborn_applied_qs_rows_title">Compact rows</string>
+    <string name="reborn_applied_qs_rows_detail">Tile rows at %1$s of the cell width (stock 0.917)</string>
+    <string name="reborn_applied_qs_tile_title">Active tile colour</string>
+    <string name="reborn_applied_qs_tile_detail">Active tiles in %1$s</string>
+    <string name="reborn_applied_turn_off">Turn off</string>
+    <string name="reborn_applied_inspect">Inspect colours</string>
+    <string name="reborn_applied_off_overlay">%1$s: overlay off</string>
+    <string name="reborn_applied_off_qs">%1$s off · applies after a System UI restart</string>
+    <string name="reborn_applied_off_tile">Active tile back to stock · System UI restarts</string>
+    <string name="reborn_applied_restart_title">System UI restart needed</string>
+    <string name="reborn_applied_restart_text">Quick Settings changes apply after a System UI restart.</string>
+    <string name="reborn_applied_restart">Restart</string>
+    <string name="reborn_applied_swipe_hint">Swipe a row to turn it off · tap AMOLED rows to inspect</string>
+    <string name="reborn_applied_empty">Everything is stock</string>
+    <string name="reborn_applied_empty_text">Nothing is applied right now. Apply AMOLED in the Studio, or a theme from Themes.</string>
+    <string name="reborn_applied_open_studio">AMOLED Studio</string>
+    <string name="reborn_applied_open_themes">Browse themes</string>
+    <string name="reborn_applied_no_match">Nothing matches</string>
+    <string name="reborn_applied_no_match_text">Try another filter or search.</string>
+    <string name="reborn_see_all">See all</string>
+
+    <!-- Undo everything (Applied and Home) -->
+    <string name="reborn_undo_title">Undo everything?</string>
+    <string name="reborn_undo_text">All of this goes back to stock. AMOLED keeps a snapshot of its colours, and you can apply it again from AMOLED Studio.</string>
+    <string name="reborn_undo_amoled">AMOLED for every app</string>
+    <plurals name="reborn_undo_amoled_count">
+        <item quantity="one">On %d app</item>
+        <item quantity="other">On %d apps</item>
+    </plurals>
+    <string name="reborn_undo_amoled_off">Not applied: leftovers are cleaned up</string>
+    <string name="reborn_undo_overlays">Theme overlays</string>
+    <plurals name="reborn_undo_overlays_count">
+        <item quantity="one">%d enabled</item>
+        <item quantity="other">%d enabled</item>
+    </plurals>
+    <string name="reborn_undo_qs">Quick Settings</string>
+    <plurals name="reborn_undo_qs_count">
+        <item quantity="one">%d option back to stock</item>
+        <item quantity="other">%d options back to stock</item>
+    </plurals>
+    <string name="reborn_undo_systemui">System UI</string>
+    <string name="reborn_undo_systemui_text">Restarts to load stock</string>
+    <string name="reborn_undo_confirm">Undo everything</string>
+    <string name="reborn_undo_running">Undoing everything</string>
+    <string name="reborn_undo_step_amoled">Remove AMOLED</string>
+    <string name="reborn_undo_step_overlays">Turn off theme overlays</string>
+    <string name="reborn_undo_step_qs">Reset Quick Settings</string>
+    <string name="reborn_undo_step_systemui">Restart System UI</string>
+    <string name="reborn_undo_done_title">Back to stock</string>
+    <string name="reborn_undo_done_amoled">AMOLED removal queued: it finishes in the background</string>
+    <plurals name="reborn_undo_done_overlays">
+        <item quantity="one">%d overlay turned off</item>
+        <item quantity="other">%d overlays turned off</item>
+    </plurals>
+    <string name="reborn_undo_done_overlays_none">No overlays were on</string>
+    <plurals name="reborn_undo_done_overlays_left">
+        <item quantity="one">%d overlay is still on</item>
+        <item quantity="other">%d overlays are still on</item>
+    </plurals>
+    <string name="reborn_undo_done_qs">Quick Settings back to stock</string>
+    <string name="reborn_undo_done_restart">System UI restarted</string>
+    <string name="reborn_undo_done_note">To bring AMOLED back, apply it again in AMOLED Studio and set the Quick Settings options there.</string>
+    <string name="reborn_undo_failed_step">%1$s did not work</string>
+    <string name="reborn_undo_no_root">Reborn needs root to undo anything</string>
+    <string name="reborn_done">Done</string>
+    <string name="reborn_action_undo_all">Undo everything</string>
+    <string name="reborn_action_undo_all_text">AMOLED, theme overlays and Quick Settings back to stock, in one go</string>
 
     <!-- AMOLED Studio: hero -->
     <string name="reborn_studio_subtitle">Studio</string>

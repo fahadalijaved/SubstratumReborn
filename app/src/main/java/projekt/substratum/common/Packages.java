@@ -715,29 +715,18 @@ public class Packages {
                 // By default, we will have to enforce continuation to false, if a poorly adapted
                 // theme did not implement the proper meta data.
                 boolean canContinue = false;
-                if ((appInfo.metaData.getString(metadataName) != null) &&
-                        (appInfo.metaData.getString(metadataAuthor) != null) &&
-                        (appInfo.metaData.getString(metadataVersion) != null)) {
-                    // Check if Samsung, and block the showing of the theme if the theme does not
-                    // support samsung intentionally!
-                    boolean samsungSupport =
-                            appInfo.metaData.getBoolean(metadataSamsungSupport, true);
-                    if (!samsungSupport && !isNewSamsungDeviceAndromeda(context) &&
-                            (Systems.isSamsungDevice(context) || Systems.isNewSamsungDevice())) {
-                        canContinue = false;
-                    } else {
-                        // The theme app contains the proper metadata
-                        canContinue = true;
-                        // If the user is searching using the search bar
-                        if ((searchFilter != null) && !searchFilter.isEmpty()) {
-                            @SuppressWarnings("StringBufferReplaceableByString") StringBuilder
-                                    filtered = new StringBuilder();
-                            filtered.append(appInfo.metaData.getString(metadataName));
-                            filtered.append(appInfo.metaData.getString(metadataAuthor));
-                            canContinue = filtered.toString()
-                                    .toLowerCase(Locale.US)
-                                    .contains(searchFilter.toLowerCase(Locale.US));
-                        }
+                if (isUsableTheme(context, appInfo)) {
+                    // The theme app contains the proper metadata
+                    canContinue = true;
+                    // If the user is searching using the search bar
+                    if ((searchFilter != null) && !searchFilter.isEmpty()) {
+                        @SuppressWarnings("StringBufferReplaceableByString") StringBuilder
+                                filtered = new StringBuilder();
+                        filtered.append(appInfo.metaData.getString(metadataName));
+                        filtered.append(appInfo.metaData.getString(metadataAuthor));
+                        canContinue = filtered.toString()
+                                .toLowerCase(Locale.US)
+                                .contains(searchFilter.toLowerCase(Locale.US));
                     }
                 }
                 if (canContinue) {
@@ -759,6 +748,49 @@ public class Packages {
         } catch (Exception ignored) {
         }
         return null;
+    }
+
+    /**
+     * Whether an installed theme carries the metadata Substratum needs (name, author, plugin
+     * version) and does not refuse this device (Samsung support).
+     */
+    private static boolean isUsableTheme(Context context, ApplicationInfo appInfo) {
+        if (appInfo.metaData == null) return false;
+        if ((appInfo.metaData.getString(metadataName) == null) ||
+                (appInfo.metaData.getString(metadataAuthor) == null) ||
+                (appInfo.metaData.getString(metadataVersion) == null)) {
+            return false;
+        }
+        // Check if Samsung, and block the showing of the theme if the theme does not support
+        // samsung intentionally!
+        boolean samsungSupport = appInfo.metaData.getBoolean(metadataSamsungSupport, true);
+        return samsungSupport || isNewSamsungDeviceAndromeda(context) ||
+                !(Systems.isSamsungDevice(context) || Systems.isNewSamsungDevice());
+    }
+
+    /**
+     * Every installed theme {@link #getSubstratumPackages} accepts, one entry per package: two
+     * themes with the same name (a port next to its original) are both listed.
+     *
+     * @param context Context
+     * @return The themes' application infos, with their metadata
+     */
+    public static List<ApplicationInfo> listSubstratumThemes(Context context) {
+        List<ApplicationInfo> themes = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        PackageManager pm = context.getPackageManager();
+        for (ResolveInfo ri : getThemes(context)) {
+            String packageName = ri.activityInfo.packageName;
+            if (!seen.add(packageName)) continue;
+            try {
+                ApplicationInfo appInfo =
+                        pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+                if (isUsableTheme(context, appInfo)) themes.add(appInfo);
+            } catch (Exception e) {
+                Log.e(PACKAGE_TAG, "Skipping package: '" + packageName + "': " + e);
+            }
+        }
+        return themes;
     }
 
     /**

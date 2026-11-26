@@ -255,13 +255,25 @@ fun ConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     @DrawableRes icon: Int? = null,
+    /** Shown under [text]: what the action covers, for instance */
+    body: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val haptics = LocalHapticFeedback.current
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = icon?.let { { Icon(painterResource(it), contentDescription = null) } },
         title = { Text(title) },
-        text = { Text(text) },
+        text = {
+            if (body == null) {
+                Text(text)
+            } else {
+                Column {
+                    Text(text)
+                    Spacer(Modifier.height(16.dp))
+                    body()
+                }
+            }
+        },
         confirmButton = {
             Button(onClick = {
                 haptics.performHapticFeedback(HapticFeedbackType.Confirm)

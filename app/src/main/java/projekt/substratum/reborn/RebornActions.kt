@@ -15,6 +15,7 @@ import projekt.substratum.common.platform.AmoledState
 import projekt.substratum.common.platform.QsOptions
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.common.platform.XposedBackend
+import projekt.substratum.reborn.applied.AppliedRepository
 import projekt.substratum.reborn.components.onIo
 
 /** What the Reborn screens do to the device. Root work always runs on the IO dispatcher. */
@@ -22,12 +23,17 @@ object RebornActions {
 
     const val AMOLED_THEME = "projekt.substratum.theme.amoled"
 
-    suspend fun restartSystemUi() = onIo { QsOptions.restartSystemUi() }
+    suspend fun restartSystemUi() = onIo {
+        QsOptions.restartSystemUi()
+        // Quick Settings options written in Applied are picked up now
+        AppliedRepository.restartDone()
+    }
 
     /** Kill switch on or off, then a System UI restart so it takes effect there at once. */
     suspend fun setHooksPaused(paused: Boolean): Boolean = onIo {
         val done = XposedBackend.setHooksPaused(paused)
         QsOptions.restartSystemUi()
+        AppliedRepository.restartDone()
         done
     }
 

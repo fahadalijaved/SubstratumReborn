@@ -42,11 +42,7 @@ public final class StarterTheme {
             boolean installed = false;
             try {
                 if (Root.checkRootAccess()) {
-                    File apk = copyAsset(app, new File(app.getCacheDir(), "reborn_amoled.apk"));
-                    String result = Root.runCommand("pm install -r '" + apk.getAbsolutePath() + "'");
-                    installed = result != null && result.contains("Success");
-                    //noinspection ResultOfMethodCallIgnored
-                    apk.delete();
+                    installed = installWithRoot(app);
                 } else {
                     // Without root, hand the APK to the system installer
                     File dir = app.getExternalCacheDir();
@@ -75,6 +71,32 @@ public final class StarterTheme {
                 }
             });
         }).start();
+    }
+
+    /**
+     * Install the starter theme as root and wait for it (blocking: call off the main thread).
+     *
+     * @return True, if the package manager reported success
+     */
+    public static boolean installWithRoot(Context context) {
+        Context app = context.getApplicationContext();
+        File apk = null;
+        try {
+            apk = copyAsset(app, new File(app.getCacheDir(), "reborn_amoled.apk"));
+            String result = Root.runCommand("pm install -r '" + apk.getAbsolutePath() + "' 2>&1");
+            if (result == null || !result.contains("Success")) {
+                // The package manager may not read the app's cache: through /data/local/tmp
+                String tmp = "/data/local/tmp/reborn_amoled.apk";
+                result = Root.runCommand("cp -f '" + apk.getAbsolutePath() + "' " + tmp +
+                        " && chmod 644 " + tmp + " && pm install -r " + tmp + " 2>&1; rm -f " + tmp);
+            }
+            return result != null && result.contains("Success");
+        } catch (IOException | RuntimeException e) {
+            return false;
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            if (apk != null) apk.delete();
+        }
     }
 
     private static File copyAsset(Context context, File target) throws IOException {

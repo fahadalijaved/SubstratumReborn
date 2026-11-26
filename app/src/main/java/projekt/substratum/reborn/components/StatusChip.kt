@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -79,6 +80,35 @@ fun StatusChip(text: String, state: ChipState, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium,
             color = colors.onContainer,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** What something is (a source, a kind), not a state: an icon and a label on a coloured pill. */
+@Composable
+fun TagChip(
+    text: String,
+    @DrawableRes icon: Int,
+    container: Color,
+    content: Color,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(container)
+            .padding(start = 8.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = content, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+            color = content,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

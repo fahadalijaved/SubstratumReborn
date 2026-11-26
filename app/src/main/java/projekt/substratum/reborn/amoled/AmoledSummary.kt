@@ -6,8 +6,6 @@ package projekt.substratum.reborn.amoled
 
 import android.content.Context
 import projekt.substratum.common.platform.AmoledState
-import projekt.substratum.common.platform.QsOptions
-import projekt.substratum.common.platform.XposedBackend
 import projekt.substratum.reborn.RebornActions
 
 /** AMOLED for every app as the state file has it. */
@@ -24,16 +22,11 @@ data class AmoledSummary(
     val themeName: CharSequence?,
 )
 
-/** Everything applied right now, for Home. */
-data class AppliedNow(
-    val amoled: AmoledSummary,
-    val overlays: Int,
-    val qs: QsOptions,
-)
-
 /** Blocking (files, and root on the state file's first read). */
-fun readAmoledSummary(context: Context): AmoledSummary {
-    val state = AmoledState.read(context)
+fun readAmoledSummary(context: Context): AmoledSummary = amoledSummaryOf(context, AmoledState.read(context))
+
+/** Blocking (PackageManager, for the rules theme's name). */
+fun amoledSummaryOf(context: Context, state: AmoledState): AmoledSummary {
     val (theme, name) = RebornActions.amoledTheme(context, state)
     return AmoledSummary(
         enabled = state.enabled,
@@ -48,10 +41,3 @@ fun readAmoledSummary(context: Context): AmoledSummary {
         themeName = name,
     )
 }
-
-/** Blocking. */
-fun readAppliedNow(context: Context): AppliedNow = AppliedNow(
-    amoled = readAmoledSummary(context),
-    overlays = XposedBackend.listAll().count { XposedBackend.isEnabled(it) },
-    qs = QsOptions.read(),
-)

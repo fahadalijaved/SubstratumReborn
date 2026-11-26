@@ -43,6 +43,7 @@ import projekt.substratum.common.platform.SystemAmoled
 import projekt.substratum.common.platform.XposedBackend
 import projekt.substratum.reborn.RebornActions
 import projekt.substratum.reborn.RebornCache
+import projekt.substratum.reborn.applied.AppliedRepository
 import projekt.substratum.reborn.components.mock.MockRoles
 import projekt.substratum.util.helpers.Root
 import org.json.JSONObject
@@ -286,6 +287,13 @@ object StudioState {
     }
 
     fun refreshApps() = appReads.trySend(Unit)
+
+    /** The look was changed outside the Studio (Applied's active tile): read it again. Main thread. */
+    fun reloadLook() {
+        if (!::app.isInitialized) return
+        _look.value = readLook()
+        previewReads.trySend(Unit)
+    }
 
     /** A screen asked for a rules theme (a theme's card, the Classic menu). */
     fun requestTheme(pkg: String?) {
@@ -758,6 +766,7 @@ object StudioState {
                 queue(AmoledJobs.Kind.APPLY_SYSTEMUI) { AmoledJobs.applySystemUi(app, theme) }
             } else {
                 withContext(Dispatchers.IO) { QsOptions.restartSystemUi() }
+                AppliedRepository.restartDone()
             }
             say(string(R.string.reborn_studio_qs_applied))
         }

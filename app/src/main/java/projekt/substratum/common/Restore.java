@@ -31,6 +31,7 @@ import projekt.substratum.R;
 import projekt.substratum.Substratum;
 import projekt.substratum.common.commands.ElevatedCommands;
 import projekt.substratum.common.commands.FileOperations;
+import projekt.substratum.common.platform.AmoledJobs;
 import projekt.substratum.common.platform.ThemeManager;
 import projekt.substratum.tabs.BootAnimationsManager;
 import projekt.substratum.tabs.FontsManager;
@@ -292,6 +293,11 @@ public class Restore {
                         FileOperations.mountSystemRO();
                     }
                 } else {
+                    // The panic button undoes AMOLED for every app too (queued: it runs in the
+                    // AMOLED service, keeps a snapshot of the definitions and restarts System UI)
+                    if (context != null && AmoledJobs.isApplied(context)) {
+                        AmoledJobs.remove(context);
+                    }
                     ThemeManager.disableAllThemeOverlays(context);
                 }
             }

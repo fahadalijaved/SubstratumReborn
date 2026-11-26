@@ -6,8 +6,8 @@ package projekt.substratum.reborn
 
 import projekt.substratum.common.platform.RebornStatus
 import projekt.substratum.reborn.amoled.AmoledSummary
-import projekt.substratum.reborn.amoled.AppliedNow
-import projekt.substratum.reborn.themes.ThemeItem
+import projekt.substratum.reborn.applied.AppliedSnapshot
+import projekt.substratum.reborn.themes.ThemesSnapshot
 
 /**
  * The last reads, kept for the process: a screen shown again starts from them while it reads
@@ -18,11 +18,11 @@ object RebornCache {
     var status: RebornStatus.Snapshot? = null
 
     @Volatile
-    var applied: AppliedNow? = null
+    var applied: AppliedSnapshot? = null
 
     @Volatile
     var amoled: AmoledSummary? = null
 
     @Volatile
-    var themes: List<ThemeItem>? = null
+    var themes: ThemesSnapshot? = null
 }

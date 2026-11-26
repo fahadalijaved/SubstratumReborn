@@ -53,14 +53,15 @@ import projekt.substratum.R
 import projekt.substratum.common.RebornInit
 import projekt.substratum.reborn.amoled.AmoledTab
 import projekt.substratum.reborn.amoled.StudioState
-import projekt.substratum.reborn.applied.AppliedTab
+import projekt.substratum.reborn.applied.AppliedScreen
+import projekt.substratum.reborn.applied.UndoEverythingHost
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.RebornSnackbarHost
 import projekt.substratum.reborn.home.HomeScreen
 import projekt.substratum.reborn.setup.SetupScreen
 import projekt.substratum.reborn.theme.RebornTheme
 import projekt.substratum.reborn.theme.isDarkPreferred
-import projekt.substratum.reborn.themes.ThemesTab
+import projekt.substratum.reborn.themes.ThemesScreen
 import projekt.substratum.util.helpers.LocaleHelper
 
 enum class RebornTab(val key: String, @StringRes val label: Int, @DrawableRes val icon: Int) {
@@ -189,15 +190,27 @@ fun RebornApp(requestedTab: MutableState<String?>) {
                                     RebornTab.Home -> HomeScreen(
                                         onOpenSetup = { showSetup = true },
                                         onOpenAmoled = { tab = RebornTab.Amoled },
+                                        onOpenApplied = { tab = RebornTab.Applied },
                                     )
                                     RebornTab.Amoled -> AmoledTab()
-                                    RebornTab.Themes -> ThemesTab()
-                                    RebornTab.Applied -> AppliedTab()
+                                    RebornTab.Themes -> ThemesScreen(
+                                        onOpenStudio = { theme ->
+                                            // A rules theme: AMOLED Studio applies with its rules
+                                            StudioState.requestTheme(theme)
+                                            tab = RebornTab.Amoled
+                                        },
+                                    )
+                                    RebornTab.Applied -> AppliedScreen(
+                                        onOpenAmoled = { tab = RebornTab.Amoled },
+                                        onOpenThemes = { tab = RebornTab.Themes },
+                                    )
                                 }
                             }
                         }
                     }
                 }
+                // Undo everything (Applied, Home): its question, progress and result
+                UndoEverythingHost()
             }
         }
     }
