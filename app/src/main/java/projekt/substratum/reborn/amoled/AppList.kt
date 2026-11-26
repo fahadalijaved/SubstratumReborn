@@ -1,0 +1,467 @@
+/*
+ * Copyright (c) 2026 SubstratumReborn
+ * SPDX-License-Identifier: GPL-3.0-Or-Later
+ */
+package projekt.substratum.reborn.amoled
+
+import android.content.Intent
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumFlexibleTopAppBar
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.toShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
+import projekt.substratum.R
+import projekt.substratum.common.platform.AmoledState
+import projekt.substratum.reborn.RebornActions
+import projekt.substratum.reborn.components.AppIcon
+import projekt.substratum.reborn.components.SectionCard
+import projekt.substratum.reborn.components.ShapedIcon
+import projekt.substratum.reborn.components.onIo
+import projekt.substratum.reborn.theme.LocalRebornColors
+
+/** What the app list shows. */
+enum class AppFilter(@StringRes val label: Int, @DrawableRes val icon: Int) {
+    All(R.string.reborn_studio_filter_all, R.drawable.ic_reborn_apps),
+    Themed(R.string.reborn_studio_filter_themed, R.drawable.ic_reborn_amoled),
+    Off(R.string.reborn_studio_filter_off, R.drawable.ic_reborn_off),
+    Native(R.string.reborn_studio_filter_native, R.drawable.ic_reborn_ok),
+    Module(R.string.reborn_studio_filter_module, R.drawable.ic_reborn_module),
+    NeedsScope(R.string.reborn_studio_filter_scope, R.drawable.ic_reborn_warning),
+    Unsupported(R.string.reborn_studio_filter_unsupported, R.drawable.ic_reborn_error),
+    Restart(R.string.reborn_studio_filter_restart, R.drawable.ic_reborn_restart),
+    Changed(R.string.reborn_studio_filter_changed, R.drawable.ic_reborn_refresh);
+
+    fun matches(row: StudioState.AppRow, scope: Set<String>?): Boolean = when (this) {
+        All -> true
+        Themed -> row.themed
+        Off -> !row.enabled
+        Native -> row.route == AmoledState.Route.OVERLAY
+        Module -> row.route == AmoledState.Route.MODULE
+        NeedsScope -> needsScope(row, scope)
+        Unsupported -> row.route == AmoledState.Route.UNSUPPORTED
+        Restart -> row.restartNeeded
+        Changed -> row.changed
+    }
+}
+
+/** Themed through the LSPosed module, which is not scoped to it: its colours do not show. */
+fun needsScope(row: StudioState.AppRow, scope: Set<String>?): Boolean =
+    row.route == AmoledState.Route.MODULE && scope != null && row.pkg !in scope
+
+private enum class RowAction { Inspect, Open, Reapply, Restart, Scope }
+
+/** What a row needs to draw, so unchanged rows skip recomposition. */
+@Immutable
+private class RowCallbacks(
+    val onToggle: (StudioState.AppRow, Boolean) -> Unit,
+    val onAction: (StudioState.AppRow, RowAction) -> Unit,
+)
+
+/**
+ * Every app AMOLED covers: search (name and package), filters, and a row per app with its route,
+ * colours, restart state and switch. A tap opens the [Inspector].
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@Composable
+fun AppList(initialFilter: AppFilter, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val apps by StudioState.apps.collectAsStateWithLifecycle()
+    val scope by StudioState.lsposedScope.collectAsStateWithLifecycle()
+    var query by rememberSaveable { mutableStateOf("") }
+    var filter by rememberSaveable { mutableStateOf(initialFilter) }
+    var inspecting by rememberSaveable { mutableStateOf<String?>(null) }
+    val haptics = LocalHapticFeedback.current
+    val focus = LocalFocusManager.current
+    val snackbar = rememberActionSnackbar()
+    val coroutines = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    val counts = remember(apps, scope) {
+        AppFilter.entries.associateWith { f -> apps?.count { f.matches(it, scope) } ?: 0 }
+    }
+    val visible = remember(apps, scope, query, filter) {
+        val q = query.trim().lowercase()
+        apps.orEmpty().filter { filter.matches(it, scope) && (q.isEmpty() || it.search.contains(q)) }
+    }
+    // A new search or filter starts from the top (the controls stay pinned)
+    LaunchedEffect(query, filter) {
+        if (listState.firstVisibleItemIndex > 0) listState.scrollToItem(0)
+    }
+
+    val undo = stringResource(R.string.reborn_studio_undo)
+    val callbacks = remember(context, snackbar, coroutines) {
+        RowCallbacks(
+            onToggle = { row, on ->
+                StudioState.setEnabled(row, on)
+                snackbar(
+                    context.getString(if (on) R.string.reborn_studio_app_on else R.string.reborn_studio_app_off, row.label),
+                    undo,
+                    { StudioState.setEnabled(row.copy(enabled = on), !on) },
+                )
+            },
+            onAction = { row, action ->
+                when (action) {
+                    RowAction.Inspect -> inspecting = row.pkg
+                    RowAction.Reapply -> StudioState.reapply(row)
+                    RowAction.Open -> coroutines.launch {
+                        val intent = onIo {
+                            runCatching { context.packageManager.getLaunchIntentForPackage(row.pkg) }.getOrNull()
+                        }
+                        val started = intent != null && runCatching {
+                            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }.isSuccess
+                        if (!started) snackbar(context.getString(R.string.reborn_studio_no_launch, row.label), null, null)
+                    }
+                    RowAction.Restart -> coroutines.launch {
+                        val done = StudioState.restart(row)
+                        snackbar(
+                            context.getString(if (done) R.string.reborn_studio_restarted else R.string.reborn_studio_restart_failed, row.label),
+                            null, null,
+                        )
+                    }
+                    RowAction.Scope -> coroutines.launch {
+                        snackbar(context.getString(R.string.reborn_studio_scope_hint, row.label), null, null)
+                        if (!RebornActions.openLsposed(context)) {
+                            snackbar(context.getString(R.string.reborn_no_lsposed), null, null)
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val background = MaterialTheme.colorScheme.background
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = background,
+        topBar = {
+            MediumFlexibleTopAppBar(
+                title = { Text(stringResource(R.string.reborn_studio_apps), fontWeight = FontWeight.Bold) },
+                subtitle = {
+                    apps?.let { list ->
+                        Text(stringResource(R.string.reborn_studio_themed, list.count { it.themed }, list.size))
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(R.drawable.ic_reborn_back), stringResource(R.string.reborn_back))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = background,
+                    scrolledContainerColor = background,
+                ),
+                scrollBehavior = scrollBehavior,
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 24.dp,
+            ),
+        ) {
+            stickyHeader(key = "controls", contentType = "controls") {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(background)
+                        .padding(bottom = 8.dp),
+                ) {
+                    TextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        placeholder = { Text(stringResource(R.string.reborn_studio_search)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_search), contentDescription = null) },
+                        trailingIcon = if (query.isNotEmpty()) {
+                            {
+                                IconButton(onClick = { query = "" }) {
+                                    Icon(painterResource(R.drawable.ic_reborn_close), stringResource(R.string.reborn_studio_clear_search))
+                                }
+                            }
+                        } else null,
+                        singleLine = true,
+                        shape = CircleShape,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(AppFilter.entries, key = { it.name }) { f ->
+                            val selected = filter == f
+                            FilterChip(
+                                selected = selected,
+                                onClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    filter = f
+                                },
+                                label = {
+                                    Text(stringResource(R.string.reborn_studio_filter_count, stringResource(f.label), counts[f] ?: 0))
+                                },
+                                leadingIcon = if (selected) {
+                                    { Icon(painterResource(R.drawable.ic_reborn_check), null, Modifier.size(18.dp)) }
+                                } else null,
+                            )
+                        }
+                    }
+                }
+            }
+            val list = apps
+            when {
+                list == null -> item(key = "loading") {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(240.dp),
+                        contentAlignment = Alignment.Center,
+                    ) { LoadingIndicator(Modifier.size(64.dp)) }
+                }
+                list.isEmpty() -> item(key = "empty") {
+                    EmptyCard(R.string.reborn_studio_apps_empty, R.string.reborn_studio_apps_empty_text)
+                }
+                visible.isEmpty() -> item(key = "none") {
+                    EmptyCard(R.string.reborn_studio_no_apps, R.string.reborn_studio_no_apps_text)
+                }
+                else -> items(visible, key = { it.pkg }, contentType = { "app" }) { row ->
+                    AppRowItem(
+                        row = row,
+                        needsScope = needsScope(row, scope),
+                        callbacks = callbacks,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+        }
+    }
+
+    inspecting?.let { pkg ->
+        val row = apps?.firstOrNull { it.pkg == pkg }
+        if (row != null) Inspector(row = row, onDismiss = { inspecting = null })
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun EmptyCard(@StringRes title: Int, @StringRes text: Int) {
+    SectionCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        ShapedIcon(
+            icon = R.drawable.ic_reborn_search,
+            container = MaterialTheme.colorScheme.secondaryContainer,
+            content = MaterialTheme.colorScheme.onSecondaryContainer,
+            size = 52.dp,
+            shape = MaterialShapes.Cookie7Sided.toShape(),
+        )
+        Spacer(Modifier.height(14.dp))
+        Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            stringResource(text),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private val RowShape = RoundedCornerShape(22.dp)
+
+@Composable
+private fun AppRowItem(
+    row: StudioState.AppRow,
+    needsScope: Boolean,
+    callbacks: RowCallbacks,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalRebornColors.current
+    val scheme = MaterialTheme.colorScheme
+    val haptics = LocalHapticFeedback.current
+    var menu by remember { mutableStateOf(false) }
+    Row(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth()
+            .clip(RowShape)
+            .background(colors.card)
+            .then(if (colors.dark) Modifier.border(1.dp, colors.cardBorder, RowShape) else Modifier)
+            .clickable { callbacks.onAction(row, RowAction.Inspect) }
+            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppIcon(row.pkg, size = 44.dp, shape = RoundedCornerShape(12.dp))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                row.label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                row.pkg,
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                RouteChip(row.route)
+                when {
+                    needsScope -> MiniChip(stringResource(R.string.reborn_studio_needs_scope), R.drawable.ic_reborn_warning, colors.error)
+                    row.restartNeeded -> MiniChip(stringResource(R.string.reborn_studio_restart_needed), R.drawable.ic_reborn_restart, colors.warn)
+                    row.colors > 0 -> Text(
+                        pluralStringResource(R.plurals.reborn_studio_colours, row.colors, row.colors),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.width(6.dp))
+        Switch(
+            checked = row.enabled,
+            enabled = row.route != AmoledState.Route.UNSUPPORTED,
+            onCheckedChange = {
+                haptics.performHapticFeedback(if (it) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff)
+                callbacks.onToggle(row, it)
+            },
+        )
+        Box {
+            IconButton(onClick = { menu = true }) {
+                Icon(painterResource(R.drawable.ic_reborn_more), stringResource(R.string.reborn_more))
+            }
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                val act: (RowAction) -> Unit = {
+                    menu = false
+                    callbacks.onAction(row, it)
+                }
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.reborn_studio_inspect)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_palette), null) },
+                    onClick = { act(RowAction.Inspect) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.reborn_studio_open_app)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_open), null) },
+                    onClick = { act(RowAction.Open) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.reborn_studio_reapply_app)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_refresh), null) },
+                    enabled = row.enabled && row.route != AmoledState.Route.UNSUPPORTED,
+                    onClick = { act(RowAction.Reapply) },
+                )
+                // Whether a force-stop is safe is read when the menu opens (PackageManager, settings)
+                val safe by produceState<Boolean?>(null, row.pkg) { value = StudioState.safeToRestart(row.pkg) }
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                when (safe) {
+                                    null -> R.string.reborn_studio_restart_checking
+                                    true -> R.string.reborn_studio_restart_app
+                                    false -> R.string.reborn_studio_restart_unsafe
+                                }
+                            )
+                        )
+                    },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_restart), null) },
+                    enabled = safe == true,
+                    onClick = { act(RowAction.Restart) },
+                )
+                if (row.route == AmoledState.Route.MODULE) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.reborn_studio_add_scope)) },
+                        leadingIcon = { Icon(painterResource(R.drawable.ic_reborn_module), null) },
+                        onClick = { act(RowAction.Scope) },
+                    )
+                }
+            }
+        }
+    }
+}

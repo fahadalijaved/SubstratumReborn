@@ -26,10 +26,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 
-/** App icons by package and size: the 64 most recent. */
-private val iconCache = LruCache<String, ImageBitmap>(64)
+/** App icons by package and size: the most recent, up to 12 MB (the AMOLED app list has ~400). */
+private val iconCache = object : LruCache<String, ImageBitmap>(12 * 1024 * 1024) {
+    override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
+}
+
+/** A few icons at a time: a fast scroll through a long list does not flood the IO pool. */
+@OptIn(ExperimentalCoroutinesApi::class)
+private val iconLoader = Dispatchers.IO.limitedParallelism(4)
 
 private fun loadIcon(context: Context, pkg: String, px: Int): ImageBitmap? = try {
     val drawable = context.packageManager.getApplicationIcon(pkg)
@@ -49,7 +56,7 @@ fun AppIcon(
     val context = LocalContext.current
     val px = with(LocalDensity.current) { size.roundToPx() }.coerceAtLeast(1)
     val bitmap by produceState(iconCache.get("$pkg@$px"), pkg, px) {
-        if (value == null) value = withContext(Dispatchers.IO) { loadIcon(context, pkg, px) }
+        if (value == null) value = withContext(iconLoader) { loadIcon(context, pkg, px) }
     }
     val image = bitmap
     if (image != null) {

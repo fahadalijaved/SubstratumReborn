@@ -77,8 +77,14 @@ object RebornActions {
         return theme to name
     }
 
+    /** AMOLED Studio (the AMOLED tab), with a rules theme to apply with. */
     fun openAmoledSettings(context: Context, theme: String?, name: CharSequence?) {
         AmoledSettingsActivity.launch(context, theme, name)
+    }
+
+    /** The AMOLED screen of earlier versions, kept as "Classic AMOLED screen". */
+    fun openClassicAmoled(context: Context, theme: String?, name: CharSequence?) {
+        AmoledSettingsActivity.launchClassic(context, theme, name)
     }
 
     private fun start(context: Context, intent: Intent): Boolean = try {

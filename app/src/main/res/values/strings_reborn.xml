@@ -192,4 +192,161 @@
     <string name="reborn_applied_soon">Everything applied, in one place</string>
     <string name="reborn_applied_soon_text">Compiled overlays, AMOLED and quick settings tweaks will be listed here with one Undo. Until then the Classic overlay manager has the overlays.</string>
     <string name="reborn_applied_open_manager">Open overlay manager</string>
+
+    <!-- AMOLED Studio: hero -->
+    <string name="reborn_studio_subtitle">Studio</string>
+    <string name="reborn_studio_overline">AMOLED for every app</string>
+    <string name="reborn_studio_themed">%1$d of %2$d apps themed</string>
+    <string name="reborn_studio_applied">Applied %1$s</string>
+    <string name="reborn_studio_never_applied">Never applied</string>
+    <string name="reborn_studio_off_text">Apps keep their own dark mode. Apply turns every Samsung, Google and system app true black.</string>
+    <string name="reborn_studio_pending">Pending changes</string>
+    <string name="reborn_studio_apply">Apply</string>
+    <string name="reborn_studio_reapply">Re-apply</string>
+    <string name="reborn_studio_apply_changes">Apply changes</string>
+    <string name="reborn_studio_more_actions">More AMOLED actions</string>
+    <string name="reborn_studio_remove">Remove AMOLED</string>
+    <string name="reborn_studio_reapply_changed">Re-apply changed apps only</string>
+    <string name="reborn_studio_classic">Classic AMOLED screen</string>
+    <string name="reborn_studio_rules">Rules</string>
+    <string name="reborn_studio_rules_builtin">Built-in</string>
+    <string name="reborn_studio_starting">Starting…</string>
+    <string name="reborn_studio_progress">%1$d of %2$d · %3$s</string>
+    <string name="reborn_studio_progress_count">%1$d of %2$d</string>
+    <string name="reborn_studio_job_apply">Applying AMOLED</string>
+    <string name="reborn_studio_job_apply_one">Reading colours again</string>
+    <string name="reborn_studio_job_remove">Removing AMOLED</string>
+    <string name="reborn_studio_job_restore">Restoring after reboot</string>
+    <string name="reborn_studio_job_systemui">Updating Quick Settings</string>
+    <string name="reborn_studio_job_switch">Switching an app</string>
+    <string name="reborn_studio_queued">%1$d more waiting</string>
+    <string name="reborn_studio_applying">Applying AMOLED to every app…</string>
+    <string name="reborn_studio_removing">Removing AMOLED from every app…</string>
+    <string name="reborn_studio_reapplying_changed">Reading %1$d changed apps again…</string>
+    <string name="reborn_studio_nothing_changed">Every app is up to date</string>
+    <string name="reborn_studio_apps_loading">Still reading the app list</string>
+
+    <!-- AMOLED Studio: look -->
+    <string name="reborn_studio_look">Look</string>
+    <string name="reborn_studio_preview">Live preview</string>
+    <string name="reborn_studio_preview_hint">Drag the divider: stock One UI on the left, your look on the right. Nothing is applied until you tap Apply.</string>
+    <string name="reborn_studio_preview_description">Before and after preview of Quick Settings and Settings</string>
+    <string name="reborn_studio_stock">Stock</string>
+    <string name="reborn_studio_amoled">AMOLED</string>
+    <string name="reborn_studio_surfaces">Surfaces</string>
+    <string name="reborn_studio_accent">Accent</string>
+    <string name="reborn_studio_accent_light">Also in light mode</string>
+    <string name="reborn_studio_custom_title">Custom accent</string>
+    <string name="reborn_studio_custom_hue">Hue</string>
+    <string name="reborn_studio_custom_hex">Hex colour</string>
+    <string name="reborn_studio_use">Use</string>
+    <string name="reborn_studio_selected">Selected</string>
+
+    <!-- AMOLED Studio: Quick Settings designer -->
+    <string name="reborn_studio_qs">Quick Settings</string>
+    <string name="reborn_studio_qs_title">Quick Settings designer</string>
+    <string name="reborn_studio_qs_text">One UI 9 draws these in code: the LSPosed module carries them out in System UI.</string>
+    <string name="reborn_studio_qs_shade">Opaque shade</string>
+    <string name="reborn_studio_qs_shade_text">Solid black instead of see-through</string>
+    <string name="reborn_studio_qs_tracks">Dark slider tracks</string>
+    <string name="reborn_studio_qs_tracks_text">Brightness and volume tracks near black</string>
+    <string name="reborn_studio_qs_tile">Active tile</string>
+    <string name="reborn_studio_qs_rows">Row height</string>
+    <string name="reborn_studio_qs_compact">Compact</string>
+    <string name="reborn_studio_qs_default">Default</string>
+    <string name="reborn_studio_qs_stock">Stock</string>
+    <string name="reborn_studio_qs_percent">%1$d%% of stock</string>
+    <string name="reborn_studio_qs_apply">Apply to Quick Settings</string>
+    <string name="reborn_studio_qs_confirm_title">Apply to Quick Settings?</string>
+    <string name="reborn_studio_qs_confirm_text">System UI restarts for a moment.</string>
+    <string name="reborn_studio_qs_confirm">Apply</string>
+    <string name="reborn_studio_qs_off">Shade, tracks and tile colours act on top of AMOLED: apply it first. The row height applies without it.</string>
+    <string name="reborn_studio_qs_applied">Quick Settings saved · restarting System UI…</string>
+    <string name="reborn_studio_qs_waiting">Quick Settings apply after the running job</string>
+
+    <!-- AMOLED Studio: apps -->
+    <string name="reborn_studio_apps">Apps</string>
+    <string name="reborn_studio_manage_apps">Manage apps (%1$d)</string>
+    <string name="reborn_studio_apps_text">Search, switch, restart and inspect every app AMOLED covers.</string>
+    <string name="reborn_studio_search">Search apps</string>
+    <string name="reborn_studio_clear_search">Clear search</string>
+    <string name="reborn_studio_filter_all">All</string>
+    <string name="reborn_studio_filter_themed">Themed</string>
+    <string name="reborn_studio_filter_off">Off</string>
+    <string name="reborn_studio_filter_native">Native</string>
+    <string name="reborn_studio_filter_module">Module</string>
+    <string name="reborn_studio_filter_scope">Needs scope</string>
+    <string name="reborn_studio_filter_unsupported">Refuses overlays</string>
+    <string name="reborn_studio_filter_restart">Restart needed</string>
+    <string name="reborn_studio_filter_changed">Changed</string>
+    <string name="reborn_studio_filter_count">%1$s · %2$d</string>
+    <string name="reborn_studio_route_native">Native</string>
+    <string name="reborn_studio_route_module">Module</string>
+    <string name="reborn_studio_route_unsupported">Unsupported</string>
+    <string name="reborn_studio_route_none">Not themed</string>
+    <plurals name="reborn_studio_colours">
+        <item quantity="one">%d colour</item>
+        <item quantity="other">%d colours</item>
+    </plurals>
+    <string name="reborn_studio_needs_scope">Needs scope</string>
+    <string name="reborn_studio_restart_needed">Restart needed</string>
+    <string name="reborn_studio_off_chip">Off</string>
+    <string name="reborn_studio_no_apps">No apps match</string>
+    <string name="reborn_studio_no_apps_text">Try another filter or search.</string>
+    <string name="reborn_studio_apps_empty">Nothing themed yet</string>
+    <string name="reborn_studio_apps_empty_text">Apply AMOLED once and every app it covers is listed here.</string>
+    <string name="reborn_studio_open_app">Open app</string>
+    <string name="reborn_studio_reapply_app">Re-apply</string>
+    <string name="reborn_studio_restart_app">Restart app</string>
+    <string name="reborn_studio_restart_unsafe">Not safe to restart</string>
+    <string name="reborn_studio_restart_checking">Checking…</string>
+    <string name="reborn_studio_add_scope">Add to LSPosed scope</string>
+    <string name="reborn_studio_inspect">Inspect colours</string>
+    <string name="reborn_studio_undo">Undo</string>
+    <string name="reborn_studio_app_on">%1$s: AMOLED on</string>
+    <string name="reborn_studio_app_off">%1$s: AMOLED off</string>
+    <string name="reborn_studio_reapplying_app">Reading %1$s again…</string>
+    <string name="reborn_studio_restarted">%1$s restarted</string>
+    <string name="reborn_studio_restart_failed">%1$s was not restarted</string>
+    <string name="reborn_studio_no_launch">%1$s has no screen to open</string>
+    <string name="reborn_studio_scope_hint">Add %1$s to Reborn\'s scope in LSPosed</string>
+
+    <!-- AMOLED Studio: inspector -->
+    <string name="reborn_studio_inspector_search">Search colours</string>
+    <string name="reborn_studio_inspector_empty">Apply once to see this app\'s colours</string>
+    <string name="reborn_studio_inspector_empty_text">The inspector lists every colour AMOLED changes in this app, stock to AMOLED, with the rule that decided it.</string>
+    <string name="reborn_studio_inspector_hint">Long-press a colour to keep it stock or pin your own.</string>
+    <string name="reborn_studio_your_rules">Your rules</string>
+    <string name="reborn_studio_keep_stock">Keep stock</string>
+    <string name="reborn_studio_pin">Pin colour…</string>
+    <string name="reborn_studio_reset">Reset</string>
+    <string name="reborn_studio_kept">%1$s stays stock · reading the app again</string>
+    <string name="reborn_studio_pinned">%1$s pinned · reading the app again</string>
+    <string name="reborn_studio_reset_done">%1$s back to the rules · reading the app again</string>
+    <string name="reborn_studio_pin_title">Pin colour</string>
+    <string name="reborn_studio_pin_hint">#AARRGGBB or #RRGGBB</string>
+    <string name="reborn_studio_invalid_colour">Not a colour: use #RRGGBB or #AARRGGBB</string>
+    <string name="reborn_studio_rule_kept">kept</string>
+    <string name="reborn_studio_rule_pinned">pinned</string>
+    <string name="reborn_studio_rule_pattern">pattern</string>
+    <string name="reborn_studio_state_list">state list</string>
+    <string name="reborn_studio_changes_none">No colour matches</string>
+    <string name="reborn_studio_level">%1$s look</string>
+
+    <!-- Mock Quick Settings and Settings drawn in the preview -->
+    <string name="reborn_mock_time" translatable="false">12:45</string>
+    <string name="reborn_mock_date">Thu, 26 November</string>
+    <string name="reborn_mock_song" translatable="false">Midnight City</string>
+    <string name="reborn_mock_artist" translatable="false">M83</string>
+    <string name="reborn_mock_settings">Settings</string>
+    <string name="reborn_mock_profile">Your Galaxy</string>
+    <string name="reborn_mock_account">Samsung account</string>
+    <string name="reborn_mock_connections">Connections</string>
+    <string name="reborn_mock_connections_text">Wi-Fi · Bluetooth · SIM manager</string>
+    <string name="reborn_mock_sounds">Sounds and vibration</string>
+    <string name="reborn_mock_sounds_text">Sound mode · Ringtone</string>
+    <string name="reborn_mock_dark">Dark mode</string>
+    <string name="reborn_mock_dark_text">On as scheduled</string>
+    <string name="reborn_mock_display">Display</string>
+    <string name="reborn_mock_display_text">Brightness · Eye comfort shield</string>
 </resources>

@@ -52,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import projekt.substratum.R
 import projekt.substratum.common.RebornInit
 import projekt.substratum.reborn.amoled.AmoledTab
+import projekt.substratum.reborn.amoled.StudioState
 import projekt.substratum.reborn.applied.AppliedTab
 import projekt.substratum.reborn.components.LocalSnackbar
 import projekt.substratum.reborn.components.RebornSnackbarHost
@@ -76,12 +77,13 @@ enum class RebornTab(val key: String, @StringRes val label: Int, @DrawableRes va
 /**
  * The Reborn shell: Home, AMOLED, Themes and Applied, and the setup checklist on the first
  * launch. Started by [projekt.substratum.LauncherActivity]; extra [EXTRA_TAB] picks a tab
- * (home, amoled, themes or applied).
+ * (home, amoled, themes or applied) and [EXTRA_THEME] the rules theme AMOLED Studio applies with.
  */
 class RebornActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_TAB = "tab"
+        const val EXTRA_THEME = "theme"
     }
 
     private val requestedTab = mutableStateOf<String?>(null)
@@ -101,7 +103,10 @@ class RebornActivity : ComponentActivity() {
         enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
         super.onCreate(savedInstanceState)
         RebornInit.start(this)
-        if (savedInstanceState == null) requestedTab.value = intent?.getStringExtra(EXTRA_TAB)
+        if (savedInstanceState == null) {
+            requestedTab.value = intent?.getStringExtra(EXTRA_TAB)
+            StudioState.requestTheme(intent?.getStringExtra(EXTRA_THEME))
+        }
         setContent {
             RebornTheme {
                 RebornApp(requestedTab)
@@ -113,6 +118,7 @@ class RebornActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         intent.getStringExtra(EXTRA_TAB)?.let { requestedTab.value = it }
+        StudioState.requestTheme(intent.getStringExtra(EXTRA_THEME))
     }
 }
 

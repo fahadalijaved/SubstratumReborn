@@ -54,7 +54,7 @@ public class Theming {
     public static void launchTheme(Context context,
                                    String packageName) {
         // Rules themes (assets/amoled/rules.json) theme every app on the device, not a list of
-        // overlays: open the AMOLED screen with the theme's rules
+        // overlays: open AMOLED Studio with the theme's rules
         if (context instanceof android.app.Activity &&
                 projekt.substratum.common.platform.AmoledRules.isRulesTheme(context, packageName)) {
             projekt.substratum.activities.launch.AmoledSettingsActivity.launch(

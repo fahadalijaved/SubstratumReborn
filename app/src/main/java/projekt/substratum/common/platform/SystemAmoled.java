@@ -759,7 +759,17 @@ public final class SystemAmoled {
      * the state does not know (applied by an older version) are added to it.
      */
     public static List<AppState> listApps(Context context) {
-        Map<String, Character> overlays = overlayStates();
+        return listApps(context, false);
+    }
+
+    /**
+     * {@link #listApps(Context)}
+     *
+     * @param quick Read the overlay list on the status root shell ({@link Root#runQuickCommand}),
+     *              so a screen never waits behind a running job
+     */
+    public static List<AppState> listApps(Context context, boolean quick) {
+        Map<String, Character> overlays = overlayStates(quick);
         Set<String> moduleLists = new HashSet<>();
         String[] files = new File(XposedBackend.DIR).list();
         if (files != null) {
@@ -823,8 +833,13 @@ public final class SystemAmoled {
      * Status of every AMOLED overlay: 'x' enabled, ' ' disabled, '-' refused by the system
      */
     private static Map<String, Character> overlayStates() {
+        return overlayStates(false);
+    }
+
+    private static Map<String, Character> overlayStates(boolean quick) {
         Map<String, Character> states = new HashMap<>();
-        String out = Root.runCommand("cmd overlay list 2>/dev/null | grep '" + SUFFIX + "'");
+        String command = "cmd overlay list 2>/dev/null | grep '" + SUFFIX + "'";
+        String out = quick ? Root.runQuickCommand(command) : Root.runCommand(command);
         if (out == null) return states;
         Matcher m = Pattern.compile(
                 "\\[(.)\\] com\\.android\\.shell:(\\S+)" + Pattern.quote(SUFFIX) + "|" +

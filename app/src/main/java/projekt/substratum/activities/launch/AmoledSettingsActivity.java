@@ -69,6 +69,10 @@ public class AmoledSettingsActivity extends AppCompatActivity {
 
     public static final String EXTRA_THEME = "theme";
     public static final String EXTRA_THEME_NAME = "theme_name";
+    /**
+     * Opens this screen itself; without it the intent goes on to AMOLED Studio
+     */
+    public static final String EXTRA_CLASSIC = "classic";
 
     private static final long LOOK_APPLY_DELAY = 1200;
     private static final int[] LEVEL_BUTTONS = {R.id.amoled_level_pure, R.id.amoled_level_dim,
@@ -163,15 +167,40 @@ public class AmoledSettingsActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * AMOLED for every app: AMOLED Studio (the Reborn shell's AMOLED tab), applying with the rules
+     * of {@code themePackage} (null keeps the Studio's choice).
+     */
     public static void launch(Context context, String themePackage, CharSequence themeName) {
-        context.startActivity(new Intent(context, AmoledSettingsActivity.class)
+        Intent intent = new Intent(context, projekt.substratum.reborn.RebornActivity.class)
+                .putExtra(projekt.substratum.reborn.RebornActivity.EXTRA_TAB, "amoled")
+                .putExtra(projekt.substratum.reborn.RebornActivity.EXTRA_THEME, themePackage);
+        if (!(context instanceof android.app.Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+    /**
+     * This screen, kept as "Classic AMOLED screen" (the Studio's menu).
+     */
+    public static void launchClassic(Context context, String themePackage, CharSequence themeName) {
+        Intent intent = new Intent(context, AmoledSettingsActivity.class)
                 .putExtra(EXTRA_THEME, themePackage)
-                .putExtra(EXTRA_THEME_NAME, themeName));
+                .putExtra(EXTRA_THEME_NAME, themeName)
+                .putExtra(EXTRA_CLASSIC, true);
+        if (!(context instanceof android.app.Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!getIntent().getBooleanExtra(EXTRA_CLASSIC, false)) {
+            // Any older way in leads to AMOLED Studio
+            launch(this, getIntent().getStringExtra(EXTRA_THEME),
+                    getIntent().getCharSequenceExtra(EXTRA_THEME_NAME));
+            finish();
+            return;
+        }
         setContentView(R.layout.amoled_settings_activity);
         prefs = Substratum.getPreferences();
         theme = getIntent().getStringExtra(EXTRA_THEME);

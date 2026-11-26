@@ -375,6 +375,19 @@ public final class AmoledRules {
     }
 
     /**
+     * A look given here instead of read from the preferences (each part null to keep what is
+     * there), for previews of a look that is not chosen yet: a preset, or an active tile option.
+     *
+     * @param accent An accent choice (see {@link AmoledPresets#resolveAccent})
+     * @param tile   An active tile option ({@link #TILE_WHITE}...), or null
+     * @param monet  The wallpaper's accent, or null
+     */
+    public AmoledRules withLook(AmoledLevel level, String accent, Boolean accentLight, String tile,
+                                Integer monet) {
+        return withOptions(level, accent, accentLight, tile, monet);
+    }
+
+    /**
      * The choices, each null to keep what the theme says.
      *
      * @param accent An accent choice (see {@link AmoledPresets#resolveAccent})
