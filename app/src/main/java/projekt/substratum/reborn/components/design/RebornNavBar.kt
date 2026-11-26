@@ -294,9 +294,12 @@ private fun NavIcon(dest: NavDest, selected: Boolean, badge: Boolean, tint: Colo
     val pop = remember { Animatable(1f) }
     var settled by remember { mutableStateOf(false) }
     LaunchedEffect(selected) {
-        // Pop (1 → 1.16 → 1) only when the user selects it, not on first composition
+        // Pop (1 → 1.16 → 1) only when the user selects it, not on first composition. Left mid-pop
+        // (another tab chosen at once), it settles back instead of staying enlarged.
         if (selected && settled) {
             pop.animateTo(1.16f, motion.fastSpatialSpec())
+            pop.animateTo(1f, motion.fastSpatialSpec())
+        } else if (pop.value != 1f) {
             pop.animateTo(1f, motion.fastSpatialSpec())
         }
         settled = true

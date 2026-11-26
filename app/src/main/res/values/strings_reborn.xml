@@ -777,7 +777,11 @@
         <item quantity="other">%1$d to restart</item>
     </plurals>
     <string name="reborn_now_classic_native">Applied natively</string>
-    <string name="reborn_now_themes_installed">themes installed</string>
+    <!-- Under the count of installed themes (the count itself is shown above it) -->
+    <plurals name="reborn_now_themes_installed">
+        <item quantity="one">theme installed</item>
+        <item quantity="other">themes installed</item>
+    </plurals>
     <string name="reborn_now_start_fresh">Or start fresh</string>
     <string name="reborn_now_make_own">Make your own</string>
     <string name="reborn_now_chip_classic">Classic</string>

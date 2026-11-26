@@ -7,11 +7,8 @@ package projekt.substratum.reborn.home
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -53,11 +50,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -246,7 +247,12 @@ internal fun NowCard(
                     }
                     BlockRow(
                         count = {
-                            CountBlock(installedThemes?.toString() ?: "–", stringResource(R.string.reborn_now_themes_installed), onPickTheme, it)
+                            CountBlock(
+                                installedThemes?.toString() ?: "–",
+                                pluralStringResource(R.plurals.reborn_now_themes_installed, installedThemes ?: 2),
+                                onPickTheme,
+                                it,
+                            )
                         },
                         detail = {
                             DetailBlock(stringResource(R.string.reborn_now_start_fresh), stringResource(R.string.reborn_now_make_own), emptyList(), onOpenCreate, it)
@@ -366,7 +372,7 @@ private fun AccentBlock(
                     .padding(horizontal = 24.dp, vertical = 20.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    LiveDot(live, content)
+                    LiveDot(live, running, content)
                     Spacer(Modifier.width(8.dp))
                     Text(overline, style = MaterialTheme.typography.labelLargeEmphasized, color = content)
                 }
@@ -390,20 +396,27 @@ private fun AccentBlock(
     }
 }
 
-/** An 8 dp dot whose ring pulses out (0 → 7 dp, 35 % → clear, every 2.4 s) while something is live. */
+/**
+ * An 8 dp dot whose ring pulses out (0 → 7 dp, 35 % → clear, every 2.4 s) while something is live.
+ * The pulse rests while Home is covered ([running] false), like the ambient shape.
+ */
 @Composable
-private fun LiveDot(live: Boolean, color: Color) {
-    val transition = rememberInfiniteTransition(label = "live")
-    val pulse by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart),
-        label = "livePulse",
-    )
+private fun LiveDot(live: Boolean, running: Boolean, color: Color) {
+    val pulse = remember { Animatable(1f) }
+    LaunchedEffect(live && running) {
+        if (!live || !running) {
+            pulse.snapTo(1f)
+            return@LaunchedEffect
+        }
+        while (true) {
+            pulse.snapTo(0f)
+            pulse.animateTo(1f, tween(2400, easing = LinearEasing))
+        }
+    }
     Canvas(Modifier.size(8.dp)) {
         val r = size.minDimension / 2f
         if (live) {
-            val p = (pulse / 0.7f).coerceAtMost(1f)
+            val p = (pulse.value / 0.7f).coerceAtMost(1f)
             if (p < 1f) drawCircle(color.copy(alpha = 0.35f * (1f - p)), radius = r + 7.dp.toPx() * p)
         }
         drawCircle(if (live) color else color.copy(alpha = 0.5f), radius = r)
@@ -591,18 +604,28 @@ private fun DetailBlock(key: String, value: String, apps: List<String>, onClick:
     }
 }
 
-/** Up to three app icons, 28 dp with 9 dp corners, overlapping by 6 dp; "+N" for the rest. */
+/**
+ * Up to three app icons, 28 dp with 9 dp corners, overlapping by 6 dp; "+N" for the rest. Their
+ * 2.5 dp ring is drawn outside them, so it takes no room (the block stays 120 dp).
+ */
 @Composable
 private fun AppStack(apps: List<String>, ring: Color) {
     val corner = RoundedCornerShape(9.dp)
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Row(horizontalArrangement = Arrangement.spacedBy((-11).dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
             apps.take(3).forEach { pkg ->
                 Box(
                     Modifier
-                        .size(33.dp)
-                        .background(ring, RoundedCornerShape(11.5.dp))
-                        .padding(2.5.dp),
+                        .size(28.dp)
+                        .drawBehind {
+                            val out = 2.5.dp.toPx()
+                            drawRoundRect(
+                                ring,
+                                topLeft = Offset(-out, -out),
+                                size = Size(size.width + 2 * out, size.height + 2 * out),
+                                cornerRadius = CornerRadius(11.5.dp.toPx()),
+                            )
+                        },
                 ) {
                     AppIcon(pkg, Modifier.clip(corner), size = 28.dp, shape = corner)
                 }

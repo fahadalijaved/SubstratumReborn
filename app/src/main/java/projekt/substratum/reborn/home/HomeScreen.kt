@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -249,10 +248,13 @@ fun HomeScreen(
                 item(key = "actions") {
                     Entrance(1, animate) {
                         val classic = now as? Now.Classic
+                        // Undo everything, as Applied offers it: whenever something is applied
+                        // (Quick Settings tweaks too, with no theme in use), not while the engine works
+                        val undoable = applied?.let { it.amoled.enabled || it.entries.isNotEmpty() } == true
                         NowActions(
                             reapplyEnabled = now is Now.Engine || classic != null,
                             reapplyFilled = (now as? Now.Engine)?.needsReapply == true,
-                            undoEnabled = now is Now.Engine || classic != null,
+                            undoEnabled = undoable && now !is Now.Applying,
                             onReapply = {
                                 if (classic != null) {
                                     // Classic overlays are built and applied again in Classic's theme screen
@@ -299,7 +301,8 @@ private fun BrandBar(
     Row(
         Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            // 64 dp; taller only when a large font needs it
+            .heightIn(min = 64.dp)
             .padding(start = 16.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -377,7 +380,7 @@ private fun EnginePill(
     ) {
         Row(
             Modifier
-                .height(36.dp)
+                .heightIn(min = 36.dp)
                 .padding(start = 10.dp, end = 6.dp)
                 .clearAndSetSemantics { contentDescription = description },
             verticalAlignment = Alignment.CenterVertically,

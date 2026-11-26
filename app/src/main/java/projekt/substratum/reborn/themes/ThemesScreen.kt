@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -395,7 +396,8 @@ private fun ThemesHeader(
     Row(
         Modifier
             .fillMaxWidth()
-            .height(HeaderHeight)
+            // Taller only when a large font needs it
+            .heightIn(min = HeaderHeight)
             .padding(start = 4.dp, top = 8.dp),
     ) {
         Column(
